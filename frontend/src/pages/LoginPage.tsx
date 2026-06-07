@@ -59,7 +59,7 @@ export default function LoginPage() {
                 value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
                 required
-                inputProps={{ autoComplete: 'new-username' }}
+                autoComplete="new-username"
               />
               <TextField
                 fullWidth
@@ -70,7 +70,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                inputProps={{ autoComplete: 'new-password' }}
+                autoComplete="new-password"
               />
               <Button
                 type="submit"
