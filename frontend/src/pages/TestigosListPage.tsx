@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { 
-  Box, Typography, Card, CardContent, Grid, TextField, Button, MenuItem, 
-  FormControl, InputLabel, Select, Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, 
+import {
+  Box, Typography, Card, CardContent, Grid, TextField, Button, MenuItem,
+  FormControl, InputLabel, Select, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent,
   DialogActions, Alert, TablePagination, CircularProgress, Tooltip
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -38,7 +38,7 @@ interface Testigo {
 
 export default function TestigosListPage() {
   const { dashboardUpdates } = useWebSocket();
-  
+
   const [testigos, setTestigos] = useState<Testigo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -219,10 +219,10 @@ export default function TestigosListPage() {
       const data = await res.json();
       if (data.success) {
         setMoveDeptosList(data.data);
-        
+
         if (testigo.departamentoId) {
           setMoveDepto(String(testigo.departamentoId));
-          
+
           const mpiosRes = await fetch(`${API_URL}/api/catalogo/departamentos/${testigo.departamentoId}/municipios`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -231,7 +231,7 @@ export default function TestigosListPage() {
             setMoveMpiosList(mpiosData.data);
             if (testigo.municipioId) {
               setMoveMpio(String(testigo.municipioId));
-              
+
               const puestosRes = await fetch(`${API_URL}/api/catalogo/municipios/${testigo.municipioId}/puestos`, {
                 headers: { 'Authorization': `Bearer ${token}` }
               });
@@ -240,7 +240,7 @@ export default function TestigosListPage() {
                 setMovePuestosList(puestosData.data);
                 if (testigo.puestoId) {
                   setMovePuesto(String(testigo.puestoId));
-                  
+
                   const mesasRes = await fetch(`${API_URL}/api/catalogo/puestos/${testigo.puestoId}/mesas`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                   });
@@ -351,7 +351,7 @@ export default function TestigosListPage() {
   // Filter clientside witnesses
   const filteredTestigos = testigos.filter(t => {
     const query = searchQuery.trim().toLowerCase();
-    const matchesSearch = query === '' || 
+    const matchesSearch = query === '' ||
       t.documento.toLowerCase().includes(query) ||
       t.nombreCompleto.toLowerCase().includes(query);
 
@@ -389,7 +389,7 @@ export default function TestigosListPage() {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2} sx={{ alignItems: 'center' }}>
-            <Grid size={{xs: 12, md: 4}}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -405,7 +405,7 @@ export default function TestigosListPage() {
               />
             </Grid>
 
-            <Grid size={{xs: 12, sm: 4, md: 2.6}}>
+            <Grid size={{ xs: 12, sm: 4, md: 2.6 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Municipio</InputLabel>
                 <Select
@@ -414,14 +414,16 @@ export default function TestigosListPage() {
                   onChange={(e) => { handleMunicipioChange(e); setPage(0); }}
                 >
                   <MenuItem value="">Todos</MenuItem>
-                  {municipios.map((m: any) => (
-                    <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
-                  ))}
+                  {[...municipios]
+                    .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
+                    .map((m: any) => (
+                      <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid size={{xs: 12, sm: 4, md: 2.7}}>
+            <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
                 <InputLabel>Puesto</InputLabel>
                 <Select
@@ -430,14 +432,16 @@ export default function TestigosListPage() {
                   onChange={(e) => { handlePuestoChange(e); setPage(0); }}
                 >
                   <MenuItem value="">Todos</MenuItem>
-                  {puestos.map((p: any) => (
-                    <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
-                  ))}
+                  {[...puestos]
+                    .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
+                    .map((p: any) => (
+                      <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid size={{xs: 12, sm: 4, md: 2.7}}>
+            <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth size="small" disabled={!selectedPuesto}>
                 <InputLabel>Mesa</InputLabel>
                 <Select
@@ -446,9 +450,11 @@ export default function TestigosListPage() {
                   onChange={(e) => { setSelectedMesa(e.target.value as string); setPage(0); }}
                 >
                   <MenuItem value="">Todas</MenuItem>
-                  {mesas.map((m: any) => (
-                    <MenuItem key={m.id} value={m.id}>Mesa {m.numeroMesa}</MenuItem>
-                  ))}
+                  {[...mesas]
+                    .sort((a: any, b: any) => a.numeroMesa - b.numeroMesa)
+                    .map((m: any) => (
+                      <MenuItem key={m.id} value={m.id}>Mesa {m.numeroMesa}</MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -574,7 +580,7 @@ export default function TestigosListPage() {
           {moveError && <Alert severity="error" sx={{ mb: 2 }}>{moveError}</Alert>}
 
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid size={{xs: 12}}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Departamento</InputLabel>
                 <Select
@@ -582,14 +588,16 @@ export default function TestigosListPage() {
                   label="Departamento"
                   onChange={handleMoveDeptoChange}
                 >
-                  {moveDeptosList.map((d: any) => (
-                    <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>
-                  ))}
+                  {[...moveDeptosList]
+                    .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
+                    .map((d: any) => (
+                      <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid size={{xs: 12}}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!moveDepto}>
                 <InputLabel>Municipio</InputLabel>
                 <Select
@@ -597,14 +605,16 @@ export default function TestigosListPage() {
                   label="Municipio"
                   onChange={handleMoveMpioChange}
                 >
-                  {moveMpiosList.map((m: any) => (
-                    <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
-                  ))}
+                  {[...moveMpiosList]
+                    .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
+                    .map((m: any) => (
+                      <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid size={{xs: 12}}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!moveMpio}>
                 <InputLabel>Puesto</InputLabel>
                 <Select
@@ -612,14 +622,16 @@ export default function TestigosListPage() {
                   label="Puesto"
                   onChange={handleMovePuestoChange}
                 >
-                  {movePuestosList.map((p: any) => (
-                    <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
-                  ))}
+                  {[...movePuestosList]
+                    .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
+                    .map((p: any) => (
+                      <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid size={{xs: 12}}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!movePuesto}>
                 <InputLabel>Mesa</InputLabel>
                 <Select
@@ -627,26 +639,28 @@ export default function TestigosListPage() {
                   label="Mesa"
                   onChange={(e) => setMoveMesa(e.target.value as string)}
                 >
-                  {moveMesasList.map((m: any) => {
-                    const isAvailable = m.ocupados < m.capacidad;
-                    const isCurrent = selectedTestigoForMove?.mesaId === m.id;
-                    return (
-                      <MenuItem 
-                        key={m.id} 
-                        value={m.id} 
-                        disabled={!isAvailable && !isCurrent}
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          color: isCurrent ? 'primary.main' : (!isAvailable ? 'text.disabled' : 'inherit'),
-                          fontWeight: isCurrent ? 'bold' : 'normal'
-                        }}
-                      >
-                        <span>Mesa {m.numeroMesa} {isCurrent ? '(Actual)' : ''}</span>
-                        <span>({m.ocupados}/{m.capacidad} ocupados)</span>
-                      </MenuItem>
-                    );
-                  })}
+                  {[...moveMesasList]
+                    .sort((a: any, b: any) => a.numeroMesa - b.numeroMesa)
+                    .map((m: any) => {
+                      const isAvailable = m.ocupados < m.capacidad;
+                      const isCurrent = selectedTestigoForMove?.mesaId === m.id;
+                      return (
+                        <MenuItem
+                          key={m.id}
+                          value={m.id}
+                          disabled={!isAvailable && !isCurrent}
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            color: isCurrent ? 'primary.main' : (!isAvailable ? 'text.disabled' : 'inherit'),
+                            fontWeight: isCurrent ? 'bold' : 'normal'
+                          }}
+                        >
+                          <span>Mesa {m.numeroMesa} {isCurrent ? '(Actual)' : ''}</span>
+                          <span>({m.ocupados}/{m.capacidad} ocupados)</span>
+                        </MenuItem>
+                      );
+                    })}
                 </Select>
               </FormControl>
             </Grid>
@@ -654,9 +668,9 @@ export default function TestigosListPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setMoveDialogOpen(false)}>Cancelar</Button>
-          <Button 
-            onClick={handleConfirmMove} 
-            color="primary" 
+          <Button
+            onClick={handleConfirmMove}
+            color="primary"
             variant="contained"
             disabled={!moveMesa || moveMesa === String(selectedTestigoForMove?.mesaId)}
           >

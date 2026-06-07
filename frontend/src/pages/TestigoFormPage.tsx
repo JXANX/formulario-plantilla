@@ -54,8 +54,6 @@ export default function TestigoFormPage() {
           correo: t.correo || '',
           tipoTestigo: t.tipoTestigo || 'PRINCIPAL'
         }));
-
-        // If it has location, we might want to load it (optional, skipped for brevity or handled manually by user)
       } else {
         setSuccess('Documento disponible para registro nuevo.');
       }
@@ -134,7 +132,6 @@ export default function TestigoFormPage() {
 
       if (data.success) {
         setSuccess('Testigo registrado correctamente');
-        // Limpiar campos personales
         setFormData({
           documento: '',
           nombre: '',
@@ -145,9 +142,7 @@ export default function TestigoFormPage() {
           correo: '',
           tipoTestigo: 'PRINCIPAL'
         });
-        // Limpiar mesa seleccionada
         setSelectedMesa('');
-        // Recargar las mesas del puesto para actualizar ocupados
         if (selectedPuesto) {
           fetch(`${API_URL}/api/catalogo/puestos/${selectedPuesto}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(res => res.json())
@@ -240,7 +235,11 @@ export default function TestigoFormPage() {
                 <FormControl fullWidth size="small">
                   <InputLabel>Departamento</InputLabel>
                   <Select value={selectedDepto} label="Departamento" onChange={handleDeptoChange} required>
-                    {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>)}
+                    {[...departamentos]
+                      .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
+                      .map((d: any) => (
+                        <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>
@@ -249,7 +248,11 @@ export default function TestigoFormPage() {
                 <FormControl fullWidth size="small" disabled={!selectedDepto}>
                   <InputLabel>Municipio</InputLabel>
                   <Select value={selectedMpio} label="Municipio" onChange={handleMpioChange} required>
-                    {municipios.map((m: any) => <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>)}
+                    {[...municipios]
+                      .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
+                      .map((m: any) => (
+                        <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>
@@ -258,7 +261,11 @@ export default function TestigoFormPage() {
                 <FormControl fullWidth size="small" disabled={!selectedMpio}>
                   <InputLabel>Puesto</InputLabel>
                   <Select value={selectedPuesto} label="Puesto" onChange={handlePuestoChange} required>
-                    {puestos.map((p: any) => <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>)}
+                    {[...puestos]
+                      .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
+                      .map((p: any) => (
+                        <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>
@@ -267,8 +274,9 @@ export default function TestigoFormPage() {
                 <FormControl fullWidth size="small" disabled={!selectedPuesto}>
                   <InputLabel>Mesa</InputLabel>
                   <Select value={selectedMesa} label="Mesa" onChange={(e) => setSelectedMesa(e.target.value as string)} required>
-                    {mesas
+                    {[...mesas]
                       .filter((m: any) => m.ocupados < m.capacidad)
+                      .sort((a: any, b: any) => a.numeroMesa - b.numeroMesa)
                       .map((m: any) => {
                         const isPartial = m.ocupados > 0 && m.ocupados < m.capacidad;
                         return (
