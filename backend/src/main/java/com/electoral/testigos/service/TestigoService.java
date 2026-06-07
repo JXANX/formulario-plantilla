@@ -39,6 +39,10 @@ public class TestigoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    public java.util.Optional<Testigo> buscarPorDocumento(String documento) {
+        return testigoRepository.findByDocumento(documento);
+    }
+
     @Transactional
     public Testigo registrarTestigo(TestigoRequest request) {
         // Validar duplicados

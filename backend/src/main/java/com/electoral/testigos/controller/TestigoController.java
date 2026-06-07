@@ -33,6 +33,22 @@ public class TestigoController {
         }
     }
 
+    @GetMapping("/documento/{documento}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> buscarPorDocumento(@PathVariable String documento) {
+        try {
+            java.util.Optional<Testigo> testigo = testigoService.buscarPorDocumento(documento);
+            if (testigo.isPresent()) {
+                return ResponseEntity.ok(new ApiResponse<>(true, "Testigo encontrado", testigo.get()));
+            } else {
+                return ResponseEntity.ok(new ApiResponse<>(false, "Testigo no encontrado", null));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> registrarTestigo(@Valid @RequestBody TestigoRequest request) {

@@ -28,6 +28,43 @@ export default function TestigoFormPage() {
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleVerificarDocumento = async () => {
+    if (!formData.documento) return;
+    setIsVerifying(true);
+    setError('');
+    setSuccess('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/testigos/documento/${formData.documento}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setSuccess('El testigo ya existe. Verifique sus datos o asigne ubicación si es necesario.');
+        const t = data.data;
+        setFormData(prev => ({
+          ...prev,
+          nombre: t.nombre || '',
+          segundoNombre: t.segundoNombre || '',
+          primerApellido: t.primerApellido || '',
+          segundoApellido: t.segundoApellido || '',
+          celular: t.celular || '',
+          correo: t.correo || '',
+          tipoTestigo: t.tipoTestigo || 'PRINCIPAL'
+        }));
+        
+        // If it has location, we might want to load it (optional, skipped for brevity or handled manually by user)
+      } else {
+        setSuccess('Documento disponible para registro nuevo.');
+      }
+    } catch (err) {
+      setError('Error al verificar documento');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -140,7 +177,63 @@ export default function TestigoFormPage() {
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid size={{xs: 12}}>
-                <Typography variant="h6" color="secondary.main">Ubicación Electoral</Typography>
+                <Typography variant="h6" color="secondary.main">1. Buscar/Verificar Cédula</Typography>
+              </Grid>
+
+              <Grid size={{xs: 12, sm: 6, md: 4}}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField 
+                    fullWidth 
+                    required 
+                    label="Cédula / Documento" 
+                    name="documento" 
+                    value={formData.documento} 
+                    onChange={handleChange} 
+                  />
+                  <Button 
+                    variant="outlined" 
+                    onClick={handleVerificarDocumento}
+                    disabled={!formData.documento || isVerifying}
+                  >
+                    Verificar
+                  </Button>
+                </Box>
+              </Grid>
+
+              <Grid size={{xs: 12}}>
+                <Typography variant="h6" color="secondary.main" sx={{ mt: 2 }}>2. Datos Personales</Typography>
+              </Grid>
+
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
+                <TextField fullWidth required label="Primer Nombre" name="nombre" value={formData.nombre} onChange={handleChange} />
+              </Grid>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
+                <TextField fullWidth label="Segundo Nombre" name="segundoNombre" value={formData.segundoNombre} onChange={handleChange} />
+              </Grid>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
+                <TextField fullWidth required label="Primer Apellido" name="primerApellido" value={formData.primerApellido} onChange={handleChange} />
+              </Grid>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
+                <TextField fullWidth label="Segundo Apellido" name="segundoApellido" value={formData.segundoApellido} onChange={handleChange} />
+              </Grid>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
+                <TextField fullWidth required label="Celular" name="celular" value={formData.celular} onChange={handleChange} />
+              </Grid>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
+                <TextField fullWidth label="Correo Electrónico" name="correo" type="email" value={formData.correo} onChange={handleChange} />
+              </Grid>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Tipo Testigo</InputLabel>
+                  <Select name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange}>
+                    <MenuItem value="PRINCIPAL">PRINCIPAL</MenuItem>
+                    <MenuItem value="SUPLENTE">SUPLENTE</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid size={{xs: 12}}>
+                <Typography variant="h6" color="secondary.main" sx={{ mt: 2 }}>3. Asignación Electoral</Typography>
               </Grid>
               
               <Grid size={{xs: 12, sm: 6, md: 3}}>
@@ -199,39 +292,6 @@ export default function TestigoFormPage() {
                 </FormControl>
               </Grid>
 
-              <Grid size={{xs: 12}}>
-                <Typography variant="h6" color="secondary.main" sx={{ mt: 2 }}>Datos Personales</Typography>
-              </Grid>
-
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
-                <TextField fullWidth required label="Documento" name="documento" value={formData.documento} onChange={handleChange} />
-              </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
-                <TextField fullWidth required label="Primer Nombre" name="nombre" value={formData.nombre} onChange={handleChange} />
-              </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
-                <TextField fullWidth label="Segundo Nombre" name="segundoNombre" value={formData.segundoNombre} onChange={handleChange} />
-              </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
-                <TextField fullWidth required label="Primer Apellido" name="primerApellido" value={formData.primerApellido} onChange={handleChange} />
-              </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
-                <TextField fullWidth label="Segundo Apellido" name="segundoApellido" value={formData.segundoApellido} onChange={handleChange} />
-              </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
-                <TextField fullWidth required label="Celular" name="celular" value={formData.celular} onChange={handleChange} />
-              </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
-                <TextField fullWidth label="Correo Electrónico" name="correo" type="email" value={formData.correo} onChange={handleChange} />
-              </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Tipo Testigo</InputLabel>
-                  <Select name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange}>
-                    <MenuItem value="PRINCIPAL">PRINCIPAL</MenuItem>
-                    <MenuItem value="SUPLENTE">SUPLENTE</MenuItem>
-                  </Select>
-                </FormControl>
               </Grid>
 
               <Grid size={{xs: 12}} sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
