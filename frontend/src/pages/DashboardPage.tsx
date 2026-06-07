@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Card, CardContent } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, Button } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import UploadIcon from '@mui/icons-material/Upload';
 import PeopleIcon from '@mui/icons-material/People';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
 import SchoolIcon from '@mui/icons-material/School';
@@ -67,6 +69,61 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDownloadExcel = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/excel/export`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "Testigos_Electorales_Export.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        alert("Error al descargar el archivo");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error de conexión");
+    }
+  };
+
+  const handleUploadExcel = async (event: any) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const token = localStorage.getItem('token');
+      alert("Subiendo archivo, por favor espera hasta que salga el aviso de éxito...");
+      const response = await fetch(`${API_URL}/api/excel/import`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      if (response.ok) {
+        alert("Archivo subido exitosamente");
+        fetchStats();
+      } else {
+        alert("Error al subir el archivo");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error de conexión");
+    }
+  };
+
   const StatCard = ({ title, value, icon, color }: { title: string, value: string | number, icon: any, color: string }) => (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'visible' }}>
       <CardContent>
@@ -100,11 +157,28 @@ export default function DashboardPage() {
         <Typography variant="h4" sx={{ fontWeight: 'bold' }} color="primary.main">
           Dashboard Electoral
         </Typography>
-        {dashboardUpdates > 0 && (
-          <Typography variant="body2" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <span className="live-indicator"></span> En vivo
-          </Typography>
-        )}
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Button 
+            variant="outlined" 
+            startIcon={<UploadIcon />}
+            component="label"
+          >
+            Subir Plantilla Excel
+            <input type="file" hidden accept=".xlsx" onChange={handleUploadExcel} />
+          </Button>
+          <Button 
+            variant="contained" 
+            startIcon={<DownloadIcon />}
+            onClick={handleDownloadExcel}
+          >
+            Descargar Excel
+          </Button>
+          {dashboardUpdates > 0 && (
+            <Typography variant="body2" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
+              <span className="live-indicator"></span> En vivo
+            </Typography>
+          )}
+        </Box>
       </Box>
 
       <Grid container spacing={3}>

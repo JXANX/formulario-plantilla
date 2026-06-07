@@ -27,7 +27,6 @@ public class ExcelController {
     private ExcelExportService excelExportService;
 
     @PostMapping("/import")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> importExcel(@RequestParam("file") MultipartFile file) {
         try {
             excelImportService.importarPlantilla(file.getInputStream(), false);
@@ -39,7 +38,6 @@ public class ExcelController {
     }
 
     @GetMapping("/export")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Resource> exportExcel() {
         try {
             File file = excelExportService.exportarDatos();
