@@ -292,8 +292,6 @@ export default function TestigoFormPage() {
                 </FormControl>
               </Grid>
 
-              </Grid>
-
               <Grid size={{xs: 12}} sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                 <Button type="submit" variant="contained" color="primary" size="large" startIcon={<SaveIcon />}>
                   Registrar Testigo
