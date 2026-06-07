@@ -54,13 +54,13 @@ export default function TestigoFormPage() {
           correo: t.correo || '',
           tipoTestigo: t.tipoTestigo || 'PRINCIPAL'
         }));
-        
+
         // If it has location, we might want to load it (optional, skipped for brevity or handled manually by user)
       } else {
         setSuccess('Documento disponible para registro nuevo.');
       }
     } catch (err) {
-      setError('Error al verificar documento');
+      setError('Cedula ya registrada');
     } finally {
       setIsVerifying(false);
     }
@@ -68,7 +68,7 @@ export default function TestigoFormPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` }})
+    fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => {
         if (data.success) setDepartamentos(data.data);
@@ -81,7 +81,7 @@ export default function TestigoFormPage() {
     setSelectedMpio('');
     setPuestos([]);
     setMesas([]);
-    fetch(`${API_URL}/api/catalogo/departamentos/${e.target.value}/municipios`, { headers: { 'Authorization': `Bearer ${token}` }})
+    fetch(`${API_URL}/api/catalogo/departamentos/${e.target.value}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => {
         if (data.success) setMunicipios(data.data);
@@ -93,7 +93,7 @@ export default function TestigoFormPage() {
     setSelectedMpio(e.target.value);
     setSelectedPuesto('');
     setMesas([]);
-    fetch(`${API_URL}/api/catalogo/municipios/${e.target.value}/puestos`, { headers: { 'Authorization': `Bearer ${token}` }})
+    fetch(`${API_URL}/api/catalogo/municipios/${e.target.value}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => {
         if (data.success) setPuestos(data.data);
@@ -104,7 +104,7 @@ export default function TestigoFormPage() {
     const token = localStorage.getItem('token');
     setSelectedPuesto(e.target.value);
     setSelectedMesa('');
-    fetch(`${API_URL}/api/catalogo/puestos/${e.target.value}/mesas`, { headers: { 'Authorization': `Bearer ${token}` }})
+    fetch(`${API_URL}/api/catalogo/puestos/${e.target.value}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => {
         if (data.success) setMesas(data.data);
@@ -119,19 +119,19 @@ export default function TestigoFormPage() {
     e.preventDefault();
     setError('');
     setSuccess('');
-    
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/testigos`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ ...formData, mesaId: selectedMesa })
       });
       const data = await res.json();
-      
+
       if (data.success) {
         setSuccess('Testigo registrado correctamente');
         // Limpiar campos personales
@@ -149,7 +149,7 @@ export default function TestigoFormPage() {
         setSelectedMesa('');
         // Recargar las mesas del puesto para actualizar ocupados
         if (selectedPuesto) {
-          fetch(`${API_URL}/api/catalogo/puestos/${selectedPuesto}/mesas`, { headers: { 'Authorization': `Bearer ${token}` }})
+          fetch(`${API_URL}/api/catalogo/puestos/${selectedPuesto}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(res => res.json())
             .then(d => {
               if (d.success) setMesas(d.data);
@@ -176,22 +176,22 @@ export default function TestigoFormPage() {
         <CardContent>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              <Grid size={{xs: 12}}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" color="secondary.main">1. Buscar/Verificar Cédula</Typography>
               </Grid>
 
-              <Grid size={{xs: 12, sm: 6, md: 4}}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <TextField 
-                    fullWidth 
-                    required 
-                    label="Cédula / Documento" 
-                    name="documento" 
-                    value={formData.documento} 
-                    onChange={handleChange} 
+                  <TextField
+                    fullWidth
+                    required
+                    label="Cédula / Documento"
+                    name="documento"
+                    value={formData.documento}
+                    onChange={handleChange}
                   />
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     onClick={handleVerificarDocumento}
                     disabled={!formData.documento || isVerifying}
                   >
@@ -200,29 +200,29 @@ export default function TestigoFormPage() {
                 </Box>
               </Grid>
 
-              <Grid size={{xs: 12}}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" color="secondary.main" sx={{ mt: 2 }}>2. Datos Personales</Typography>
               </Grid>
 
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <TextField fullWidth required label="Primer Nombre" name="nombre" value={formData.nombre} onChange={handleChange} />
               </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <TextField fullWidth label="Segundo Nombre" name="segundoNombre" value={formData.segundoNombre} onChange={handleChange} />
               </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <TextField fullWidth required label="Primer Apellido" name="primerApellido" value={formData.primerApellido} onChange={handleChange} />
               </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <TextField fullWidth label="Segundo Apellido" name="segundoApellido" value={formData.segundoApellido} onChange={handleChange} />
               </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <TextField fullWidth required label="Celular" name="celular" value={formData.celular} onChange={handleChange} />
               </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <TextField fullWidth label="Correo Electrónico" name="correo" type="email" value={formData.correo} onChange={handleChange} />
               </Grid>
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Tipo Testigo</InputLabel>
                   <Select name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange}>
@@ -232,11 +232,11 @@ export default function TestigoFormPage() {
                 </FormControl>
               </Grid>
 
-              <Grid size={{xs: 12}}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" color="secondary.main" sx={{ mt: 2 }}>3. Asignación Electoral</Typography>
               </Grid>
-              
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Departamento</InputLabel>
                   <Select value={selectedDepto} label="Departamento" onChange={handleDeptoChange} required>
@@ -244,8 +244,8 @@ export default function TestigoFormPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedDepto}>
                   <InputLabel>Municipio</InputLabel>
                   <Select value={selectedMpio} label="Municipio" onChange={handleMpioChange} required>
@@ -254,7 +254,7 @@ export default function TestigoFormPage() {
                 </FormControl>
               </Grid>
 
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedMpio}>
                   <InputLabel>Puesto</InputLabel>
                   <Select value={selectedPuesto} label="Puesto" onChange={handlePuestoChange} required>
@@ -263,7 +263,7 @@ export default function TestigoFormPage() {
                 </FormControl>
               </Grid>
 
-              <Grid size={{xs: 12, sm: 6, md: 3}}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedPuesto}>
                   <InputLabel>Mesa</InputLabel>
                   <Select value={selectedMesa} label="Mesa" onChange={(e) => setSelectedMesa(e.target.value as string)} required>
@@ -272,11 +272,11 @@ export default function TestigoFormPage() {
                       .map((m: any) => {
                         const isPartial = m.ocupados > 0 && m.ocupados < m.capacidad;
                         return (
-                          <MenuItem 
-                            key={m.id} 
+                          <MenuItem
+                            key={m.id}
                             value={m.id}
-                            sx={{ 
-                              color: isPartial ? '#b8860b' : '#d32f2f', 
+                            sx={{
+                              color: isPartial ? '#b8860b' : '#d32f2f',
                               fontWeight: 'medium',
                               display: 'flex',
                               justifyContent: 'space-between',
@@ -292,7 +292,7 @@ export default function TestigoFormPage() {
                 </FormControl>
               </Grid>
 
-              <Grid size={{xs: 12}} sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+              <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                 <Button type="submit" variant="contained" color="primary" size="large" startIcon={<SaveIcon />}>
                   Registrar Testigo
                 </Button>
