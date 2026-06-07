@@ -40,7 +40,6 @@ public class ExcelImportService {
     @Autowired
     private AuditService auditService;
 
-    @Transactional
     public void importarPlantilla(InputStream is, boolean isInitialLoad) throws Exception {
         logger.info("Iniciando importación de plantilla Excel...");
 

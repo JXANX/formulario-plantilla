@@ -7,6 +7,9 @@ spring:
     username: ${DB_USERNAME:electoral}
     password: ${DB_PASSWORD:electoral2026}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: "SET statement_timeout = '300s'"
+      maximum-pool-size: 5
   jpa:
     hibernate:
       ddl-auto: update
