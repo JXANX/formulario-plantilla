@@ -106,7 +106,7 @@ public class ExcelImportService {
                     String tipoTestigoStr = getCellValueAsString(row.getCell(9));
                     String documento = getCellValueAsString(row.getCell(10));
                     
-                    if (!documento.isEmpty() && testigoRepository.findByDocumento(documento).isEmpty()) {
+                    if (!documento.isEmpty()) {
                         String nombre = getCellValueAsString(row.getCell(11));
                         String segundoNombre = getCellValueAsString(row.getCell(12));
                         String apellido = getCellValueAsString(row.getCell(13));
@@ -119,25 +119,50 @@ public class ExcelImportService {
                             tipo = TipoTestigo.SUPLENTE;
                         }
 
-                        Testigo testigo = Testigo.builder()
-                                .documento(documento)
-                                .nombre(nombre)
-                                .segundoNombre(segundoNombre)
-                                .primerApellido(apellido)
-                                .segundoApellido(segundoApellido)
-                                .celular(celular)
-                                .correo(correo)
-                                .nombreOrganizacion(nomOrg)
-                                .tipoTestigo(tipo)
-                                .mesa(mesa)
-                                .fechaRegistro(LocalDateTime.now())
-                                .build();
+                        java.util.Optional<Testigo> existingOpt = testigoRepository.findByDocumento(documento);
+                        if (existingOpt.isPresent()) {
+                            Testigo existing = existingOpt.get();
+                            existing.setNombre(nombre.toUpperCase());
+                            existing.setSegundoNombre(segundoNombre != null ? segundoNombre.toUpperCase() : null);
+                            existing.setPrimerApellido(apellido.toUpperCase());
+                            existing.setSegundoApellido(segundoApellido != null ? segundoApellido.toUpperCase() : null);
+                            existing.setCelular(celular);
+                            existing.setCorreo(correo);
+                            existing.setNombreOrganizacion(nomOrg);
+                            existing.setTipoTestigo(tipo);
 
-                        testigoRepository.save(testigo);
-                        
-                        // Increment mesa occupation
-                        mesa.setOcupados(mesa.getOcupados() + 1);
-                        mesaRepository.save(mesa);
+                            Mesa oldMesa = existing.getMesa();
+                            if (oldMesa == null || !oldMesa.getId().equals(mesa.getId())) {
+                                if (oldMesa != null) {
+                                    oldMesa.setOcupados(Math.max(0, oldMesa.getOcupados() - 1));
+                                    mesaRepository.save(oldMesa);
+                                }
+                                existing.setMesa(mesa);
+                                mesa.setOcupados(mesa.getOcupados() + 1);
+                                mesaRepository.save(mesa);
+                            }
+                            testigoRepository.save(existing);
+                        } else {
+                            Testigo testigo = Testigo.builder()
+                                    .documento(documento)
+                                    .nombre(nombre.toUpperCase())
+                                    .segundoNombre(segundoNombre != null ? segundoNombre.toUpperCase() : null)
+                                    .primerApellido(apellido.toUpperCase())
+                                    .segundoApellido(segundoApellido != null ? segundoApellido.toUpperCase() : null)
+                                    .celular(celular)
+                                    .correo(correo)
+                                    .nombreOrganizacion(nomOrg)
+                                    .tipoTestigo(tipo)
+                                    .mesa(mesa)
+                                    .fechaRegistro(LocalDateTime.now())
+                                    .build();
+
+                            testigoRepository.save(testigo);
+                            
+                            // Increment mesa occupation
+                            mesa.setOcupados(mesa.getOcupados() + 1);
+                            mesaRepository.save(mesa);
+                        }
                     }
                 }
             }
