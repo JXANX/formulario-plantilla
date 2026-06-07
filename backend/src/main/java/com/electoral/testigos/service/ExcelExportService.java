@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.util.List;
@@ -35,6 +36,7 @@ public class ExcelExportService {
         "PRIMER_APELLIDO", "SEGUNDO_APELLIDO", "CELULAR", "CORREO"
     };
 
+    @Transactional(readOnly = true)
     public File exportarDatos() throws IOException {
         logger.info("Iniciando exportación de Excel desde la base de datos...");
 

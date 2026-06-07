@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PeopleIcon from '@mui/icons-material/People';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useState, useEffect } from 'react';
@@ -48,6 +49,10 @@ export default function MainLayout() {
         <ListItemButton onClick={() => navigate('/testigos')} sx={{ '&:hover': { bgcolor: 'primary.light' } }}>
           <ListItemIcon sx={{ color: 'white' }}><PeopleIcon /></ListItemIcon>
           <ListItemText primary="Listado de Testigos" />
+        </ListItemButton>
+        <ListItemButton onClick={() => navigate('/reporte-mesas')} sx={{ '&:hover': { bgcolor: 'primary.light' } }}>
+          <ListItemIcon sx={{ color: 'white' }}><AssessmentIcon /></ListItemIcon>
+          <ListItemText primary="Reporte de Mesas" />
         </ListItemButton>
       </List>
     </Box>
