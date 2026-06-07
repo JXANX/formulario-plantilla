@@ -1,0 +1,15 @@
+package com.electoral.testigos.model.enums;
+
+public enum AccionAuditoria {
+    LOGIN,
+    LOGOUT,
+    REGISTRO_TESTIGO,
+    EDICION_TESTIGO,
+    ELIMINACION_TESTIGO,
+    EXPORTACION_EXCEL,
+    IMPORTACION_EXCEL,
+    CREACION_USUARIO,
+    EDICION_USUARIO,
+    ELIMINACION_USUARIO,
+    DUPLICADO_DETECTADO
+}

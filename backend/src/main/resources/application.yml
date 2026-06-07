@@ -1,0 +1,49 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/testigos_electorales}
+    username: ${DB_USERNAME:electoral}
+    password: ${DB_PASSWORD:electoral2026}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:c2lzdGVtYS10ZXN0aWdvcy1lbGVjdG9yYWxlcy1xdWluZGlvLTIwMjYtc2VjcmV0LWtleS12ZXJ5LWxvbmctYW5kLXNlY3VyZQ==}
+    expiration-ms: 86400000  # 24 hours
+
+  excel:
+    template-path: ${EXCEL_TEMPLATE:classpath:plantilla/PLANTILLA_DEFINITIVA_QUINDIO_CONSOLIDADA.xlsx}
+    export-dir: ${EXCEL_EXPORT_DIR:./exports}
+
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+  admin:
+    email: ${ADMIN_EMAIL:admin@electoral.com}
+    password: ${ADMIN_PASSWORD:Admin123!}
+    nombre: ${ADMIN_NOMBRE:Super Administrador}
+
+logging:
+  level:
+    com.electoral.testigos: DEBUG
+    org.springframework.security: INFO
+  file:
+    name: ${LOG_FILE:./logs/testigos-electorales.log}
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,0 +1,22 @@
+# Build and IDE files
+**/target/
+**/.idea/
+**/*.iml
+**/.vscode/
+**/*.log
+**/logs/
+**/exports/
+
+# Frontend dependencies and builds
+**/node_modules/
+**/dist/
+frontend/build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local environment configs
+.env
+.env.local
+.env.*.local

@@ -1,0 +1,18 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
+import DashboardPage from './pages/DashboardPage';
+import TestigoFormPage from './pages/TestigoFormPage';
+import LoginPage from './pages/LoginPage';
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="registro" element={<TestigoFormPage />} />
+      </Route>
+    </Routes>
+  );
+}
