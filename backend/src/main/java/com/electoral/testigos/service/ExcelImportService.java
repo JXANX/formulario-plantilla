@@ -106,6 +106,8 @@ public class ExcelImportService {
                                 .municipio(municipio)
                                 .build()));
 
+                String documento = getCellValueAsString(row.getCell(10));
+
                 // 4. Mesa
                 if (!mesaStr.isEmpty()) {
                     int numMesa = 0;
@@ -127,7 +129,6 @@ public class ExcelImportService {
                     // 5. Check if there is a witness in this row
                     String nomOrg = getCellValueAsString(row.getCell(8));
                     String tipoTestigoStr = getCellValueAsString(row.getCell(9));
-                    String documento = getCellValueAsString(row.getCell(10));
                     
                     if (!documento.isEmpty()) {
                         String nombre = getCellValueAsString(row.getCell(11));
