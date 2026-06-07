@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ExcelExportService {
@@ -36,25 +37,23 @@ public class ExcelExportService {
         "PRIMER_APELLIDO", "SEGUNDO_APELLIDO", "CELULAR", "CORREO"
     };
 
-    @Transactional(readOnly = true)
+    @Transactional
     public File exportarDatos() throws IOException {
         logger.info("Iniciando exportación de Excel desde la base de datos...");
 
-        // Create temp file
         File outputFile = File.createTempFile("Testigos_Electorales_Export_", ".xlsx");
 
-        // Load all mesas with their relationships
         List<Mesa> mesas = mesaRepository.findAllWithEagerRelationships();
-
-        // Build a map of mesa -> testigos
         List<Testigo> allTestigos = testigoRepository.findAllWithEagerRelationships();
+
+        // Group testigos by mesa, safely handling null mesa
         java.util.Map<Long, java.util.List<Testigo>> testigosByMesa = allTestigos.stream()
-                .collect(java.util.stream.Collectors.groupingBy(t -> t.getMesa().getId()));
+                .filter(t -> t.getMesa() != null && t.getMesa().getId() != null)
+                .collect(Collectors.groupingBy(t -> t.getMesa().getId()));
 
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Plantilla");
 
-            // Create header style
             CellStyle headerStyle = workbook.createCellStyle();
             Font headerFont = workbook.createFont();
             headerFont.setBold(true);
@@ -62,7 +61,6 @@ public class ExcelExportService {
             headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-            // Write headers
             Row headerRow = sheet.createRow(0);
             for (int i = 0; i < HEADERS.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -77,15 +75,14 @@ public class ExcelExportService {
                 Municipio municipio = puesto != null ? puesto.getMunicipio() : null;
                 Departamento departamento = municipio != null ? municipio.getDepartamento() : null;
 
-                java.util.List<Testigo> testigos = testigosByMesa.get(mesa.getId());
+                java.util.List<Testigo> testigos = mesa.getId() != null ? testigosByMesa.get(mesa.getId()) : null;
 
                 if (testigos != null && !testigos.isEmpty()) {
-                    // Write one row per testigo
                     for (Testigo testigo : testigos) {
                         Row row = sheet.createRow(rowIdx++);
                         writeBaseColumns(row, departamento, municipio, puesto, mesa);
                         row.createCell(8).setCellValue(safe(testigo.getNombreOrganizacion()));
-                        row.createCell(9).setCellValue(testigo.getTipoTestigo().name());
+                        row.createCell(9).setCellValue(testigo.getTipoTestigo() != null ? testigo.getTipoTestigo().name() : "");
                         row.createCell(10).setCellValue(safe(testigo.getDocumento()));
                         row.createCell(11).setCellValue(safe(testigo.getNombre()));
                         row.createCell(12).setCellValue(safe(testigo.getSegundoNombre()));
@@ -95,24 +92,25 @@ public class ExcelExportService {
                         row.createCell(16).setCellValue(safe(testigo.getCorreo()));
                     }
                 } else {
-                    // Write the mesa row without testigo data
                     Row row = sheet.createRow(rowIdx++);
                     writeBaseColumns(row, departamento, municipio, puesto, mesa);
                 }
             }
 
-            // Auto-size columns
             for (int i = 0; i < HEADERS.length; i++) {
                 sheet.autoSizeColumn(i);
             }
 
-            // Write to file
             try (FileOutputStream fos = new FileOutputStream(outputFile)) {
                 workbook.write(fos);
             }
         }
 
-        auditService.log(AccionAuditoria.EXPORTACION_EXCEL, "Exportación de datos generada", "Excel", null);
+        try {
+            auditService.log(AccionAuditoria.EXPORTACION_EXCEL, "Exportación de datos generada", "Excel", null);
+        } catch (Exception e) {
+            logger.warn("No se pudo registrar auditoría de exportación: {}", e.getMessage());
+        }
         logger.info("Exportación finalizada: {} filas generadas", mesas.size());
 
         return outputFile;

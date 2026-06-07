@@ -5,17 +5,14 @@ import com.electoral.testigos.model.enums.AccionAuditoria;
 import com.electoral.testigos.model.enums.TipoTestigo;
 import com.electoral.testigos.repository.*;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class ExcelImportService {
@@ -52,127 +49,147 @@ public class ExcelImportService {
 
             wsNotificationService.notificarProgresoImportacion(0, lastRowNum);
 
-            // We assume row 0 is headers, data starts at row 1
             for (int i = 1; i <= lastRowNum; i++) {
-                if (i % 10 == 0 || i == lastRowNum) {
-                    wsNotificationService.notificarProgresoImportacion(i, lastRowNum);
-                }
-                Row row = sheet.getRow(i);
-                if (row == null) continue;
-
-                boolean isRowEmpty = true;
-                for (int c = 0; c < 17; c++) {
-                    if (!getCellValueAsString(row.getCell(c)).isEmpty()) {
-                        isRowEmpty = false;
-                        break;
+                try {
+                    if (i % 10 == 0 || i == lastRowNum) {
+                        wsNotificationService.notificarProgresoImportacion(i, lastRowNum);
                     }
-                }
-                if (isRowEmpty) continue; // Skip completely empty rows
+                    Row row = sheet.getRow(i);
+                    if (row == null) continue;
 
-                // Extract hierarchical data
-                String codDepto = getCellValueAsString(row.getCell(0));
-
-                String codMpio = getCellValueAsString(row.getCell(1));
-                String zona = getCellValueAsString(row.getCell(2));
-                String codPuesto = getCellValueAsString(row.getCell(3));
-                
-                String nomDepto = getCellValueAsString(row.getCell(4));
-                String nomMpio = getCellValueAsString(row.getCell(5));
-                String nomPuesto = getCellValueAsString(row.getCell(6));
-                
-                String mesaStr = getCellValueAsString(row.getCell(7));
-
-                // 1. Departamento
-                Departamento departamento = departamentoRepository.findByCodigoDepartamento(codDepto)
-                        .orElseGet(() -> departamentoRepository.save(Departamento.builder()
-                                .codigoDepartamento(codDepto)
-                                .nombre(nomDepto)
-                                .build()));
-
-                // 2. Municipio
-                Municipio municipio = municipioRepository.findByCodigoMunicipio(codMpio)
-                        .orElseGet(() -> municipioRepository.save(Municipio.builder()
-                                .codigoMunicipio(codMpio)
-                                .nombre(nomMpio)
-                                .departamento(departamento)
-                                .build()));
-
-                // 3. Puesto
-                Puesto puesto = puestoRepository.findByCodigoPuestoAndMunicipioIdAndZona(codPuesto, municipio.getId(), zona)
-                        .orElseGet(() -> puestoRepository.save(Puesto.builder()
-                                .codigoPuesto(codPuesto)
-                                .nombrePuesto(nomPuesto)
-                                .zona(zona)
-                                .municipio(municipio)
-                                .build()));
-
-                String documento = getCellValueAsString(row.getCell(10));
-
-                // 4. Mesa
-                if (!mesaStr.isEmpty()) {
-                    int numMesa = 0;
-                    try {
-                        numMesa = Integer.parseInt(mesaStr.replaceAll("[^0-9]", ""));
-                    } catch (NumberFormatException e) {
-                        logger.warn("Formato de mesa inválido: " + mesaStr + ", usando 0 por defecto");
+                    // Skip completely empty rows
+                    boolean isRowEmpty = true;
+                    for (int c = 0; c < 17; c++) {
+                        if (!getCellValueAsString(row.getCell(c)).isEmpty()) {
+                            isRowEmpty = false;
+                            break;
+                        }
                     }
-                    int finalNumMesa = numMesa;
-                    
-                    Mesa mesa = mesaRepository.findByPuestoIdAndNumeroMesa(puesto.getId(), finalNumMesa)
-                            .orElseGet(() -> mesaRepository.save(Mesa.builder()
-                                    .puesto(puesto)
-                                    .numeroMesa(finalNumMesa)
-                                    .capacidad(2) // Default max 2 testigos por mesa
-                                    .ocupados(0)
-                                    .build()));
+                    if (isRowEmpty) continue;
 
-                    // 5. Check if there is a witness in this row
+                    String codDepto = getCellValueAsString(row.getCell(0));
+                    String codMpio = getCellValueAsString(row.getCell(1));
+                    String zona = getCellValueAsString(row.getCell(2));
+                    String codPuesto = getCellValueAsString(row.getCell(3));
+                    String nomDepto = getCellValueAsString(row.getCell(4));
+                    String nomMpio = getCellValueAsString(row.getCell(5));
+                    String nomPuesto = getCellValueAsString(row.getCell(6));
+                    String mesaStr = getCellValueAsString(row.getCell(7));
+
                     String nomOrg = getCellValueAsString(row.getCell(8));
                     String tipoTestigoStr = getCellValueAsString(row.getCell(9));
-                    
-                    if (!documento.isEmpty()) {
-                        String nombre = getCellValueAsString(row.getCell(11));
-                        String segundoNombre = getCellValueAsString(row.getCell(12));
-                        String apellido = getCellValueAsString(row.getCell(13));
-                        String segundoApellido = getCellValueAsString(row.getCell(14));
-                        String celular = getCellValueAsString(row.getCell(15));
-                        String correo = getCellValueAsString(row.getCell(16));
+                    String documento = getCellValueAsString(row.getCell(10));
+                    String nombre = getCellValueAsString(row.getCell(11));
+                    String segundoNombre = getCellValueAsString(row.getCell(12));
+                    String apellido = getCellValueAsString(row.getCell(13));
+                    String segundoApellido = getCellValueAsString(row.getCell(14));
+                    String celular = getCellValueAsString(row.getCell(15));
+                    String correo = getCellValueAsString(row.getCell(16));
 
+                    // Build hierarchy only if we have codes
+                    Departamento departamento = null;
+                    Municipio municipio = null;
+                    Puesto puesto = null;
+                    Mesa mesa = null;
+
+                    if (!codDepto.isEmpty()) {
+                        final String fCodDepto = codDepto;
+                        final String fNomDepto = nomDepto;
+                        departamento = departamentoRepository.findByCodigoDepartamento(fCodDepto)
+                                .orElseGet(() -> departamentoRepository.save(Departamento.builder()
+                                        .codigoDepartamento(fCodDepto)
+                                        .nombre(fNomDepto)
+                                        .build()));
+                    }
+
+                    if (!codMpio.isEmpty() && departamento != null) {
+                        final String fCodMpio = codMpio;
+                        final String fNomMpio = nomMpio;
+                        final Departamento fDepto = departamento;
+                        municipio = municipioRepository.findByCodigoMunicipio(fCodMpio)
+                                .orElseGet(() -> municipioRepository.save(Municipio.builder()
+                                        .codigoMunicipio(fCodMpio)
+                                        .nombre(fNomMpio)
+                                        .departamento(fDepto)
+                                        .build()));
+                    }
+
+                    if (!codPuesto.isEmpty() && municipio != null) {
+                        final String fCodPuesto = codPuesto;
+                        final String fNomPuesto = nomPuesto;
+                        final String fZona = zona;
+                        final Municipio fMpio = municipio;
+                        puesto = puestoRepository.findByCodigoPuestoAndMunicipioIdAndZona(fCodPuesto, fMpio.getId(), fZona)
+                                .orElseGet(() -> puestoRepository.save(Puesto.builder()
+                                        .codigoPuesto(fCodPuesto)
+                                        .nombrePuesto(fNomPuesto)
+                                        .zona(fZona)
+                                        .municipio(fMpio)
+                                        .build()));
+                    }
+
+                    if (!mesaStr.isEmpty() && puesto != null) {
+                        int numMesa = 0;
+                        try {
+                            String digits = mesaStr.replaceAll("[^0-9]", "");
+                            if (!digits.isEmpty()) {
+                                numMesa = Integer.parseInt(digits);
+                            }
+                        } catch (NumberFormatException e) {
+                            logger.warn("Fila {}: Formato de mesa inválido: {}", i, mesaStr);
+                        }
+                        final int finalNumMesa = numMesa;
+                        final Puesto fPuesto = puesto;
+                        mesa = mesaRepository.findByPuestoIdAndNumeroMesa(fPuesto.getId(), finalNumMesa)
+                                .orElseGet(() -> mesaRepository.save(Mesa.builder()
+                                        .puesto(fPuesto)
+                                        .numeroMesa(finalNumMesa)
+                                        .capacidad(2)
+                                        .ocupados(0)
+                                        .build()));
+                    }
+
+                    // Process testigo if documento exists
+                    if (!documento.isEmpty()) {
                         TipoTestigo tipo = TipoTestigo.PRINCIPAL;
                         if ("SUPLENTE".equalsIgnoreCase(tipoTestigoStr)) {
                             tipo = TipoTestigo.SUPLENTE;
                         }
 
-                        java.util.Optional<Testigo> existingOpt = testigoRepository.findByDocumento(documento);
+                        Optional<Testigo> existingOpt = testigoRepository.findByDocumento(documento);
                         if (existingOpt.isPresent()) {
                             Testigo existing = existingOpt.get();
-                            existing.setNombre(nombre.toUpperCase());
-                            existing.setSegundoNombre(segundoNombre != null ? segundoNombre.toUpperCase() : null);
-                            existing.setPrimerApellido(apellido.toUpperCase());
-                            existing.setSegundoApellido(segundoApellido != null ? segundoApellido.toUpperCase() : null);
-                            existing.setCelular(celular);
-                            existing.setCorreo(correo);
-                            existing.setNombreOrganizacion(nomOrg);
+                            if (!nombre.isEmpty()) existing.setNombre(nombre.toUpperCase());
+                            if (!segundoNombre.isEmpty()) existing.setSegundoNombre(segundoNombre.toUpperCase());
+                            if (!apellido.isEmpty()) existing.setPrimerApellido(apellido.toUpperCase());
+                            if (!segundoApellido.isEmpty()) existing.setSegundoApellido(segundoApellido.toUpperCase());
+                            if (!celular.isEmpty()) existing.setCelular(celular);
+                            if (!correo.isEmpty()) existing.setCorreo(correo);
+                            if (!nomOrg.isEmpty()) existing.setNombreOrganizacion(nomOrg);
                             existing.setTipoTestigo(tipo);
 
-                            Mesa oldMesa = existing.getMesa();
-                            if (oldMesa == null || !oldMesa.getId().equals(mesa.getId())) {
-                                if (oldMesa != null) {
-                                    oldMesa.setOcupados(Math.max(0, oldMesa.getOcupados() - 1));
-                                    mesaRepository.save(oldMesa);
+                            // Update mesa assignment if we have a new one
+                            if (mesa != null) {
+                                Mesa oldMesa = existing.getMesa();
+                                if (oldMesa == null || !oldMesa.getId().equals(mesa.getId())) {
+                                    if (oldMesa != null) {
+                                        oldMesa.setOcupados(Math.max(0, oldMesa.getOcupados() - 1));
+                                        mesaRepository.save(oldMesa);
+                                    }
+                                    existing.setMesa(mesa);
+                                    mesa.setOcupados(mesa.getOcupados() + 1);
+                                    mesaRepository.save(mesa);
                                 }
-                                existing.setMesa(mesa);
-                                mesa.setOcupados(mesa.getOcupados() + 1);
-                                mesaRepository.save(mesa);
                             }
                             testigoRepository.save(existing);
-                        } else {
+                        } else if (mesa != null) {
+                            // Only create new testigo if we have a mesa to assign
                             Testigo testigo = Testigo.builder()
                                     .documento(documento)
                                     .nombre(nombre.toUpperCase())
-                                    .segundoNombre(segundoNombre != null ? segundoNombre.toUpperCase() : null)
+                                    .segundoNombre(!segundoNombre.isEmpty() ? segundoNombre.toUpperCase() : null)
                                     .primerApellido(apellido.toUpperCase())
-                                    .segundoApellido(segundoApellido != null ? segundoApellido.toUpperCase() : null)
+                                    .segundoApellido(!segundoApellido.isEmpty() ? segundoApellido.toUpperCase() : null)
                                     .celular(celular)
                                     .correo(correo)
                                     .nombreOrganizacion(nomOrg)
@@ -180,51 +197,32 @@ public class ExcelImportService {
                                     .mesa(mesa)
                                     .fechaRegistro(LocalDateTime.now())
                                     .build();
-
                             testigoRepository.save(testigo);
-                            
-                            // Increment mesa occupation
                             mesa.setOcupados(mesa.getOcupados() + 1);
                             mesaRepository.save(mesa);
                         }
                     }
-                } else if (!documento.isEmpty()) {
-                    // Update testigo directly if mesa is not specified
-                    java.util.Optional<Testigo> existingOpt = testigoRepository.findByDocumento(documento);
-                    if (existingOpt.isPresent()) {
-                        String nombre = getCellValueAsString(row.getCell(11));
-                        String segundoNombre = getCellValueAsString(row.getCell(12));
-                        String apellido = getCellValueAsString(row.getCell(13));
-                        String segundoApellido = getCellValueAsString(row.getCell(14));
-                        String celular = getCellValueAsString(row.getCell(15));
-                        String correo = getCellValueAsString(row.getCell(16));
-                        String nomOrg = getCellValueAsString(row.getCell(8));
-                        
-                        Testigo existing = existingOpt.get();
-                        if (!nombre.isEmpty()) existing.setNombre(nombre.toUpperCase());
-                        if (!segundoNombre.isEmpty()) existing.setSegundoNombre(segundoNombre.toUpperCase());
-                        if (!apellido.isEmpty()) existing.setPrimerApellido(apellido.toUpperCase());
-                        if (!segundoApellido.isEmpty()) existing.setSegundoApellido(segundoApellido.toUpperCase());
-                        if (!celular.isEmpty()) existing.setCelular(celular);
-                        if (!correo.isEmpty()) existing.setCorreo(correo);
-                        if (!nomOrg.isEmpty()) existing.setNombreOrganizacion(nomOrg);
-                        
-                        testigoRepository.save(existing);
-                    }
+                } catch (Exception rowEx) {
+                    logger.warn("Fila {} ignorada por error: {}", i, rowEx.getMessage());
+                    // Continue with next row, don't abort the whole import
                 }
             }
-            
+
             logger.info("Importación de plantilla finalizada correctamente.");
-            
+
             if (!isInitialLoad) {
-                auditService.log(AccionAuditoria.IMPORTACION_EXCEL, "Importación manual de plantilla Excel", "Sistema", null);
+                try {
+                    auditService.log(AccionAuditoria.IMPORTACION_EXCEL, "Importación manual de plantilla Excel", "Sistema", null);
+                } catch (Exception e) {
+                    logger.warn("No se pudo registrar auditoría: {}", e.getMessage());
+                }
             }
         }
     }
 
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return "";
-        
+
         switch (cell.getCellType()) {
             case STRING:
                 return cell.getStringCellValue().trim();
