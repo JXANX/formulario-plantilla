@@ -46,7 +46,7 @@ public class ExcelImportService {
     public void importarPlantilla(InputStream is, boolean isInitialLoad) throws Exception {
         logger.info("Iniciando importación de plantilla Excel...");
 
-        try (Workbook workbook = new XSSFWorkbook(is)) {
+        try (Workbook workbook = WorkbookFactory.create(is)) {
             Sheet sheet = workbook.getSheetAt(0);
             int lastRowNum = sheet.getLastRowNum();
 
@@ -100,11 +100,18 @@ public class ExcelImportService {
 
                 // 4. Mesa
                 if (!mesaStr.isEmpty()) {
-                    int numMesa = Integer.parseInt(mesaStr);
-                    Mesa mesa = mesaRepository.findByPuestoIdAndNumeroMesa(puesto.getId(), numMesa)
+                    int numMesa = 0;
+                    try {
+                        numMesa = Integer.parseInt(mesaStr.replaceAll("[^0-9]", ""));
+                    } catch (NumberFormatException e) {
+                        logger.warn("Formato de mesa inválido: " + mesaStr + ", usando 0 por defecto");
+                    }
+                    int finalNumMesa = numMesa;
+                    
+                    Mesa mesa = mesaRepository.findByPuestoIdAndNumeroMesa(puesto.getId(), finalNumMesa)
                             .orElseGet(() -> mesaRepository.save(Mesa.builder()
                                     .puesto(puesto)
-                                    .numeroMesa(numMesa)
+                                    .numeroMesa(finalNumMesa)
                                     .capacidad(2) // Default max 2 testigos por mesa
                                     .ocupados(0)
                                     .build()));

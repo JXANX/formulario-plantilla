@@ -74,8 +74,11 @@ public class ExcelExportService {
 
             for (Mesa mesa : mesas) {
                 Puesto puesto = mesa.getPuesto();
+                if (puesto == null) continue;
                 Municipio municipio = puesto.getMunicipio();
+                if (municipio == null) continue;
                 Departamento departamento = municipio.getDepartamento();
+                if (departamento == null) continue;
 
                 java.util.List<Testigo> testigos = testigosByMesa.get(mesa.getId());
 
