@@ -60,9 +60,17 @@ public class ExcelImportService {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
+                boolean isRowEmpty = true;
+                for (int c = 0; c < 17; c++) {
+                    if (!getCellValueAsString(row.getCell(c)).isEmpty()) {
+                        isRowEmpty = false;
+                        break;
+                    }
+                }
+                if (isRowEmpty) continue; // Skip completely empty rows
+
                 // Extract hierarchical data
                 String codDepto = getCellValueAsString(row.getCell(0));
-                if (codDepto.isEmpty()) continue; // Skip empty rows
 
                 String codMpio = getCellValueAsString(row.getCell(1));
                 String zona = getCellValueAsString(row.getCell(2));
@@ -178,6 +186,29 @@ public class ExcelImportService {
                             mesa.setOcupados(mesa.getOcupados() + 1);
                             mesaRepository.save(mesa);
                         }
+                    }
+                } else if (!documento.isEmpty()) {
+                    // Update testigo directly if mesa is not specified
+                    java.util.Optional<Testigo> existingOpt = testigoRepository.findByDocumento(documento);
+                    if (existingOpt.isPresent()) {
+                        String nombre = getCellValueAsString(row.getCell(11));
+                        String segundoNombre = getCellValueAsString(row.getCell(12));
+                        String apellido = getCellValueAsString(row.getCell(13));
+                        String segundoApellido = getCellValueAsString(row.getCell(14));
+                        String celular = getCellValueAsString(row.getCell(15));
+                        String correo = getCellValueAsString(row.getCell(16));
+                        String nomOrg = getCellValueAsString(row.getCell(8));
+                        
+                        Testigo existing = existingOpt.get();
+                        if (!nombre.isEmpty()) existing.setNombre(nombre.toUpperCase());
+                        if (!segundoNombre.isEmpty()) existing.setSegundoNombre(segundoNombre.toUpperCase());
+                        if (!apellido.isEmpty()) existing.setPrimerApellido(apellido.toUpperCase());
+                        if (!segundoApellido.isEmpty()) existing.setSegundoApellido(segundoApellido.toUpperCase());
+                        if (!celular.isEmpty()) existing.setCelular(celular);
+                        if (!correo.isEmpty()) existing.setCorreo(correo);
+                        if (!nomOrg.isEmpty()) existing.setNombreOrganizacion(nomOrg);
+                        
+                        testigoRepository.save(existing);
                     }
                 }
             }

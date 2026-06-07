@@ -74,11 +74,8 @@ public class ExcelExportService {
 
             for (Mesa mesa : mesas) {
                 Puesto puesto = mesa.getPuesto();
-                if (puesto == null) continue;
-                Municipio municipio = puesto.getMunicipio();
-                if (municipio == null) continue;
-                Departamento departamento = municipio.getDepartamento();
-                if (departamento == null) continue;
+                Municipio municipio = puesto != null ? puesto.getMunicipio() : null;
+                Departamento departamento = municipio != null ? municipio.getDepartamento() : null;
 
                 java.util.List<Testigo> testigos = testigosByMesa.get(mesa.getId());
 
@@ -122,14 +119,14 @@ public class ExcelExportService {
     }
 
     private void writeBaseColumns(Row row, Departamento depto, Municipio mpio, Puesto puesto, Mesa mesa) {
-        row.createCell(0).setCellValue(safe(depto.getCodigoDepartamento()));
-        row.createCell(1).setCellValue(safe(mpio.getCodigoMunicipio()));
-        row.createCell(2).setCellValue(safe(puesto.getZona()));
-        row.createCell(3).setCellValue(safe(puesto.getCodigoPuesto()));
-        row.createCell(4).setCellValue(safe(depto.getNombre()));
-        row.createCell(5).setCellValue(safe(mpio.getNombre()));
-        row.createCell(6).setCellValue(safe(puesto.getNombrePuesto()));
-        row.createCell(7).setCellValue(mesa.getNumeroMesa());
+        row.createCell(0).setCellValue(depto != null ? safe(depto.getCodigoDepartamento()) : "");
+        row.createCell(1).setCellValue(mpio != null ? safe(mpio.getCodigoMunicipio()) : "");
+        row.createCell(2).setCellValue(puesto != null ? safe(puesto.getZona()) : "");
+        row.createCell(3).setCellValue(puesto != null ? safe(puesto.getCodigoPuesto()) : "");
+        row.createCell(4).setCellValue(depto != null ? safe(depto.getNombre()) : "");
+        row.createCell(5).setCellValue(mpio != null ? safe(mpio.getNombre()) : "");
+        row.createCell(6).setCellValue(puesto != null ? safe(puesto.getNombrePuesto()) : "");
+        row.createCell(7).setCellValue(mesa != null && mesa.getNumeroMesa() != null ? mesa.getNumeroMesa().toString() : "");
     }
 
     private String safe(String val) {
