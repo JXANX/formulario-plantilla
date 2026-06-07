@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { 
-  Box, Typography, Card, CardContent, Grid, MenuItem, FormControl, 
-  InputLabel, Select, Table, TableBody, TableCell, TableContainer, 
+import {
+  Box, Typography, Card, CardContent, Grid, MenuItem, FormControl,
+  InputLabel, Select, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Chip, CircularProgress, Alert
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -37,7 +37,7 @@ export default function MesasReportPage() {
 
   const [selectedMunicipio, setSelectedMunicipio] = useState('');
   const [selectedPuesto, setSelectedPuesto] = useState('');
-  
+
   const [loadingMesas, setLoadingMesas] = useState(false);
   const [loadingWitnesses, setLoadingWitnesses] = useState(true);
   const [error, setError] = useState('');
@@ -181,9 +181,11 @@ export default function MesasReportPage() {
                   onChange={handleMunicipioChange}
                 >
                   <MenuItem value="">Selecciona Municipio...</MenuItem>
-                  {municipios.map((m: any) => (
-                    <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
-                  ))}
+                  {[...municipios]
+                    .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
+                    .map((m: any) => (
+                      <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -197,9 +199,11 @@ export default function MesasReportPage() {
                   onChange={(e) => setSelectedPuesto(e.target.value as string)}
                 >
                   <MenuItem value="">Selecciona Puesto...</MenuItem>
-                  {puestos.map((p: any) => (
-                    <MenuItem key={p.id} value={p.id}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>
-                  ))}
+                  {[...puestos]
+                    .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
+                    .map((p: any) => (
+                      <MenuItem key={p.id} value={p.id}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -253,57 +257,59 @@ export default function MesasReportPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    mesas.map((m) => {
-                      const witnessesInMesa = allWitnesses.filter(w => w.mesaId === m.id);
-                      const principal = witnessesInMesa.find(w => w.tipoTestigo === 'PRINCIPAL');
-                      const suplente = witnessesInMesa.find(w => w.tipoTestigo === 'SUPLENTE');
+                    [...mesas]
+                      .sort((a, b) => a.numeroMesa - b.numeroMesa)
+                      .map((m) => {
+                        const witnessesInMesa = allWitnesses.filter(w => w.mesaId === m.id);
+                        const principal = witnessesInMesa.find(w => w.tipoTestigo === 'PRINCIPAL');
+                        const suplente = witnessesInMesa.find(w => w.tipoTestigo === 'SUPLENTE');
 
-                      let statusChip = <Chip icon={<CancelIcon />} label="Sin Cobertura" color="error" size="small" variant="outlined" />;
-                      if (m.ocupados === 1) {
-                        statusChip = <Chip icon={<WarningIcon />} label="Parcial" color="warning" size="small" variant="outlined" sx={{ borderColor: '#ffb300', color: '#b8860b' }} />;
-                      } else if (m.ocupados >= m.capacidad) {
-                        statusChip = <Chip icon={<CheckCircleIcon />} label="Completa" color="success" size="small" variant="outlined" />;
-                      }
+                        let statusChip = <Chip icon={<CancelIcon />} label="Sin Cobertura" color="error" size="small" variant="outlined" />;
+                        if (m.ocupados === 1) {
+                          statusChip = <Chip icon={<WarningIcon />} label="Parcial" color="warning" size="small" variant="outlined" sx={{ borderColor: '#ffb300', color: '#b8860b' }} />;
+                        } else if (m.ocupados >= m.capacidad) {
+                          statusChip = <Chip icon={<CheckCircleIcon />} label="Completa" color="success" size="small" variant="outlined" />;
+                        }
 
-                      return (
-                        <TableRow key={m.id} hover>
-                          <TableCell sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                            Mesa {m.numeroMesa}
-                          </TableCell>
-                          <TableCell>
-                            {statusChip}
-                          </TableCell>
-                          <TableCell>
-                            {principal ? (
-                              <Box>
-                                <Typography sx={{ fontWeight: 'medium' }}>{principal.nombreCompleto}</Typography>
-                                <Typography variant="caption" color="textSecondary">
-                                  C.C: {principal.documento} | Cel: {principal.celular}
+                        return (
+                          <TableRow key={m.id} hover>
+                            <TableCell sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                              Mesa {m.numeroMesa}
+                            </TableCell>
+                            <TableCell>
+                              {statusChip}
+                            </TableCell>
+                            <TableCell>
+                              {principal ? (
+                                <Box>
+                                  <Typography sx={{ fontWeight: 'medium' }}>{principal.nombreCompleto}</Typography>
+                                  <Typography variant="caption" color="textSecondary">
+                                    C.C: {principal.documento} | Cel: {principal.celular}
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Typography color="error" sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>
+                                  🔴 Pendiente asignar Principal
                                 </Typography>
-                              </Box>
-                            ) : (
-                              <Typography color="error" sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>
-                                🔴 Pendiente asignar Principal
-                              </Typography>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {suplente ? (
-                              <Box>
-                                <Typography sx={{ fontWeight: 'medium' }}>{suplente.nombreCompleto}</Typography>
-                                <Typography variant="caption" color="textSecondary">
-                                  C.C: {suplente.documento} | Cel: {suplente.celular}
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {suplente ? (
+                                <Box>
+                                  <Typography sx={{ fontWeight: 'medium' }}>{suplente.nombreCompleto}</Typography>
+                                  <Typography variant="caption" color="textSecondary">
+                                    C.C: {suplente.documento} | Cel: {suplente.celular}
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Typography color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>
+                                  ⚪ Pendiente asignar Suplente
                                 </Typography>
-                              </Box>
-                            ) : (
-                              <Typography color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>
-                                ⚪ Pendiente asignar Suplente
-                              </Typography>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                   )}
                 </TableBody>
               </Table>
