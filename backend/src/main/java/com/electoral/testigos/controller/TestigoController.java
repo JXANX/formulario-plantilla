@@ -2,6 +2,7 @@ package com.electoral.testigos.controller;
 
 import com.electoral.testigos.dto.request.TestigoRequest;
 import com.electoral.testigos.dto.response.ApiResponse;
+import com.electoral.testigos.dto.response.TestigoResponse;
 import com.electoral.testigos.model.Testigo;
 import com.electoral.testigos.service.TestigoService;
 import jakarta.validation.Valid;
@@ -11,12 +12,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/testigos")
 public class TestigoController {
 
     @Autowired
     private TestigoService testigoService;
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> listarTestigos() {
+        try {
+            List<TestigoResponse> testigos = testigoService.obtenerTodosLosTestigos();
+            return ResponseEntity.ok(new ApiResponse<>(true, "Listado de testigos obtenido correctamente", testigos));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
@@ -25,6 +40,30 @@ public class TestigoController {
             Testigo testigo = testigoService.registrarTestigo(request);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse<>(true, "Testigo registrado correctamente", testigo));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> eliminarTestigo(@PathVariable Long id) {
+        try {
+            testigoService.eliminarTestigo(id);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Testigo eliminado correctamente", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/{id}/mover")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> moverTestigo(@PathVariable Long id, @RequestParam Long nuevaMesaId) {
+        try {
+            Testigo testigo = testigoService.moverTestigo(id, nuevaMesaId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Testigo reubicado correctamente", testigo));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(false, e.getMessage(), null));
