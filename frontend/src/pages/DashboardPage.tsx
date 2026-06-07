@@ -23,6 +23,8 @@ interface DashboardStats {
   porcentajeCobertura: number;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function DashboardPage() {
   const { dashboardUpdates } = useWebSocket();
   const [stats, setStats] = useState<DashboardStats>({
@@ -46,7 +48,7 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/dashboard/stats', {
+      const response = await fetch(`${API_URL}/api/dashboard/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

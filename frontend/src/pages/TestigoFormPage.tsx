@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Grid, TextField, Button, MenuItem, FormControl, InputLabel, Select, Alert } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function TestigoFormPage() {
   const [departamentos, setDepartamentos] = useState([]);
   const [municipios, setMunicipios] = useState([]);
@@ -29,7 +31,7 @@ export default function TestigoFormPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:8080/api/catalogo/departamentos', { headers: { 'Authorization': `Bearer ${token}` }})
+    fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` }})
       .then(res => res.json())
       .then(data => {
         if (data.success) setDepartamentos(data.data);
@@ -42,7 +44,7 @@ export default function TestigoFormPage() {
     setSelectedMpio('');
     setPuestos([]);
     setMesas([]);
-    fetch(`http://localhost:8080/api/catalogo/departamentos/${e.target.value}/municipios`, { headers: { 'Authorization': `Bearer ${token}` }})
+    fetch(`${API_URL}/api/catalogo/departamentos/${e.target.value}/municipios`, { headers: { 'Authorization': `Bearer ${token}` }})
       .then(res => res.json())
       .then(data => {
         if (data.success) setMunicipios(data.data);
@@ -54,7 +56,7 @@ export default function TestigoFormPage() {
     setSelectedMpio(e.target.value);
     setSelectedPuesto('');
     setMesas([]);
-    fetch(`http://localhost:8080/api/catalogo/municipios/${e.target.value}/puestos`, { headers: { 'Authorization': `Bearer ${token}` }})
+    fetch(`${API_URL}/api/catalogo/municipios/${e.target.value}/puestos`, { headers: { 'Authorization': `Bearer ${token}` }})
       .then(res => res.json())
       .then(data => {
         if (data.success) setPuestos(data.data);
@@ -65,7 +67,7 @@ export default function TestigoFormPage() {
     const token = localStorage.getItem('token');
     setSelectedPuesto(e.target.value);
     setSelectedMesa('');
-    fetch(`http://localhost:8080/api/catalogo/puestos/${e.target.value}/mesas`, { headers: { 'Authorization': `Bearer ${token}` }})
+    fetch(`${API_URL}/api/catalogo/puestos/${e.target.value}/mesas`, { headers: { 'Authorization': `Bearer ${token}` }})
       .then(res => res.json())
       .then(data => {
         if (data.success) setMesas(data.data);
@@ -83,7 +85,7 @@ export default function TestigoFormPage() {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8080/api/testigos', {
+      const res = await fetch(`${API_URL}/api/testigos`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -110,7 +112,7 @@ export default function TestigoFormPage() {
         setSelectedMesa('');
         // Recargar las mesas del puesto para actualizar ocupados
         if (selectedPuesto) {
-          fetch(`http://localhost:8080/api/catalogo/puestos/${selectedPuesto}/mesas`, { headers: { 'Authorization': `Bearer ${token}` }})
+          fetch(`${API_URL}/api/catalogo/puestos/${selectedPuesto}/mesas`, { headers: { 'Authorization': `Bearer ${token}` }})
             .then(res => res.json())
             .then(d => {
               if (d.success) setMesas(d.data);

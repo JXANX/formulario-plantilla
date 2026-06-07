@@ -3,6 +3,8 @@ import { Client } from '@stomp/stompjs';
 // @ts-ignore
 import SockJS from 'sockjs-client/dist/sockjs';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export function useWebSocket() {
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [dashboardUpdates, setDashboardUpdates] = useState<number>(0);
@@ -12,7 +14,7 @@ export function useWebSocket() {
   useEffect(() => {
     // Configurar cliente STOMP sobre SockJS
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${API_URL}/ws`),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
