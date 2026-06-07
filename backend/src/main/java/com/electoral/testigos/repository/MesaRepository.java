@@ -21,4 +21,10 @@ public interface MesaRepository extends JpaRepository<Mesa, Long> {
     
     @Query("SELECT COUNT(m) FROM Mesa m WHERE m.ocupados >= m.capacidad")
     long countMesasVerdes();
+
+    @Query("SELECT m FROM Mesa m " +
+           "LEFT JOIN FETCH m.puesto p " +
+           "LEFT JOIN FETCH p.municipio mu " +
+           "LEFT JOIN FETCH mu.departamento d")
+    List<Mesa> findAllWithEagerRelationships();
 }

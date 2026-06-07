@@ -44,10 +44,10 @@ public class ExcelExportService {
         File outputFile = File.createTempFile("Testigos_Electorales_Export_", ".xlsx");
 
         // Load all mesas with their relationships
-        List<Mesa> mesas = mesaRepository.findAll();
+        List<Mesa> mesas = mesaRepository.findAllWithEagerRelationships();
 
         // Build a map of mesa -> testigos
-        List<Testigo> allTestigos = testigoRepository.findAll();
+        List<Testigo> allTestigos = testigoRepository.findAllWithEagerRelationships();
         java.util.Map<Long, java.util.List<Testigo>> testigosByMesa = allTestigos.stream()
                 .collect(java.util.stream.Collectors.groupingBy(t -> t.getMesa().getId()));
 

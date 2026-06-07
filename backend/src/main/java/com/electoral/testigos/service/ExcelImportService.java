@@ -40,6 +40,9 @@ public class ExcelImportService {
     @Autowired
     private AuditService auditService;
 
+    @Autowired
+    private WebSocketNotificationService wsNotificationService;
+
     public void importarPlantilla(InputStream is, boolean isInitialLoad) throws Exception {
         logger.info("Iniciando importación de plantilla Excel...");
 
@@ -47,8 +50,13 @@ public class ExcelImportService {
             Sheet sheet = workbook.getSheetAt(0);
             int lastRowNum = sheet.getLastRowNum();
 
+            wsNotificationService.notificarProgresoImportacion(0, lastRowNum);
+
             // We assume row 0 is headers, data starts at row 1
             for (int i = 1; i <= lastRowNum; i++) {
+                if (i % 10 == 0 || i == lastRowNum) {
+                    wsNotificationService.notificarProgresoImportacion(i, lastRowNum);
+                }
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 

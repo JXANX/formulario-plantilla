@@ -91,7 +91,7 @@ public class TestigoService {
 
     @Transactional(readOnly = true)
     public List<TestigoResponse> obtenerTodosLosTestigos() {
-        return testigoRepository.findAll().stream()
+        return testigoRepository.findAllWithEagerRelationships().stream()
                 .map(t -> {
                     Mesa mesa = t.getMesa();
                     String deptoNombre = "";

@@ -5,11 +5,17 @@ import SockJS from 'sockjs-client/dist/sockjs';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+export interface ImportProgress {
+  procesados: number;
+  total: number;
+}
+
 export function useWebSocket() {
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [dashboardUpdates, setDashboardUpdates] = useState<number>(0);
   const [mesaUpdates, setMesaUpdates] = useState<{mesaId: number, estado: string} | null>(null);
   const [notifications, setNotifications] = useState<string[]>([]);
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
 
   useEffect(() => {
     // Configurar cliente STOMP sobre SockJS
@@ -45,6 +51,14 @@ export function useWebSocket() {
           setNotifications(prev => [...prev, data.mensaje]);
         }
       });
+
+      // Suscribirse a progreso de importación Excel
+      client.subscribe('/topic/import-progress', (message) => {
+        if (message.body) {
+          const data = JSON.parse(message.body);
+          setImportProgress(data);
+        }
+      });
     };
 
     client.onStompError = (frame) => {
@@ -62,5 +76,8 @@ export function useWebSocket() {
     };
   }, []);
 
-  return { stompClient, dashboardUpdates, mesaUpdates, notifications };
+  const clearImportProgress = () => setImportProgress(null);
+
+  return { stompClient, dashboardUpdates, mesaUpdates, notifications, importProgress, clearImportProgress };
 }
+

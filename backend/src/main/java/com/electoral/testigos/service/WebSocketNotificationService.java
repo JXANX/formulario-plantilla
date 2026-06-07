@@ -21,4 +21,8 @@ public class WebSocketNotificationService {
     public void notificarDashboardUpdate() {
         messagingTemplate.convertAndSend("/topic/dashboard", "{\"update\": true}");
     }
+
+    public void notificarProgresoImportacion(int procesados, int total) {
+        messagingTemplate.convertAndSend("/topic/import-progress", "{\"procesados\": " + procesados + ", \"total\": " + total + "}");
+    }
 }
