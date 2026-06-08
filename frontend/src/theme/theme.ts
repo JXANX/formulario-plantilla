@@ -134,17 +134,25 @@ const theme = createTheme({
           textTransform: 'uppercase',
           '&:hover': { boxShadow: 'none' },
         },
-        containedPrimary: {
-          background: JAGUAR.ink,
-          color: '#fff',
-          '&:hover': { background: JAGUAR.blue },
-        },
-        outlinedPrimary: {
-          borderColor: JAGUAR.border,
-          color: JAGUAR.ink,
-          '&:hover': { background: JAGUAR.muted, borderColor: JAGUAR.border },
-        },
       },
+      variants: [
+        {
+          props: { variant: 'contained', color: 'primary' },
+          style: {
+            background: JAGUAR.ink,
+            color: '#fff',
+            '&:hover': { background: JAGUAR.blue },
+          },
+        },
+        {
+          props: { variant: 'outlined', color: 'primary' },
+          style: {
+            borderColor: JAGUAR.border,
+            color: JAGUAR.ink,
+            '&:hover': { background: JAGUAR.muted, borderColor: JAGUAR.border },
+          },
+        },
+      ],
     },
     /* ── Cards ── */
     MuiCard: {

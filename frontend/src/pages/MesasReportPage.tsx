@@ -340,7 +340,7 @@ export default function MesasReportPage() {
         <Box>
           <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
             <CardContent sx={{ p: 2.5 }}>
-              <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+              <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
