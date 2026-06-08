@@ -5,19 +5,19 @@ import { useNavigate } from 'react-router-dom';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const JAGUAR = {
-  ink:    '#1A1F2E',
-  blue:   '#2952CC',
-  gold:   '#C9973A',
+  ink: '#1A1F2E',
+  blue: '#2952CC',
+  gold: '#C9973A',
   border: '#E2DDD6',
-  muted:  '#7A7A7A',
+  muted: '#7A7A7A',
   danger: '#B83232',
 };
 
 export default function LoginPage() {
-  const [correo,   setCorreo]   = useState('');
+  const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-  const [error,    setError]    = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -33,7 +33,7 @@ export default function LoginPage() {
       const data = await response.json();
       if (data.success && data.data.token) {
         localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user',  JSON.stringify(data.data));
+        localStorage.setItem('user', JSON.stringify(data.data));
         navigate('/dashboard');
       } else {
         setError(data.message || 'Credenciales inválidas');
@@ -46,7 +46,6 @@ export default function LoginPage() {
   };
 
   return (
-    /* ── Full-page dark canvas ── */
     <Box
       sx={{
         minHeight: '100vh',
@@ -56,7 +55,8 @@ export default function LoginPage() {
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
-        /* dot grid atmosphere */
+        // Padding so card doesn't touch edges on small phones
+        p: { xs: 2, sm: 3 },
         backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
         backgroundSize: '28px 28px',
       }}
@@ -66,7 +66,7 @@ export default function LoginPage() {
         sx={{
           position: 'absolute',
           top: 0, left: 0, right: 0,
-          height: 3,
+          height: 4,
           background: `linear-gradient(90deg, transparent, ${JAGUAR.gold}, transparent)`,
         }}
       />
@@ -75,20 +75,20 @@ export default function LoginPage() {
       <Box
         sx={{
           width: '100%',
-          maxWidth: 420,
+          maxWidth: 460,
           bgcolor: '#ffffff',
           border: `1px solid ${JAGUAR.border}`,
-          p: { xs: 4, sm: '48px 40px' },
+          p: { xs: '32px 24px', sm: '52px 44px' },
           position: 'relative',
           zIndex: 1,
         }}
       >
         {/* Brand */}
-        <Box sx={{ mb: 5, textAlign: 'center' }}>
+        <Box sx={{ mb: { xs: 4, sm: 5 }, textAlign: 'center' }}>
           <Typography
             sx={{
               fontWeight: 700,
-              fontSize: '32px',
+              fontSize: { xs: '36px', sm: '40px' },
               letterSpacing: '0.06em',
               color: JAGUAR.ink,
               lineHeight: 1,
@@ -98,9 +98,10 @@ export default function LoginPage() {
           </Typography>
           <Typography
             sx={{
-              fontSize: '15px',
+              fontSize: { xs: '17px', sm: '18px' },
               color: JAGUAR.gold,
-              mt: 0.5,
+              fontWeight: 600,
+              mt: 0.75,
             }}
           >
             Control de Testigos
@@ -112,10 +113,11 @@ export default function LoginPage() {
           <Typography
             sx={{
               mt: 2.5,
-              fontSize: '11px',
-              letterSpacing: '0.22em',
+              fontSize: { xs: '13px', sm: '13px' },
+              letterSpacing: '0.2em',
               textTransform: 'uppercase',
               color: JAGUAR.muted,
+              fontWeight: 500,
             }}
           >
             Acceso Institucional
@@ -130,7 +132,8 @@ export default function LoginPage() {
               mb: 3,
               borderRadius: 0,
               border: `1px solid ${JAGUAR.danger}`,
-              fontSize: '15px',
+              fontSize: '1rem',
+              fontWeight: 500,
             }}
           >
             {error}
@@ -139,7 +142,7 @@ export default function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleLogin} autoComplete="off">
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <TextField
               fullWidth
               label="Usuario"
@@ -148,6 +151,7 @@ export default function LoginPage() {
               onChange={(e) => setCorreo(e.target.value)}
               required
               autoComplete="new-username"
+              inputProps={{ style: { fontSize: '1.1rem' } }}
             />
             <TextField
               fullWidth
@@ -158,6 +162,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="new-password"
+              inputProps={{ style: { fontSize: '1.1rem' } }}
             />
 
             <Button
@@ -168,15 +173,16 @@ export default function LoginPage() {
               disabled={loading}
               sx={{
                 mt: 1,
-                py: 1.6,
+                py: 2,
                 bgcolor: JAGUAR.ink,
                 color: '#fff',
-                fontSize: '13px',
-                letterSpacing: '0.18em',
+                fontSize: { xs: '15px', sm: '16px' },
+                letterSpacing: '0.14em',
                 textTransform: 'uppercase',
-                fontWeight: 600,
+                fontWeight: 700,
                 borderRadius: 0,
                 boxShadow: 'none',
+                minHeight: 60,
                 '&:hover': { bgcolor: JAGUAR.blue, boxShadow: 'none' },
                 '&:disabled': { bgcolor: 'rgba(26,31,46,0.4)', color: '#fff' },
               }}
@@ -190,10 +196,10 @@ export default function LoginPage() {
         <Box sx={{ mt: 4, textAlign: 'center' }}>
           <Typography
             sx={{
-              fontSize: '11px',
+              fontSize: '12px',
               letterSpacing: '0.15em',
               textTransform: 'uppercase',
-              color: 'rgba(26,31,46,0.25)',
+              color: 'rgba(26,31,46,0.3)',
             }}
           >
             Sistema Electoral — Acceso Restringido
@@ -206,7 +212,7 @@ export default function LoginPage() {
         sx={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
-          height: 3,
+          height: 4,
           background: `linear-gradient(90deg, transparent, ${JAGUAR.gold}, transparent)`,
         }}
       />
