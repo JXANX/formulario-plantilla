@@ -3,6 +3,7 @@ package com.electoral.testigos.service;
 import com.electoral.testigos.model.*;
 import com.electoral.testigos.model.enums.AccionAuditoria;
 import com.electoral.testigos.repository.*;
+import com.electoral.testigos.dto.response.CoberturaMunicipioResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,12 +31,19 @@ public class ExcelExportService {
     @Autowired
     private AuditService auditService;
 
+    @Autowired
+    private DashboardService dashboardService;
+
     private static final String[] HEADERS = {
         "COD_DEPTO", "COD_MPIO", "ZONA", "COD_PUESTO",
         "NOM_DEPTO", "NOM_MPIO", "NOM_PUESTO",
         "MESA", "NOM_ORGANIZACION", "TIPO_TESTIGO",
         "DOCUMENTO", "NOMBRE", "SEGUNDO_NOMBRE",
         "PRIMER_APELLIDO", "SEGUNDO_APELLIDO", "CELULAR", "CORREO"
+    };
+
+    private static final String[] HEADERS_COBERTURA = {
+        "DEPARTAMENTO", "MUNICIPIO", "TOTAL MESAS", "MESAS CUBIERTAS", "MESAS SIN COBERTURA", "PORCENTAJE COBERTURA"
     };
 
     @Transactional
@@ -125,6 +134,67 @@ public class ExcelExportService {
         row.createCell(5).setCellValue(mpio != null ? safe(mpio.getNombre()) : "");
         row.createCell(6).setCellValue(puesto != null ? safe(puesto.getNombrePuesto()) : "");
         row.createCell(7).setCellValue(mesa != null && mesa.getNumeroMesa() != null ? mesa.getNumeroMesa().toString() : "");
+    }
+
+    @Transactional
+    public File exportarCobertura(Long departamentoId) throws IOException {
+        logger.info("Iniciando exportación de Excel de cobertura por municipio...");
+
+        File outputFile = File.createTempFile("Cobertura_Municipios_Export_", ".xlsx");
+
+        List<CoberturaMunicipioResponse> coberturaList = dashboardService.getCoberturaMunicipios(departamentoId);
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Cobertura por Municipio");
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < HEADERS_COBERTURA.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(HEADERS_COBERTURA[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (CoberturaMunicipioResponse item : coberturaList) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(safe(item.getDepartamentoNombre()));
+                row.createCell(1).setCellValue(safe(item.getMunicipioNombre()));
+                row.createCell(2).setCellValue(item.getTotalMesas());
+                row.createCell(3).setCellValue(item.getMesasConTestigo());
+                row.createCell(4).setCellValue(item.getMesasSinTestigo());
+                
+                Cell pctCell = row.createCell(5);
+                pctCell.setCellValue(item.getPorcentajeCobertura() / 100.0);
+                
+                CellStyle pctStyle = workbook.createCellStyle();
+                pctStyle.setDataFormat(workbook.createDataFormat().getFormat("0.00%"));
+                pctCell.setCellStyle(pctStyle);
+            }
+
+            for (int i = 0; i < HEADERS_COBERTURA.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+                workbook.write(fos);
+            }
+        }
+
+        try {
+            auditService.log(AccionAuditoria.EXPORTACION_EXCEL, "Exportación de cobertura por municipio generada", "Excel", null);
+        } catch (Exception e) {
+            logger.warn("No se pudo registrar auditoría de exportación de cobertura: {}", e.getMessage());
+        }
+        logger.info("Exportación de cobertura finalizada: {} municipios exportados", coberturaList.size());
+
+        return outputFile;
     }
 
     private String safe(String val) {

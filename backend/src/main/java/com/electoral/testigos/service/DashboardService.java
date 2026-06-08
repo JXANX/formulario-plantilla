@@ -1,6 +1,9 @@
 package com.electoral.testigos.service;
 
 import com.electoral.testigos.dto.response.DashboardStats;
+import com.electoral.testigos.dto.response.CoberturaMunicipioResponse;
+import com.electoral.testigos.model.Mesa;
+import com.electoral.testigos.model.Municipio;
 import com.electoral.testigos.repository.DepartamentoRepository;
 import com.electoral.testigos.repository.MesaRepository;
 import com.electoral.testigos.repository.MunicipioRepository;
@@ -8,6 +11,10 @@ import com.electoral.testigos.repository.PuestoRepository;
 import com.electoral.testigos.repository.TestigoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 public class DashboardService {
@@ -51,5 +58,55 @@ public class DashboardService {
                 .mesasPendientes(mesasPendientes)
                 .porcentajeCobertura(Math.round(porcentajeCobertura * 100.0) / 100.0)
                 .build();
+    }
+
+    public List<CoberturaMunicipioResponse> getCoberturaMunicipios(Long departamentoId) {
+        List<Mesa> mesas = mesaRepository.findAllWithEagerRelationships();
+        
+        if (departamentoId != null) {
+            mesas = mesas.stream()
+                .filter(m -> m.getPuesto() != null && 
+                            m.getPuesto().getMunicipio() != null && 
+                            m.getPuesto().getMunicipio().getDepartamento() != null && 
+                            m.getPuesto().getMunicipio().getDepartamento().getId().equals(departamentoId))
+                .collect(Collectors.toList());
+        }
+        
+        java.util.Map<Municipio, List<Mesa>> mesasByMunicipio = mesas.stream()
+            .filter(m -> m.getPuesto() != null && m.getPuesto().getMunicipio() != null)
+            .collect(Collectors.groupingBy(m -> m.getPuesto().getMunicipio()));
+            
+        List<CoberturaMunicipioResponse> responses = new ArrayList<>();
+        for (java.util.Map.Entry<Municipio, List<Mesa>> entry : mesasByMunicipio.entrySet()) {
+            Municipio municipio = entry.getKey();
+            List<Mesa> municipioMesas = entry.getValue();
+            
+            long totalMesas = municipioMesas.size();
+            long mesasConTestigo = municipioMesas.stream().filter(m -> m.getOcupados() > 0).count();
+            long mesasSinTestigo = totalMesas - mesasConTestigo;
+            double porcentaje = totalMesas > 0 ? ((double) mesasConTestigo / totalMesas) * 100.0 : 0.0;
+            porcentaje = Math.round(porcentaje * 100.0) / 100.0;
+            
+            responses.add(CoberturaMunicipioResponse.builder()
+                .municipioId(municipio.getId())
+                .municipioNombre(municipio.getNombre())
+                .codigoMunicipio(municipio.getCodigoMunicipio())
+                .departamentoId(municipio.getDepartamento() != null ? municipio.getDepartamento().getId() : null)
+                .departamentoNombre(municipio.getDepartamento() != null ? municipio.getDepartamento().getNombre() : "")
+                .totalMesas(totalMesas)
+                .mesasConTestigo(mesasConTestigo)
+                .mesasSinTestigo(mesasSinTestigo)
+                .porcentajeCobertura(porcentaje)
+                .build());
+        }
+        
+        // Ordenar de menor a mayor cobertura
+        responses.sort((r1, r2) -> {
+            int comp = Double.compare(r1.getPorcentajeCobertura(), r2.getPorcentajeCobertura());
+            if (comp != 0) return comp;
+            return r1.getMunicipioNombre().compareTo(r2.getMunicipioNombre());
+        });
+        
+        return responses;
     }
 }
