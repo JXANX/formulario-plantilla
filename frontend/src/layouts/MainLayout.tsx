@@ -268,7 +268,8 @@ export default function MainLayout() {
         >
           <Toolbar
             sx={{
-              height: { xs: 64, sm: 72 },
+              height: { xs: 76, sm: 96 },
+              minHeight: { xs: 76, sm: 96 },
               display: 'flex',
               justifyContent: 'space-between',
               px: { xs: 2, sm: 4 },
@@ -327,14 +328,14 @@ export default function MainLayout() {
               <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
                 <Box
                   sx={{
-                    height: 56,
+                    height: 80,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
                   }}
                 >
-                  <img src={logoBox} alt="TRACTO" style={{ height: '52px', width: 'auto', objectFit: 'contain' }} />
+                  <img src={logoBox} alt="TRACTO" style={{ height: '76px', width: 'auto', objectFit: 'contain' }} />
                 </Box>
                 <Box sx={{ textAlign: 'left' }}>
                   <Typography
@@ -364,13 +365,13 @@ export default function MainLayout() {
               <Box
                 sx={{
                   display: { xs: 'flex', md: 'none' },
-                  height: 44,
+                  height: 60,
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
                 }}
               >
-                <img src={logoBox} alt="TRACTO" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+                <img src={logoBox} alt="TRACTO" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
               </Box>
             </Box>
           </Toolbar>
