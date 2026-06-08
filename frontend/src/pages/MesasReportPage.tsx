@@ -38,11 +38,80 @@ const PIE_COLORS = [
   '#A67B2D', '#3D8A6E', '#8A3D3D', '#5A3D8A', '#3D6E8A',
 ];
 
-interface Witness { id: number; documento: string; nombreCompleto: string; celular: string; tipoTestigo: string; mesaId: number; }
-interface Mesa { id: number; numeroMesa: number; capacidad: number; ocupados: number; estadoSemaforo: string; }
-interface CoberturaMunicipio { municipioId: number; municipioNombre: string; codigoMunicipio: string; departamentoId: number; departamentoNombre: string; totalMesas: number; mesasConTestigo: number; mesasSinTestigo: number; porcentajeCobertura: number; }
+// ─── INTERFACES ────────────────────────────────────────────────────────────────
 
-/* ── Mini stat card ───────────────────────────────── */
+/**
+ * Witness incluye municipioId para poder agrupar correctamente
+ * las mesas por municipio en el cálculo de cobertura parcial/total.
+ */
+interface Witness {
+  id: number;
+  documento: string;
+  nombreCompleto: string;
+  celular: string;
+  tipoTestigo: string;
+  mesaId: number;
+  municipioId: number; // ← nuevo: necesario para filtrar por municipio
+}
+
+interface Mesa {
+  id: number;
+  numeroMesa: number;
+  capacidad: number;
+  ocupados: number;
+  estadoSemaforo: string;
+}
+
+interface CoberturaMunicipio {
+  municipioId: number;
+  municipioNombre: string;
+  codigoMunicipio: string;
+  departamentoId: number;
+  departamentoNombre: string;
+  totalMesas: number;
+  mesasConTestigo: number;
+  mesasSinTestigo: number;
+  porcentajeCobertura: number;
+}
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────────
+
+/**
+ * A partir del arreglo completo de testigos calcula, por municipio:
+ *   - mesasTotalmenteCubiertas  → mesas con 2 o más testigos asignados
+ *   - mesasParcialmenteCubiertas → mesas con exactamente 1 testigo asignado
+ *
+ * Cada mesa se contabiliza una única vez (sin duplicados).
+ */
+function computeExtendedCoverage(
+  witnesses: Witness[],
+  municipioId: number
+): { totalCubiertas: number; parcialCubiertas: number } {
+  // Contar testigos por mesaId dentro del municipio indicado
+  const mesaCountMap = new Map<number, number>();
+
+  witnesses
+    .filter((w) => Number(w.municipioId) === Number(municipioId))
+    .forEach((w) => {
+      mesaCountMap.set(w.mesaId, (mesaCountMap.get(w.mesaId) ?? 0) + 1);
+    });
+
+  let totalCubiertas = 0;
+  let parcialCubiertas = 0;
+
+  mesaCountMap.forEach((count) => {
+    if (count >= 2) {
+      totalCubiertas++;
+    } else if (count === 1) {
+      parcialCubiertas++;
+    }
+    // count === 0 no puede ocurrir (el mapa solo almacena mesas con ≥1 testigo)
+  });
+
+  return { totalCubiertas, parcialCubiertas };
+}
+
+// ─── MINI STAT CARD ────────────────────────────────────────────────────────────
 function StatMini({ title, value, color }: { title: string; value: number | string; color: string }) {
   return (
     <Card sx={{ border: `1px solid ${J.border}`, borderTop: `4px solid ${color}`, borderRadius: 0, boxShadow: 'none', bgcolor: '#fff' }}>
@@ -58,14 +127,14 @@ function StatMini({ title, value, color }: { title: string; value: number | stri
   );
 }
 
-/* ── Coverage badge ───────────────────────────────── */
+// ─── COVERAGE BADGE ────────────────────────────────────────────────────────────
 function CoverageBadge({ occupied, capacity }: { occupied: number; capacity: number }) {
   if (occupied >= capacity) return <Chip icon={<CheckCircleIcon />} label="Completa" size="small" sx={{ bgcolor: 'rgba(45,125,78,0.1)', color: J.success, border: `1px solid rgba(45,125,78,0.25)`, fontSize: '12px', height: 28, letterSpacing: '0.08em' }} />;
   if (occupied === 1) return <Chip icon={<WarningIcon />} label="Parcial" size="small" sx={{ bgcolor: 'rgba(185,125,26,0.1)', color: J.warning, border: `1px solid rgba(185,125,26,0.25)`, fontSize: '12px', height: 28, letterSpacing: '0.08em' }} />;
   return <Chip icon={<CancelIcon />} label="Sin Cobertura" size="small" sx={{ bgcolor: 'rgba(184,50,50,0.1)', color: J.danger, border: `1px solid rgba(184,50,50,0.25)`, fontSize: '12px', height: 28, letterSpacing: '0.08em' }} />;
 }
 
-/* ── Custom Tooltip para barra ────────────────────── */
+// ─── CUSTOM TOOLTIPS ──────────────────────────────────────────────────────────
 function BarTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
@@ -81,7 +150,6 @@ function BarTooltip({ active, payload, label }: any) {
   );
 }
 
-/* ── Custom Tooltip para pie ──────────────────────── */
 function PieTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0];
@@ -94,7 +162,6 @@ function PieTooltip({ active, payload }: any) {
   );
 }
 
-/* ── Custom Pie Label ─────────────────────────────── */
 function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) {
   if (percent < 0.04) return null;
   const RADIAN = Math.PI / 180;
@@ -108,7 +175,7 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }:
   );
 }
 
-/* ── Sección de gráficas ──────────────────────────── */
+// ─── CHART SECTION (sin cambios) ───────────────────────────────────────────────
 function ChartSection({ data }: { data: CoberturaMunicipio[] }) {
   const [chartTab, setChartTab] = useState<'bar' | 'pie'>('bar');
   const muiTheme = useTheme();
@@ -117,7 +184,6 @@ function ChartSection({ data }: { data: CoberturaMunicipio[] }) {
 
   if (!data.length) return null;
 
-  /* Truncar nombre municipio para el eje X */
   const truncate = (name: string, max: number) =>
     name.length > max ? name.slice(0, max) + '…' : name;
 
@@ -139,7 +205,6 @@ function ChartSection({ data }: { data: CoberturaMunicipio[] }) {
 
   return (
     <Card sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none', mb: 4, overflow: 'hidden' }}>
-      {/* Header */}
       <Box sx={{ px: 3, pt: 3, pb: 2, borderBottom: `1px solid ${J.border}`, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2 }}>
         <Box>
           <Typography sx={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.gold, mb: 0.3 }}>
@@ -149,96 +214,46 @@ function ChartSection({ data }: { data: CoberturaMunicipio[] }) {
             Cobertura por Municipio
           </Typography>
         </Box>
-        {/* Toggle bar/pie */}
         <Box sx={{ display: 'flex', border: `1px solid ${J.border}`, overflow: 'hidden' }}>
           <Button
             startIcon={<BarChartIcon sx={{ fontSize: '15px !important' }} />}
             onClick={() => setChartTab('bar')}
-            sx={{
-              borderRadius: 0, px: 2, py: 1,
-              fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase',
-              fontWeight: 600, boxShadow: 'none', minWidth: 0,
-              bgcolor: chartTab === 'bar' ? J.ink : 'transparent',
-              color: chartTab === 'bar' ? '#fff' : J.textMuted,
-              '&:hover': { bgcolor: chartTab === 'bar' ? J.ink : J.muted, boxShadow: 'none' },
-            }}
+            sx={{ borderRadius: 0, px: 2, py: 1, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, boxShadow: 'none', minWidth: 0, bgcolor: chartTab === 'bar' ? J.ink : 'transparent', color: chartTab === 'bar' ? '#fff' : J.textMuted, '&:hover': { bgcolor: chartTab === 'bar' ? J.ink : J.muted, boxShadow: 'none' } }}
           >
             Barras
           </Button>
           <Button
             startIcon={<PieChartIcon sx={{ fontSize: '15px !important' }} />}
             onClick={() => setChartTab('pie')}
-            sx={{
-              borderRadius: 0, px: 2, py: 1,
-              fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase',
-              fontWeight: 600, boxShadow: 'none', minWidth: 0,
-              borderLeft: `1px solid ${J.border}`,
-              bgcolor: chartTab === 'pie' ? J.ink : 'transparent',
-              color: chartTab === 'pie' ? '#fff' : J.textMuted,
-              '&:hover': { bgcolor: chartTab === 'pie' ? J.ink : J.muted, boxShadow: 'none' },
-            }}
+            sx={{ borderRadius: 0, px: 2, py: 1, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, boxShadow: 'none', minWidth: 0, borderLeft: `1px solid ${J.border}`, bgcolor: chartTab === 'pie' ? J.ink : 'transparent', color: chartTab === 'pie' ? '#fff' : J.textMuted, '&:hover': { bgcolor: chartTab === 'pie' ? J.ink : J.muted, boxShadow: 'none' } }}
           >
             Pastel
           </Button>
         </Box>
       </Box>
 
-      {/* Chart body */}
       <Box sx={{ px: { xs: 1, sm: 3 }, py: 3, bgcolor: J.surface }}>
-
-        {/* ── Gráfica de Barras ── */}
         {chartTab === 'bar' && (
           <Box>
             <ResponsiveContainer width="100%" height={barHeight}>
-              <BarChart
-                data={barData}
-                margin={{ top: 10, right: isMobile ? 8 : 20, left: isMobile ? -20 : 0, bottom: isMobile ? 40 : 60 }}
-                barCategoryGap="30%"
-              >
+              <BarChart data={barData} margin={{ top: 10, right: isMobile ? 8 : 20, left: isMobile ? -20 : 0, bottom: isMobile ? 40 : 60 }} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke={J.border} vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: isMobile ? 9 : 11, fill: J.textMuted, fontWeight: 500 }}
-                  tickLine={false}
-                  axisLine={{ stroke: J.border }}
-                  angle={isMobile ? -45 : -35}
-                  textAnchor="end"
-                  interval={0}
-                  height={isMobile ? 55 : 70}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: J.textMuted }}
-                  tickLine={false}
-                  axisLine={false}
-                  allowDecimals={false}
-                />
+                <XAxis dataKey="name" tick={{ fontSize: isMobile ? 9 : 11, fill: J.textMuted, fontWeight: 500 }} tickLine={false} axisLine={{ stroke: J.border }} angle={isMobile ? -45 : -35} textAnchor="end" interval={0} height={isMobile ? 55 : 70} />
+                <YAxis tick={{ fontSize: 11, fill: J.textMuted }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(41,82,204,0.06)' }} />
-                <Legend
-                  wrapperStyle={{ fontSize: '12px', paddingTop: '12px', color: J.textMuted }}
-                  iconType="circle"
-                  iconSize={8}
-                />
+                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '12px', color: J.textMuted }} iconType="circle" iconSize={8} />
                 <Bar dataKey="Cubiertas" name="Cubiertas" fill={J.success} radius={[2, 2, 0, 0]}>
-                  {!isMobile && (
-                    <LabelList dataKey="Cubiertas" position="top" style={{ fontSize: '10px', fill: J.success, fontWeight: 700 }} />
-                  )}
+                  {!isMobile && <LabelList dataKey="Cubiertas" position="top" style={{ fontSize: '10px', fill: J.success, fontWeight: 700 }} />}
                 </Bar>
                 <Bar dataKey="Vacías" name="Vacías" fill={J.danger} radius={[2, 2, 0, 0]}>
-                  {!isMobile && (
-                    <LabelList dataKey="Vacías" position="top" style={{ fontSize: '10px', fill: J.danger, fontWeight: 700 }} />
-                  )}
+                  {!isMobile && <LabelList dataKey="Vacías" position="top" style={{ fontSize: '10px', fill: J.danger, fontWeight: 700 }} />}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-
-            {/* Leyenda de totales bajo la gráfica */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1, px: 1 }}>
               {data.map(d => (
                 <Box key={d.municipioId} sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                  <Box sx={{
-                    width: 6, height: 6, borderRadius: '50%',
-                    bgcolor: d.porcentajeCobertura >= 80 ? J.success : d.porcentajeCobertura >= 40 ? J.warning : J.danger,
-                  }} />
+                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: d.porcentajeCobertura >= 80 ? J.success : d.porcentajeCobertura >= 40 ? J.warning : J.danger }} />
                   <Typography sx={{ fontSize: '11px', color: J.textMuted }}>
                     {d.municipioNombre}: <strong style={{ color: J.ink }}>{d.porcentajeCobertura}%</strong>
                   </Typography>
@@ -248,23 +263,12 @@ function ChartSection({ data }: { data: CoberturaMunicipio[] }) {
           </Box>
         )}
 
-        {/* ── Gráfica de Pastel ── */}
         {chartTab === 'pie' && (
           <Grid container spacing={3} sx={{ alignItems: 'center' }}>
             <Grid size={{ xs: 12, md: 7 }}>
               <ResponsiveContainer width="100%" height={pieHeight}>
                 <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={isMobile ? 100 : 130}
-                    dataKey="value"
-                    labelLine={false}
-                    label={renderPieLabel}
-                    strokeWidth={2}
-                    stroke={J.surface}
-                  >
+                  <Pie data={pieData} cx="50%" cy="50%" outerRadius={isMobile ? 100 : 130} dataKey="value" labelLine={false} label={renderPieLabel} strokeWidth={2} stroke={J.surface}>
                     {pieData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                     ))}
@@ -273,8 +277,6 @@ function ChartSection({ data }: { data: CoberturaMunicipio[] }) {
                 </PieChart>
               </ResponsiveContainer>
             </Grid>
-
-            {/* Leyenda lateral */}
             <Grid size={{ xs: 12, md: 5 }}>
               <Typography sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
                 Mesas cubiertas por municipio
@@ -288,16 +290,10 @@ function ChartSection({ data }: { data: CoberturaMunicipio[] }) {
                     <Box key={d.name} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Box sx={{ width: 10, height: 10, borderRadius: '2px', flexShrink: 0, bgcolor: PIE_COLORS[i % PIE_COLORS.length] }} />
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography sx={{ fontSize: '12px', fontWeight: 600, color: J.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {d.name}
-                        </Typography>
-                        <Typography sx={{ fontSize: '11px', color: J.textMuted }}>
-                          {d.value} / {total} mesas
-                        </Typography>
+                        <Typography sx={{ fontSize: '12px', fontWeight: 600, color: J.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</Typography>
+                        <Typography sx={{ fontSize: '11px', color: J.textMuted }}>{d.value} / {total} mesas</Typography>
                       </Box>
-                      <Typography sx={{ fontSize: '12px', fontWeight: 700, color: pctColor, flexShrink: 0 }}>
-                        {pct}%
-                      </Typography>
+                      <Typography sx={{ fontSize: '12px', fontWeight: 700, color: pctColor, flexShrink: 0 }}>{pct}%</Typography>
                     </Box>
                   );
                 })}
@@ -310,9 +306,7 @@ function ChartSection({ data }: { data: CoberturaMunicipio[] }) {
   );
 }
 
-/* ════════════════════════════════════════════════════
-   PÁGINA PRINCIPAL
-════════════════════════════════════════════════════ */
+// ─── PÁGINA PRINCIPAL ─────────────────────────────────────────────────────────
 export default function MesasReportPage() {
   const { dashboardUpdates } = useWebSocket();
   const [activeTab, setActiveTab] = useState(0);
@@ -340,7 +334,6 @@ export default function MesasReportPage() {
   useEffect(() => { if (selectedPuesto) fetchMesas(selectedPuesto); else setMesas([]); }, [selectedPuesto, allWitnesses]);
   useEffect(() => { if (activeTab === 1 && selectedDepartamento) fetchMunicipioCoberturas(selectedDepartamento); }, [activeTab, selectedDepartamento]);
 
-  /* ── Data fetching (sin cambios) ──────────────── */
   const fetchInitialData = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -437,12 +430,21 @@ export default function MesasReportPage() {
     finally { setExportingCoberturas(false); }
   };
 
-  const thSx = { color: '#fff', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase' as const, fontWeight: 600, borderBottom: 'none', py: 2 };
+  // ── Estilos de cabecera de tabla ────────────────────────────────────────────
+  const thSx = {
+    color: '#fff',
+    fontSize: '12px',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase' as const,
+    fontWeight: 600,
+    borderBottom: 'none',
+    py: 2,
+  };
 
-  /* ── Render ───────────────────────────────────── */
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <Box>
-      {/* Page heading */}
+      {/* Encabezado de página */}
       <Box sx={{ mb: 5 }}>
         <Typography sx={{ fontSize: '12px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
           Monitoreo
@@ -467,7 +469,7 @@ export default function MesasReportPage() {
         <Tab label="Cobertura por Municipio" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
       </Tabs>
 
-      {/* ══ TAB 0: por Puesto ══════════════════════════ */}
+      {/* ══ TAB 0: por Puesto ══════════════════════════════════════════════════ */}
       {activeTab === 0 && (
         <Box>
           <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
@@ -513,11 +515,11 @@ export default function MesasReportPage() {
             ) : (
               <Box>
                 <Grid container spacing={3} sx={{ mb: 5 }}>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Total Mesas" value={stats.total} color={J.ink} /></Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Cubiertas (Verde)" value={stats.verdes} color={J.success} /></Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Parciales (Amarillo)" value={stats.amarillas} color={J.warning} /></Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Faltantes (Rojo)" value={stats.rojas} color={J.danger} /></Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="% Cobertura" value={`${stats.porcentaje}%`} color={J.blue} /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Total Mesas"        value={stats.total}            color={J.ink}     /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Cubiertas (Verde)"  value={stats.verdes}           color={J.success} /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Parciales (Amarillo)" value={stats.amarillas}      color={J.warning} /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Faltantes (Rojo)"   value={stats.rojas}            color={J.danger}  /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="% Cobertura"        value={`${stats.porcentaje}%`} color={J.blue}    /></Grid>
                 </Grid>
 
                 <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
@@ -540,36 +542,26 @@ export default function MesasReportPage() {
                           const t2 = witnesses[1] || null;
                           return (
                             <TableRow key={m.id} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
-                              <TableCell sx={{ fontWeight: 700, fontSize: '16px', color: J.ink }}>
-                                {m.numeroMesa}
-                              </TableCell>
+                              <TableCell sx={{ fontWeight: 700, fontSize: '16px', color: J.ink }}>{m.numeroMesa}</TableCell>
                               <TableCell><CoverageBadge occupied={m.ocupados} capacity={m.capacidad} /></TableCell>
                               <TableCell>
                                 {t1 ? (
                                   <Box>
                                     <Typography sx={{ fontSize: '15px', fontWeight: 600, color: J.ink }}>{t1.nombreCompleto}</Typography>
-                                    <Typography sx={{ fontSize: '13px', color: J.textMuted, mt: 0.3 }}>
-                                      C.C: {t1.documento} · {t1.celular}
-                                    </Typography>
+                                    <Typography sx={{ fontSize: '13px', color: J.textMuted, mt: 0.3 }}>C.C: {t1.documento} · {t1.celular}</Typography>
                                   </Box>
                                 ) : (
-                                  <Typography sx={{ fontSize: '13px', letterSpacing: '0.08em', color: J.danger, fontStyle: 'italic' }}>
-                                    Pendiente asignar
-                                  </Typography>
+                                  <Typography sx={{ fontSize: '13px', letterSpacing: '0.08em', color: J.danger, fontStyle: 'italic' }}>Pendiente asignar</Typography>
                                 )}
                               </TableCell>
                               <TableCell>
                                 {t2 ? (
                                   <Box>
                                     <Typography sx={{ fontSize: '15px', fontWeight: 600, color: J.ink }}>{t2.nombreCompleto}</Typography>
-                                    <Typography sx={{ fontSize: '13px', color: J.textMuted, mt: 0.3 }}>
-                                      C.C: {t2.documento} · {t2.celular}
-                                    </Typography>
+                                    <Typography sx={{ fontSize: '13px', color: J.textMuted, mt: 0.3 }}>C.C: {t2.documento} · {t2.celular}</Typography>
                                   </Box>
                                 ) : (
-                                  <Typography sx={{ fontSize: '13px', letterSpacing: '0.08em', color: J.textMuted, fontStyle: 'italic' }}>
-                                    Sin asignar
-                                  </Typography>
+                                  <Typography sx={{ fontSize: '13px', letterSpacing: '0.08em', color: J.textMuted, fontStyle: 'italic' }}>Sin asignar</Typography>
                                 )}
                               </TableCell>
                             </TableRow>
@@ -591,7 +583,7 @@ export default function MesasReportPage() {
         </Box>
       )}
 
-      {/* ══ TAB 1: por Municipio ══════════════════════ */}
+      {/* ══ TAB 1: por Municipio ═══════════════════════════════════════════════ */}
       {activeTab === 1 && (
         <Box>
           {/* Filtro + exportar */}
@@ -627,32 +619,129 @@ export default function MesasReportPage() {
               <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}><CircularProgress size={32} sx={{ color: J.blue }} /></Box>
             ) : (
               <Box>
-                {/* ── GRÁFICAS (nueva sección) ── */}
+                {/* Gráficas (sin cambios) */}
                 <ChartSection data={municipioCoberturas} />
 
-                {/* ── TABLA (existente, sin cambios) ── */}
+                {/* ── Tabla inferior con las dos nuevas columnas ── */}
                 <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
                   <Table>
                     <TableHead sx={{ bgcolor: J.ink }}>
                       <TableRow>
-                        {['Municipio', 'Total Mesas', 'Cubiertas', 'Vacías', '% Cobertura'].map(h => (
-                          <TableCell key={h} sx={thSx}>{h}</TableCell>
-                        ))}
+                        {/* Columnas originales */}
+                        <TableCell sx={thSx}>Municipio</TableCell>
+                        <TableCell sx={thSx}>Total Mesas</TableCell>
+                        {/*
+                         * ── NUEVAS COLUMNAS ──────────────────────────────────
+                         * Se ubican entre "Total Mesas" y las columnas originales
+                         * de Cubiertas / Vacías para mantener una lectura lógica:
+                         * Total → Totalmente cubiertas → Parcialmente → Vacías → %
+                         */}
+                        <TableCell sx={{ ...thSx, color: '#A8F0C6' }}>
+                          Tot. Cubiertas
+                          {/* Subtítulo visual */}
+                          <Typography
+                            component="span"
+                            sx={{
+                              display: 'block',
+                              fontSize: '9px',
+                              letterSpacing: '0.08em',
+                              opacity: 0.7,
+                              fontWeight: 400,
+                              textTransform: 'none',
+                              mt: 0.2,
+                            }}
+                          >
+                            (2+ testigos)
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ ...thSx, color: '#FFE08A' }}>
+                          Parc. Cubiertas
+                          <Typography
+                            component="span"
+                            sx={{
+                              display: 'block',
+                              fontSize: '9px',
+                              letterSpacing: '0.08em',
+                              opacity: 0.7,
+                              fontWeight: 400,
+                              textTransform: 'none',
+                              mt: 0.2,
+                            }}
+                          >
+                            (1 testigo)
+                          </Typography>
+                        </TableCell>
+                        {/* Columnas originales restantes */}
+                        <TableCell sx={thSx}>Vacías</TableCell>
+                        <TableCell sx={thSx}>% Cobertura</TableCell>
                       </TableRow>
                     </TableHead>
+
                     <TableBody>
                       {municipioCoberturas.length === 0 ? (
-                        <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>No hay municipios registrados para este departamento.</TableCell></TableRow>
+                        <TableRow>
+                          <TableCell colSpan={6} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>
+                            No hay municipios registrados para este departamento.
+                          </TableCell>
+                        </TableRow>
                       ) : (
                         municipioCoberturas.map((item) => {
                           const pct = item.porcentajeCobertura;
                           const pctColor = pct >= 80 ? J.success : pct >= 40 ? J.warning : J.danger;
+
+                          /*
+                           * ── CÁLCULO DE NUEVAS MÉTRICAS ──────────────────────
+                           *
+                           * Se agrupa por mesaId el subconjunto de testigos cuyo
+                           * municipioId coincide con el municipio actual.
+                           * Cada mesaId se cuenta una única vez:
+                           *   count >= 2  → Totalmente Cubierta
+                           *   count === 1 → Parcialmente Cubierta
+                           *
+                           * Nota: allWitnesses ya está cargado desde /api/testigos
+                           * y la API devuelve municipioId en cada registro.
+                           */
+                          const { totalCubiertas, parcialCubiertas } =
+                            computeExtendedCoverage(allWitnesses, item.municipioId);
+
                           return (
                             <TableRow key={item.municipioId} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
-                              <TableCell sx={{ fontWeight: 600, fontSize: '15.5px', color: J.ink }}>{item.municipioNombre}</TableCell>
-                              <TableCell sx={{ fontSize: '14px' }}>{item.totalMesas}</TableCell>
-                              <TableCell sx={{ fontSize: '14px', color: J.success, fontWeight: 700 }}>{item.mesasConTestigo}</TableCell>
-                              <TableCell sx={{ fontSize: '14px', color: J.danger, fontWeight: 700 }}>{item.mesasSinTestigo}</TableCell>
+                              {/* Municipio */}
+                              <TableCell sx={{ fontWeight: 600, fontSize: '15.5px', color: J.ink }}>
+                                {item.municipioNombre}
+                              </TableCell>
+
+                              {/* Total Mesas */}
+                              <TableCell sx={{ fontSize: '14px' }}>
+                                {item.totalMesas}
+                              </TableCell>
+
+                              {/* ── Totalmente Cubiertas (2+) ── */}
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <CheckCircleIcon sx={{ fontSize: 16, color: J.success, flexShrink: 0 }} />
+                                  <Typography sx={{ fontSize: '14px', color: J.success, fontWeight: 700 }}>
+                                    {totalCubiertas}
+                                  </Typography>
+                                </Box>
+                              </TableCell>
+
+                              {/* ── Parcialmente Cubiertas (1) ── */}
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <WarningIcon sx={{ fontSize: 16, color: J.warning, flexShrink: 0 }} />
+                                  <Typography sx={{ fontSize: '14px', color: J.warning, fontWeight: 700 }}>
+                                    {parcialCubiertas}
+                                  </Typography>
+                                </Box>
+                              </TableCell>
+
+                              {/* Vacías */}
+                              <TableCell sx={{ fontSize: '14px', color: J.danger, fontWeight: 700 }}>
+                                {item.mesasSinTestigo}
+                              </TableCell>
+
+                              {/* % Cobertura con barra visual */}
                               <TableCell>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                   <Box sx={{ flex: 1, height: 4, bgcolor: J.border, position: 'relative' }}>
@@ -670,6 +759,32 @@ export default function MesasReportPage() {
                     </TableBody>
                   </Table>
                 </TableContainer>
+
+                {/*
+                 * ── NOTA AL PIE DE LA TABLA ─────────────────────────────────
+                 * Aclara la diferencia entre "Cubiertas" (original del backend)
+                 * y las dos nuevas columnas calculadas en el frontend.
+                 */}
+                <Box sx={{ mt: 1.5, display: 'flex', gap: 3, flexWrap: 'wrap', px: 0.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                    <CheckCircleIcon sx={{ fontSize: 14, color: J.success }} />
+                    <Typography sx={{ fontSize: '11px', color: J.textMuted }}>
+                      <strong style={{ color: J.ink }}>Tot. Cubiertas</strong> = mesas con 2 o más testigos asignados
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                    <WarningIcon sx={{ fontSize: 14, color: J.warning }} />
+                    <Typography sx={{ fontSize: '11px', color: J.textMuted }}>
+                      <strong style={{ color: J.ink }}>Parc. Cubiertas</strong> = mesas con exactamente 1 testigo asignado
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                    <CancelIcon sx={{ fontSize: 14, color: J.danger }} />
+                    <Typography sx={{ fontSize: '11px', color: J.textMuted }}>
+                      <strong style={{ color: J.ink }}>Vacías</strong> = mesas sin testigos
+                    </Typography>
+                  </Box>
+                </Box>
               </Box>
             )
           ) : (
