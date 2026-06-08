@@ -119,8 +119,8 @@ export default function MainLayout() {
       </Box>
 
       {/* Gold rule */}
-      <Box sx={{ mx: 3, mb: 2, height: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: `rgba(201,151,58,0.25)` }}>
-        <img src={logo} alt="Logo" style={{ height: '100%', maxHeight: '30px', width: 'auto' }} />
+      <Box sx={{ mx: 3, mb: 2, height: 80, width: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: `rgba(201,151,58,0.25)` }}>
+        <img src={logo} alt="Logo" style={{ height: 'auto', maxHeight: '80px', width: 'auto' }} />
       </Box>
 
       {/* Nav items */}
