@@ -672,7 +672,6 @@ export default function MesasReportPage() {
                           </Typography>
                         </TableCell>
                         {/* Columnas originales restantes */}
-                        <TableCell sx={thSx}>Cubiertas</TableCell>
                         <TableCell sx={thSx}>Vacías</TableCell>
                         <TableCell sx={thSx}>% Cobertura</TableCell>
                       </TableRow>
@@ -681,7 +680,7 @@ export default function MesasReportPage() {
                     <TableBody>
                       {municipioCoberturas.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>
+                          <TableCell colSpan={6} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>
                             No hay municipios registrados para este departamento.
                           </TableCell>
                         </TableRow>
@@ -735,11 +734,6 @@ export default function MesasReportPage() {
                                     {parcialCubiertas}
                                   </Typography>
                                 </Box>
-                              </TableCell>
-
-                              {/* Cubiertas (original: mesas con ≥1 testigo) */}
-                              <TableCell sx={{ fontSize: '14px', color: J.success, fontWeight: 700 }}>
-                                {item.mesasConTestigo}
                               </TableCell>
 
                               {/* Vacías */}
