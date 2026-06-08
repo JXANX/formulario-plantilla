@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Grid, TextField, Button, MenuItem, FormControl, InputLabel, Select, Alert } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
+import { useToast } from '../context/ToastContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -29,6 +30,7 @@ export default function TestigoFormPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const toast = useToast();
 
   const handleVerificarDocumento = async () => {
     if (!formData.documento) return;
@@ -43,6 +45,7 @@ export default function TestigoFormPage() {
       const data = await res.json();
       if (data.success && data.data) {
         setSuccess('El testigo ya existe. Verifique sus datos o asigne ubicación si es necesario.');
+        toast.warning('El testigo ya existe. Verifique sus datos o asigne ubicación si es necesario.');
         const t = data.data;
         setFormData(prev => ({
           ...prev,
@@ -56,9 +59,11 @@ export default function TestigoFormPage() {
         }));
       } else {
         setSuccess('Documento disponible para registro nuevo.');
+        toast.info('Documento disponible para registro nuevo.');
       }
     } catch (err) {
       setError('Cedula ya registrada');
+      toast.error('Cedula ya registrada.');
     } finally {
       setIsVerifying(false);
     }
@@ -132,6 +137,7 @@ export default function TestigoFormPage() {
 
       if (data.success) {
         setSuccess('Testigo registrado correctamente');
+        toast.success('¡Testigo registrado correctamente!');
         setFormData({
           documento: '',
           nombre: '',
@@ -152,9 +158,11 @@ export default function TestigoFormPage() {
         }
       } else {
         setError(data.message || 'Error al guardar');
+        toast.error(data.message || 'Error al guardar el testigo.');
       }
     } catch (err) {
       setError('Error de conexión con el servidor');
+      toast.error('Error de conexión con el servidor.');
     }
   };
 
