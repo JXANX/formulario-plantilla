@@ -274,7 +274,7 @@ export default function TestigosListPage() {
           <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
             Filtros de búsqueda
           </Typography>
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={2} sx={{ alignItems: 'center' }}>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth size="small"

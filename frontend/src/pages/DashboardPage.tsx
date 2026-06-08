@@ -283,7 +283,7 @@ export default function DashboardPage() {
                   animation:  step.active ? 'step-pulse 1.5s infinite' : 'none',
                   mb: 1,
                 }}>
-                  {step.completed ? <CheckCircleIcon sx={{ fontSize: 22 }} /> : React.cloneElement(step.icon as React.ReactElement, { sx: { fontSize: 22 } })}
+                  {step.completed ? <CheckCircleIcon sx={{ fontSize: 22 }} /> : React.cloneElement(step.icon as React.ReactElement<any>, { sx: { fontSize: 22 } })}
                 </Box>
                 <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', color: step.active || step.completed ? 'white' : 'rgba(255,255,255,0.35)', fontWeight: step.active ? 700 : 400 }}>
                   {step.label}
