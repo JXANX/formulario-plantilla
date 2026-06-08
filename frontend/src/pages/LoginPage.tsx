@@ -151,7 +151,7 @@ export default function LoginPage() {
               onChange={(e) => setCorreo(e.target.value)}
               required
               autoComplete="new-username"
-              inputProps={{ style: { fontSize: '1.1rem' } }}
+              slotProps={{ htmlInput: { style: { fontSize: '1.1rem' } } }}
             />
             <TextField
               fullWidth
@@ -162,7 +162,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="new-password"
-              inputProps={{ style: { fontSize: '1.1rem' } }}
+              slotProps={{ htmlInput: { style: { fontSize: '1.1rem' } } }}
             />
 
             <Button
