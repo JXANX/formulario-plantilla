@@ -87,9 +87,8 @@ export default function LoginPage() {
         <Box sx={{ mb: 5, textAlign: 'center' }}>
           <Typography
             sx={{
-              fontFamily: '"IBM Plex Mono", monospace',
-              fontWeight: 600,
-              fontSize: '26px',
+              fontWeight: 700,
+              fontSize: '32px',
               letterSpacing: '0.06em',
               color: JAGUAR.ink,
               lineHeight: 1,
@@ -99,9 +98,7 @@ export default function LoginPage() {
           </Typography>
           <Typography
             sx={{
-              fontFamily: '"Playfair Display", Georgia, serif',
-              fontStyle: 'italic',
-              fontSize: '13px',
+              fontSize: '15px',
               color: JAGUAR.gold,
               mt: 0.5,
             }}
@@ -115,8 +112,7 @@ export default function LoginPage() {
           <Typography
             sx={{
               mt: 2.5,
-              fontFamily: '"IBM Plex Mono", monospace',
-              fontSize: '9px',
+              fontSize: '11px',
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
               color: JAGUAR.muted,
@@ -134,8 +130,7 @@ export default function LoginPage() {
               mb: 3,
               borderRadius: 0,
               border: `1px solid ${JAGUAR.danger}`,
-              fontFamily: '"IBM Plex Sans", sans-serif',
-              fontSize: '13px',
+              fontSize: '15px',
             }}
           >
             {error}
@@ -153,7 +148,6 @@ export default function LoginPage() {
               onChange={(e) => setCorreo(e.target.value)}
               required
               autoComplete="new-username"
-              slotProps={{ input: { style: { fontFamily: '"IBM Plex Sans", sans-serif' } } }}
             />
             <TextField
               fullWidth
@@ -164,7 +158,6 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="new-password"
-              slotProps={{ input: { style: { fontFamily: '"IBM Plex Sans", sans-serif' } } }}
             />
 
             <Button
@@ -178,8 +171,7 @@ export default function LoginPage() {
                 py: 1.6,
                 bgcolor: JAGUAR.ink,
                 color: '#fff',
-                fontFamily: '"IBM Plex Mono", monospace',
-                fontSize: '11px',
+                fontSize: '13px',
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
                 fontWeight: 600,
@@ -198,8 +190,7 @@ export default function LoginPage() {
         <Box sx={{ mt: 4, textAlign: 'center' }}>
           <Typography
             sx={{
-              fontFamily: '"IBM Plex Mono", monospace',
-              fontSize: '8.5px',
+              fontSize: '11px',
               letterSpacing: '0.15em',
               textTransform: 'uppercase',
               color: 'rgba(26,31,46,0.25)',

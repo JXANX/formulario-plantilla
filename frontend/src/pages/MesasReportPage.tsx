@@ -35,10 +35,10 @@ function StatMini({ title, value, color }: { title: string; value: number | stri
   return (
     <Card sx={{ border: `1px solid ${J.border}`, borderTop: `3px solid ${color}`, borderRadius: 0, boxShadow: 'none', bgcolor: '#fff' }}>
       <CardContent sx={{ py: 2, px: 2.5, '&:last-child': { pb: 2 } }}>
-        <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: J.textMuted, mb: 1, display: 'block' }}>
+        <Typography sx={{ fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: J.textMuted, mb: 1, display: 'block' }}>
           {title}
         </Typography>
-        <Typography sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, fontSize: '1.9rem', color, lineHeight: 1 }}>
+        <Typography sx={{ fontWeight: 700, fontSize: '2.2rem', color, lineHeight: 1 }}>
           {value}
         </Typography>
       </CardContent>
@@ -48,9 +48,9 @@ function StatMini({ title, value, color }: { title: string; value: number | stri
 
 /* ── Coverage badge ───────────────────────────────── */
 function CoverageBadge({ occupied, capacity }: { occupied: number; capacity: number }) {
-  if (occupied >= capacity) return <Chip icon={<CheckCircleIcon />} label="Completa"     size="small" sx={{ bgcolor: 'rgba(45,125,78,0.1)', color: J.success, border: `1px solid rgba(45,125,78,0.25)`, fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', height: 22, letterSpacing: '0.08em' }} />;
-  if (occupied === 1)       return <Chip icon={<WarningIcon />}     label="Parcial"      size="small" sx={{ bgcolor: 'rgba(185,125,26,0.1)', color: J.warning, border: `1px solid rgba(185,125,26,0.25)`, fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', height: 22, letterSpacing: '0.08em' }} />;
-  return                           <Chip icon={<CancelIcon />}      label="Sin Cobertura" size="small" sx={{ bgcolor: 'rgba(184,50,50,0.1)',  color: J.danger,  border: `1px solid rgba(184,50,50,0.25)`,  fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', height: 22, letterSpacing: '0.08em' }} />;
+  if (occupied >= capacity) return <Chip icon={<CheckCircleIcon />} label="Completa"     size="small" sx={{ bgcolor: 'rgba(45,125,78,0.1)', color: J.success, border: `1px solid rgba(45,125,78,0.25)`, fontSize: '11px', height: 22, letterSpacing: '0.08em' }} />;
+  if (occupied === 1)       return <Chip icon={<WarningIcon />}     label="Parcial"      size="small" sx={{ bgcolor: 'rgba(185,125,26,0.1)', color: J.warning, border: `1px solid rgba(185,125,26,0.25)`, fontSize: '11px', height: 22, letterSpacing: '0.08em' }} />;
+  return                           <Chip icon={<CancelIcon />}      label="Sin Cobertura" size="small" sx={{ bgcolor: 'rgba(184,50,50,0.1)',  color: J.danger,  border: `1px solid rgba(184,50,50,0.25)`,  fontSize: '11px', height: 22, letterSpacing: '0.08em' }} />;
 }
 
 export default function MesasReportPage() {
@@ -178,20 +178,20 @@ export default function MesasReportPage() {
   };
 
   /* ── Shared table head style ──────────────────── */
-  const thSx = { color: '#fff', fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase' as const, fontWeight: 600, borderBottom: 'none', py: 1.5 };
+  const thSx = { color: '#fff', fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase' as const, fontWeight: 600, borderBottom: 'none', py: 1.5 };
 
   /* ── Render ───────────────────────────────────── */
   return (
     <Box>
       {/* Page heading */}
       <Box sx={{ mb: 4 }}>
-        <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+        <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
           Monitoreo
         </Typography>
-        <Typography sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700, fontSize: '28px', color: J.ink }}>
+        <Typography sx={{ fontWeight: 700, fontSize: '32px', color: J.ink }}>
           Reportes de Cobertura
         </Typography>
-        <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13px', color: J.textMuted, mt: 0.5 }}>
+        <Typography sx={{ fontSize: '15px', color: J.textMuted, mt: 0.5 }}>
           Consulta y exportación del estado de mesas y cobertura de testigos electorales.
         </Typography>
       </Box>
@@ -204,8 +204,8 @@ export default function MesasReportPage() {
         onChange={(_, v) => setActiveTab(v)}
         sx={{ mb: 4, borderBottom: `1px solid ${J.border}`, '& .MuiTabs-indicator': { bgcolor: J.gold, height: 2 } }}
       >
-        <Tab label="Cobertura por Puesto"    sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
-        <Tab label="Cobertura por Municipio" sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
+        <Tab label="Cobertura por Puesto"    sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
+        <Tab label="Cobertura por Municipio" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
       </Tabs>
 
       {/* ══ TAB 0: por Puesto ══════════════════════════ */}
@@ -214,7 +214,7 @@ export default function MesasReportPage() {
           {/* Filter card */}
           <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
             <CardContent sx={{ p: 2.5 }}>
-              <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+              <Typography sx={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
                 Seleccionar ubicación
               </Typography>
               <Grid container spacing={2}>
@@ -284,20 +284,20 @@ export default function MesasReportPage() {
                           const t2 = witnesses[1] || null;
                           return (
                             <TableRow key={m.id} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
-                              <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, fontSize: '14px', color: J.ink }}>
+                              <TableCell sx={{ fontWeight: 700, fontSize: '16px', color: J.ink }}>
                                 {m.numeroMesa}
                               </TableCell>
                               <TableCell><CoverageBadge occupied={m.ocupados} capacity={m.capacidad} /></TableCell>
                               <TableCell>
                                 {t1 ? (
                                   <Box>
-                                    <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13px', fontWeight: 600, color: J.ink }}>{t1.nombreCompleto}</Typography>
-                                    <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', color: J.textMuted, mt: 0.3 }}>
+                                    <Typography sx={{ fontSize: '15px', fontWeight: 600, color: J.ink }}>{t1.nombreCompleto}</Typography>
+                                    <Typography sx={{ fontSize: '13px', color: J.textMuted, mt: 0.3 }}>
                                       C.C: {t1.documento} · {t1.celular}
                                     </Typography>
                                   </Box>
                                 ) : (
-                                  <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.08em', color: J.danger, fontStyle: 'italic' }}>
+                                  <Typography sx={{ fontSize: '13px', letterSpacing: '0.08em', color: J.danger, fontStyle: 'italic' }}>
                                     Pendiente asignar
                                   </Typography>
                                 )}
@@ -305,13 +305,13 @@ export default function MesasReportPage() {
                               <TableCell>
                                 {t2 ? (
                                   <Box>
-                                    <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13px', fontWeight: 600, color: J.ink }}>{t2.nombreCompleto}</Typography>
-                                    <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', color: J.textMuted, mt: 0.3 }}>
+                                    <Typography sx={{ fontSize: '15px', fontWeight: 600, color: J.ink }}>{t2.nombreCompleto}</Typography>
+                                    <Typography sx={{ fontSize: '13px', color: J.textMuted, mt: 0.3 }}>
                                       C.C: {t2.documento} · {t2.celular}
                                     </Typography>
                                   </Box>
                                 ) : (
-                                  <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.08em', color: J.textMuted, fontStyle: 'italic' }}>
+                                  <Typography sx={{ fontSize: '13px', letterSpacing: '0.08em', color: J.textMuted, fontStyle: 'italic' }}>
                                     Sin asignar
                                   </Typography>
                                 )}
@@ -327,7 +327,7 @@ export default function MesasReportPage() {
             )
           ) : (
             <Paper sx={{ p: 6, textAlign: 'center', border: `1px dashed ${J.border}`, borderRadius: 0, boxShadow: 'none', bgcolor: 'transparent' }}>
-              <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', letterSpacing: '0.12em', color: J.textMuted, textTransform: 'uppercase' }}>
+              <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', color: J.textMuted, textTransform: 'uppercase' }}>
                 Selecciona Departamento → Municipio → Puesto para ver el reporte de cobertura en tiempo real.
               </Typography>
             </Paper>
@@ -380,23 +380,23 @@ export default function MesasReportPage() {
                   </TableHead>
                   <TableBody>
                     {municipioCoberturas.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px' }}>No hay municipios registrados para este departamento.</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>No hay municipios registrados para este departamento.</TableCell></TableRow>
                     ) : (
                       municipioCoberturas.map((item) => {
                         const pct = item.porcentajeCobertura;
                         const pctColor = pct >= 80 ? J.success : pct >= 40 ? J.warning : J.danger;
                         return (
                           <TableRow key={item.municipioId} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
-                            <TableCell sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontWeight: 600, fontSize: '13.5px', color: J.ink }}>{item.municipioNombre}</TableCell>
-                            <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '13px' }}>{item.totalMesas}</TableCell>
-                            <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '13px', color: J.success, fontWeight: 700 }}>{item.mesasConTestigo}</TableCell>
-                            <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '13px', color: J.danger,  fontWeight: 700 }}>{item.mesasSinTestigo}</TableCell>
+                            <TableCell sx={{ fontWeight: 600, fontSize: '15.5px', color: J.ink }}>{item.municipioNombre}</TableCell>
+                            <TableCell sx={{ fontSize: '14px' }}>{item.totalMesas}</TableCell>
+                            <TableCell sx={{ fontSize: '14px', color: J.success, fontWeight: 700 }}>{item.mesasConTestigo}</TableCell>
+                            <TableCell sx={{ fontSize: '14px', color: J.danger,  fontWeight: 700 }}>{item.mesasSinTestigo}</TableCell>
                             <TableCell>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <Box sx={{ flex: 1, height: 4, bgcolor: J.border, position: 'relative' }}>
                                   <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, bgcolor: pctColor, transition: 'width 0.4s ease' }} />
                                 </Box>
-                                <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, fontSize: '12px', color: pctColor, minWidth: 36 }}>
+                                <Typography sx={{ fontWeight: 700, fontSize: '14px', color: pctColor, minWidth: 36 }}>
                                   {pct}%
                                 </Typography>
                               </Box>
@@ -411,7 +411,7 @@ export default function MesasReportPage() {
             )
           ) : (
             <Paper sx={{ p: 6, textAlign: 'center', border: `1px dashed ${J.border}`, borderRadius: 0, boxShadow: 'none', bgcolor: 'transparent' }}>
-              <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', letterSpacing: '0.12em', color: J.textMuted, textTransform: 'uppercase' }}>
+              <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', color: J.textMuted, textTransform: 'uppercase' }}>
                 Selecciona un Departamento para cargar el reporte de cobertura por municipio.
               </Typography>
             </Paper>
