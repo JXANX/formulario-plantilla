@@ -118,7 +118,9 @@ export default function MainLayout() {
       </Box>
 
       {/* Gold rule */}
-      <Box sx={{ mx: 3, mb: 2, height: 1, bgcolor: `rgba(201,151,58,0.25)` }} />
+      <Box sx={{ mx: 3, mb: 2, height: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: `rgba(201,151,58,0.25)` }}>
+        <img src={logo} alt="Logo" style={{ height: '100%', maxHeight: '30px', width: 'auto' }} />
+      </Box>
 
       {/* Nav items */}
       <List disablePadding sx={{ flex: 1 }}>
