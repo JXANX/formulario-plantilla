@@ -13,6 +13,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from 'react';
 import logo from "../assets/logo_tracto.png";
+import logoBox from "../assets/logobox_tracto.png";
 
 // Responsive drawer: narrower on phone, wider on desktop
 const drawerWidth = 270;
@@ -119,22 +120,19 @@ export default function MainLayout() {
       </Box>
 
       {/* Logo */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: 2 }}>
-        <Box
-          sx={{
-            width: 110,
-            height: 110,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: 'rgba(201,151,58,0.25)',
-            border: `1px solid ${JAGUAR.gold}`,
-            borderRadius: '8px',
-            p: 1.5,
-          }}
-        >
-          <img src={logo} alt="Logo" style={{ height: 'auto', maxHeight: '90px', width: 'auto' }} />
-        </Box>
+      <Box
+        sx={{
+          mx: 3,
+          mb: 2,
+          height: 110,
+          width: 110,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'rgba(201,151,58,0.25)',
+        }}
+      >
+        <img src={logo} alt="Logo" style={{ height: 'auto', maxHeight: '95px', width: 'auto' }} />
       </Box>
 
       {/* Nav items */}
@@ -329,8 +327,19 @@ export default function MainLayout() {
               <Box sx={{ width: 1, height: 32, bgcolor: JAGUAR.border, display: { xs: 'none', lg: 'block' } }} />
 
               {/* Avatar + label */}
-              <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ textAlign: 'right' }}>
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    height: 44,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <img src={logoBox} alt="TRACTO" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+                </Box>
+                <Box sx={{ textAlign: 'left' }}>
                   <Typography
                     sx={{
                       fontSize: '15px',
@@ -352,38 +361,19 @@ export default function MainLayout() {
                     Admin
                   </Typography>
                 </Box>
-                <Box
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    bgcolor: JAGUAR.ink,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Typography sx={{ fontSize: '15px', fontWeight: 700, color: JAGUAR.gold }}>
-                    CP
-                  </Typography>
-                </Box>
               </Box>
 
-              {/* Mobile: just the avatar square */}
+              {/* Mobile: just the rectangular logo */}
               <Box
                 sx={{
                   display: { xs: 'flex', md: 'none' },
-                  width: 42,
-                  height: 42,
-                  bgcolor: JAGUAR.ink,
+                  height: 38,
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
                 }}
               >
-                <Typography sx={{ fontSize: '14px', fontWeight: 700, color: JAGUAR.gold }}>
-                  CP
-                </Typography>
+                <img src={logoBox} alt="TRACTO" style={{ height: '30px', width: 'auto', objectFit: 'contain' }} />
               </Box>
             </Box>
           </Toolbar>
