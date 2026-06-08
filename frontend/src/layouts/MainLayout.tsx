@@ -12,6 +12,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from 'react';
+import logo from "../assets/logo_tracto.png";
 
 // Responsive drawer: narrower on phone, wider on desktop
 const drawerWidth = 270;
