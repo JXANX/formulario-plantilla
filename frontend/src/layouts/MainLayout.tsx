@@ -128,7 +128,7 @@ export default function MainLayout() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: 'rgba(201,151,58,0.25)',
+            bgcolor: 'rgba(235, 226, 211, 1)',
           }}
         >
           <img src={logo} alt="Logo" style={{ height: 'auto', maxHeight: '115px', width: 'auto' }} />
