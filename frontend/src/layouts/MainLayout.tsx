@@ -12,7 +12,7 @@ import MenuIcon       from '@mui/icons-material/Menu';
 import LogoutIcon     from '@mui/icons-material/Logout';
 import { useState, useEffect } from 'react';
 
-const drawerWidth = 228;
+const drawerWidth = 260;
 
 const JAGUAR = {
   ink:    '#1A1F2E',
@@ -31,10 +31,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard',           path: '/dashboard',     icon: <DashboardIcon  sx={{ fontSize: 20 }} /> },
-  { label: 'Registrar Testigo',   path: '/registro',      icon: <PersonAddIcon  sx={{ fontSize: 20 }} /> },
-  { label: 'Listado de Testigos', path: '/testigos',      icon: <PeopleIcon     sx={{ fontSize: 20 }} /> },
-  { label: 'Reporte de Mesas',    path: '/reporte-mesas', icon: <AssessmentIcon sx={{ fontSize: 20 }} /> },
+  { label: 'Dashboard',           path: '/dashboard',     icon: <DashboardIcon  sx={{ fontSize: 22 }} /> },
+  { label: 'Registrar Testigo',   path: '/registro',      icon: <PersonAddIcon  sx={{ fontSize: 22 }} /> },
+  { label: 'Listado de Testigos', path: '/testigos',      icon: <PeopleIcon     sx={{ fontSize: 22 }} /> },
+  { label: 'Reporte de Mesas',    path: '/reporte-mesas', icon: <AssessmentIcon sx={{ fontSize: 22 }} /> },
 ];
 
 const breadcrumbMap: Record<string, { parent: string; current: string }> = {
@@ -74,7 +74,7 @@ export default function MainLayout() {
         <Typography
           sx={{
             fontWeight: 700,
-            fontSize: '24px',
+            fontSize: '28px',
             letterSpacing: '0.08em',
             color: '#fff',
             lineHeight: 1,
@@ -85,7 +85,7 @@ export default function MainLayout() {
         <Typography
           sx={{
             fontWeight: 500,
-            fontSize: '14px',
+            fontSize: '16px',
             color: JAGUAR.gold,
             mt: 0.5,
           }}
@@ -108,20 +108,20 @@ export default function MainLayout() {
               disableRipple
               sx={{
                 px: 3,
-                py: 1.5,
-                borderLeft: active ? `2px solid ${JAGUAR.gold}` : '2px solid transparent',
+                py: 2,
+                borderLeft: active ? `3px solid ${JAGUAR.gold}` : '3px solid transparent',
                 bgcolor: active ? 'rgba(255,255,255,0.055)' : 'transparent',
                 transition: 'all 0.18s ease',
                 '&:hover': {
                   bgcolor: 'rgba(255,255,255,0.05)',
-                  borderLeft: `2px solid rgba(201,151,58,0.45)`,
+                  borderLeft: `3px solid rgba(201,151,58,0.45)`,
                 },
               }}
             >
               <ListItemIcon
                 sx={{
                   color: active ? JAGUAR.gold : 'rgba(200,208,224,0.6)',
-                  minWidth: 36,
+                  minWidth: 40,
                   transition: 'color 0.18s',
                 }}
               >
@@ -132,7 +132,7 @@ export default function MainLayout() {
                 slotProps={{
                   primary: {
                     sx: {
-                      fontSize: '15px',
+                      fontSize: '16px',
                       fontWeight: active ? 700 : 500,
                       color: active ? JAGUAR.gold : 'rgba(200,208,224,0.75)',
                       transition: 'color 0.18s',
@@ -220,7 +220,7 @@ export default function MainLayout() {
             color: JAGUAR.ink,
           }}
         >
-          <Toolbar sx={{ height: 64, display: 'flex', justifyContent: 'space-between', px: { xs: 2, sm: 4 } }}>
+          <Toolbar sx={{ height: 72, display: 'flex', justifyContent: 'space-between', px: { xs: 2, sm: 4 } }}>
             {/* Left: hamburger + breadcrumb */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <IconButton
@@ -235,7 +235,7 @@ export default function MainLayout() {
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
                 <Typography
                   sx={{
-                    fontSize: '12px',
+                    fontSize: '13px',
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
                     color: JAGUAR.muted,
@@ -246,7 +246,7 @@ export default function MainLayout() {
                 <Typography
                   sx={{
                     fontWeight: 700,
-                    fontSize: '22px',
+                    fontSize: '26px',
                     color: JAGUAR.ink,
                     lineHeight: 1,
                   }}
@@ -266,7 +266,7 @@ export default function MainLayout() {
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography
                     sx={{
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 600,
                       color: JAGUAR.ink,
                       lineHeight: 1.2,
@@ -276,7 +276,7 @@ export default function MainLayout() {
                   </Typography>
                   <Typography
                     sx={{
-                      fontSize: '11px',
+                      fontSize: '12px',
                       letterSpacing: '0.12em',
                       textTransform: 'uppercase',
                       color: JAGUAR.muted,
@@ -287,8 +287,8 @@ export default function MainLayout() {
                 </Box>
                 <Box
                   sx={{
-                    width: 34,
-                    height: 34,
+                    width: 40,
+                    height: 40,
                     bgcolor: JAGUAR.ink,
                     display: 'flex',
                     alignItems: 'center',
@@ -298,7 +298,7 @@ export default function MainLayout() {
                 >
                   <Typography
                     sx={{
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 600,
                       color: JAGUAR.gold,
                     }}
@@ -316,7 +316,7 @@ export default function MainLayout() {
           component="main"
           sx={{
             flex: 1,
-            p: { xs: 2, sm: 4 },
+            p: { xs: 2.5, sm: 5 },
             bgcolor: '#F8F7F4',
             /* subtle dot grid atmosphere */
             backgroundImage: 'radial-gradient(rgba(26,31,46,0.035) 1px, transparent 1px)',

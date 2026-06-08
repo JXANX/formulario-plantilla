@@ -33,12 +33,12 @@ interface CoberturaMunicipio { municipioId: number; municipioNombre: string; cod
 /* ── Mini stat card ───────────────────────────────── */
 function StatMini({ title, value, color }: { title: string; value: number | string; color: string }) {
   return (
-    <Card sx={{ border: `1px solid ${J.border}`, borderTop: `3px solid ${color}`, borderRadius: 0, boxShadow: 'none', bgcolor: '#fff' }}>
-      <CardContent sx={{ py: 2, px: 2.5, '&:last-child': { pb: 2 } }}>
-        <Typography sx={{ fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: J.textMuted, mb: 1, display: 'block' }}>
+    <Card sx={{ border: `1px solid ${J.border}`, borderTop: `4px solid ${color}`, borderRadius: 0, boxShadow: 'none', bgcolor: '#fff' }}>
+      <CardContent sx={{ py: 2.5, px: 3, '&:last-child': { pb: 2.5 } }}>
+        <Typography sx={{ fontSize: '12px', letterSpacing: '0.15em', textTransform: 'uppercase', color: J.textMuted, mb: 1.5, display: 'block' }}>
           {title}
         </Typography>
-        <Typography sx={{ fontWeight: 700, fontSize: '2.2rem', color, lineHeight: 1 }}>
+        <Typography sx={{ fontWeight: 700, fontSize: '2.6rem', color, lineHeight: 1 }}>
           {value}
         </Typography>
       </CardContent>
@@ -48,9 +48,9 @@ function StatMini({ title, value, color }: { title: string; value: number | stri
 
 /* ── Coverage badge ───────────────────────────────── */
 function CoverageBadge({ occupied, capacity }: { occupied: number; capacity: number }) {
-  if (occupied >= capacity) return <Chip icon={<CheckCircleIcon />} label="Completa"     size="small" sx={{ bgcolor: 'rgba(45,125,78,0.1)', color: J.success, border: `1px solid rgba(45,125,78,0.25)`, fontSize: '11px', height: 22, letterSpacing: '0.08em' }} />;
-  if (occupied === 1)       return <Chip icon={<WarningIcon />}     label="Parcial"      size="small" sx={{ bgcolor: 'rgba(185,125,26,0.1)', color: J.warning, border: `1px solid rgba(185,125,26,0.25)`, fontSize: '11px', height: 22, letterSpacing: '0.08em' }} />;
-  return                           <Chip icon={<CancelIcon />}      label="Sin Cobertura" size="small" sx={{ bgcolor: 'rgba(184,50,50,0.1)',  color: J.danger,  border: `1px solid rgba(184,50,50,0.25)`,  fontSize: '11px', height: 22, letterSpacing: '0.08em' }} />;
+  if (occupied >= capacity) return <Chip icon={<CheckCircleIcon />} label="Completa"     size="small" sx={{ bgcolor: 'rgba(45,125,78,0.1)', color: J.success, border: `1px solid rgba(45,125,78,0.25)`, fontSize: '12px', height: 28, letterSpacing: '0.08em' }} />;
+  if (occupied === 1)       return <Chip icon={<WarningIcon />}     label="Parcial"      size="small" sx={{ bgcolor: 'rgba(185,125,26,0.1)', color: J.warning, border: `1px solid rgba(185,125,26,0.25)`, fontSize: '12px', height: 28, letterSpacing: '0.08em' }} />;
+  return                           <Chip icon={<CancelIcon />}      label="Sin Cobertura" size="small" sx={{ bgcolor: 'rgba(184,50,50,0.1)',  color: J.danger,  border: `1px solid rgba(184,50,50,0.25)`,  fontSize: '12px', height: 28, letterSpacing: '0.08em' }} />;
 }
 
 export default function MesasReportPage() {
@@ -178,20 +178,20 @@ export default function MesasReportPage() {
   };
 
   /* ── Shared table head style ──────────────────── */
-  const thSx = { color: '#fff', fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase' as const, fontWeight: 600, borderBottom: 'none', py: 1.5 };
+  const thSx = { color: '#fff', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase' as const, fontWeight: 600, borderBottom: 'none', py: 2 };
 
   /* ── Render ───────────────────────────────────── */
   return (
     <Box>
       {/* Page heading */}
-      <Box sx={{ mb: 4 }}>
-        <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+      <Box sx={{ mb: 5 }}>
+        <Typography sx={{ fontSize: '12px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
           Monitoreo
         </Typography>
-        <Typography sx={{ fontWeight: 700, fontSize: '32px', color: J.ink }}>
+        <Typography sx={{ fontWeight: 700, fontSize: '36px', color: J.ink }}>
           Reportes de Cobertura
         </Typography>
-        <Typography sx={{ fontSize: '15px', color: J.textMuted, mt: 0.5 }}>
+        <Typography sx={{ fontSize: '16px', color: J.textMuted, mt: 0.5 }}>
           Consulta y exportación del estado de mesas y cobertura de testigos electorales.
         </Typography>
       </Box>
@@ -213,8 +213,8 @@ export default function MesasReportPage() {
         <Box>
           {/* Filter card */}
           <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
-            <CardContent sx={{ p: 2.5 }}>
-              <Typography sx={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+            <CardContent sx={{ p: 3.5 }}>
+              <Typography sx={{ fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2.5 }}>
                 Seleccionar ubicación
               </Typography>
               <Grid container spacing={2}>
@@ -255,7 +255,7 @@ export default function MesasReportPage() {
             ) : (
               <Box>
                 {/* Stats */}
-                <Grid container spacing={2} sx={{ mb: 4 }}>
+                <Grid container spacing={3} sx={{ mb: 5 }}>
                   <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Total Mesas"        value={stats.total}      color={J.ink}    /></Grid>
                   <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Cubiertas (Verde)"  value={stats.verdes}     color={J.success}/></Grid>
                   <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Parciales (Amarillo)"value={stats.amarillas} color={J.warning}/></Grid>
