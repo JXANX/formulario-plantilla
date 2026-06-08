@@ -43,7 +43,6 @@ const theme = createTheme({
     divider: JAGUAR.border,
   },
   typography: {
-    // Larger base font for elderly users
     fontSize: 16,
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: { fontWeight: 700, fontSize: 'clamp(2rem, 5vw, 2.8rem)', color: JAGUAR.ink },
@@ -66,7 +65,7 @@ const theme = createTheme({
   },
   shape: { borderRadius: 0 },
   components: {
-    /* ── Buttons — min 48px touch target ── */
+    /* ── Buttons ── */
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
@@ -113,7 +112,7 @@ const theme = createTheme({
         },
       ],
     },
-    /* ── IconButton — bigger tap area ── */
+    /* ── IconButton ── */
     MuiIconButton: {
       styleOverrides: {
         root: {
@@ -149,17 +148,28 @@ const theme = createTheme({
         },
       },
     },
-    /* ── Inputs — larger for elderly ── */
+    /* ── Inputs ── */
     MuiTextField: {
       defaultProps: { variant: 'outlined', size: 'medium' },
     },
+    /* ── FIX 2a: OutlinedInput — minHeight respeta el sistema de tamaños ── */
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
           borderRadius: 0,
           fontFamily: '"IBM Plex Sans", "Inter", sans-serif',
           fontSize: '1.05rem',
-          minHeight: 56,
+          // CORREGIDO: minHeight condicional por tamaño.
+          // Antes: minHeight: 56 global que ignoraba size="small", causando
+          // que el área de click excediera el componente visual y MUI
+          // interpretara el mouseup como "click fuera" → dropdown cerraba inmediatamente.
+          '&:not(.MuiInputBase-sizeSmall)': {
+            minHeight: 56,
+          },
+          '&.MuiInputBase-sizeSmall': {
+            minHeight: 44,
+            fontSize: '0.95rem',
+          },
           '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: JAGUAR.ink },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: JAGUAR.ink, borderWidth: 2 },
         },
@@ -178,11 +188,49 @@ const theme = createTheme({
         },
       },
     },
-    /* ── Select ── */
+    /* ── FIX 2b: Select — MenuProps estables + padding por tamaño ── */
     MuiSelect: {
+      defaultProps: {
+        MenuProps: {
+          // CORREGIDO: disableScrollLock evita que MUI añada padding compensatorio
+          // al <body> al abrir el dropdown. Ese padding desplazaba el layout,
+          // movía la posición ancla del Popover, y MUI detectaba el input
+          // fuera del dropdown → cerraba inmediatamente.
+          disableScrollLock: true,
+          // Ancla fija debajo del input: elimina el recálculo de posición
+          // en re-renders que causaba cierres espontáneos.
+          anchorOrigin: {
+            vertical: 'bottom',
+            horizontal: 'left',
+          },
+          transformOrigin: {
+            vertical: 'top',
+            horizontal: 'left',
+          },
+          slotProps: {
+            paper: {
+              sx: {
+                borderRadius: 0,
+                mt: 0.5,
+                boxShadow: '0 4px 20px rgba(26,31,46,0.12)',
+              },
+            },
+          },
+        },
+      },
       styleOverrides: {
         root: { borderRadius: 0, fontSize: '1.05rem' },
-        select: { padding: '16px 18px' },
+        select: {
+          // CORREGIDO: padding condicional por tamaño.
+          // Antes: padding fijo 16px 18px en componentes size="small" creaba
+          // un área de hit más grande que el visual → cierres accidentales
+          // al mover el cursor ligeramente.
+          '.MuiInputBase-sizeSmall &': {
+            padding: '10px 14px',
+            paddingRight: '32px',
+          },
+          padding: '16px 18px',
+        },
       },
     },
     MuiMenuItem: {
@@ -257,7 +305,7 @@ const theme = createTheme({
         },
       },
     },
-    /* ── ListItemButton — big tap area ── */
+    /* ── ListItemButton ── */
     MuiListItemButton: {
       styleOverrides: {
         root: {
@@ -308,10 +356,20 @@ const theme = createTheme({
         },
       },
     },
+    /* ── FIX 1: TableRow — hover solo en filas de tbody ── */
     MuiTableRow: {
       styleOverrides: {
         root: {
-          '&:hover': { background: JAGUAR.surface },
+          // CORREGIDO: antes '&:hover' aplicaba a TODAS las filas incluyendo
+          // las de <thead> (clase .MuiTableRow-head). El background JAGUAR.surface
+          // (#F8F7F4, beige claro) sobre texto blanco (#fff) lo hacía invisible.
+          // Ahora solo las filas de tbody reciben el hover.
+          '&:not(.MuiTableRow-head):hover': { background: JAGUAR.surface },
+          // Las filas de thead mantienen su fondo oscuro siempre, incluso en hover.
+          '&.MuiTableRow-head': {
+            background: JAGUAR.ink,
+            '&:hover': { background: JAGUAR.ink },
+          },
           '&:last-child td': { borderBottom: 'none' },
         },
       },
