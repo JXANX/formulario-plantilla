@@ -152,16 +152,35 @@ const theme = createTheme({
     MuiTextField: {
       defaultProps: { variant: 'outlined', size: 'medium' },
     },
-    /* ── FIX 2a: OutlinedInput — minHeight condicional por tamaño ── */
+
+    // ─────────────────────────────────────────────────────────────────────
+    // FIX CAUSA RAÍZ: MuiOutlinedInput
+    //
+    // PROBLEMA ORIGINAL:
+    //   input: { padding: '16px 18px' }
+    //   Esta regla se aplica a TODOS los inputs, incluyendo el div-display
+    //   de los componentes Select. En size="small" (minHeight: 44px):
+    //     padding top+bottom = 32px + contenido ~19px = 51px > 44px  ← OVERFLOW
+    //
+    //   Cuando el usuario hace clic en la zona de desbordamiento [44-51px]:
+    //   1. mousedown → MUI detecta clic en el Select → abre el menú
+    //   2. El menú se ancla en Y=44 (límite visual del contenedor)
+    //   3. mouseup en Y∈[44,48] → cae sobre el Backdrop → cierra inmediatamente
+    //      mouseup en Y∈[48,51] → cae sobre el primer MenuItem → lo selecciona solo
+    //   Esto explica el comportamiento intermitente y la auto-selección.
+    //
+    // CORRECCIÓN:
+    //   Se agrega '&.MuiInputBase-inputSizeSmall' como selector COMPUESTO
+    //   (clase aplicada AL MISMO elemento en size="small").
+    //   Especificidad: 0-2-0 > 0-1-0 de la regla base. Gana siempre.
+    //   Padding reducido: 10px+10px + ~19px = 39px ≤ 44px  ✓ Sin desborde.
+    // ─────────────────────────────────────────────────────────────────────
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
           borderRadius: 0,
           fontFamily: '"IBM Plex Sans", "Inter", sans-serif',
           fontSize: '1.05rem',
-          // minHeight condicional: evita que el área de click del contenedor
-          // exceda los bounds visuales, lo que causaría que MUI anclara el
-          // Popover en posición incorrecta.
           '&:not(.MuiInputBase-sizeSmall)': {
             minHeight: 56,
           },
@@ -172,11 +191,19 @@ const theme = createTheme({
           '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: JAGUAR.ink },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: JAGUAR.ink, borderWidth: 2 },
         },
-        // NOTA: este padding se aplica tanto a TextField como al div display
-        // de Select (ambos tienen clase MuiOutlinedInput-input). Para TextField
-        // funciona perfecto. Para Select, el override de MuiSelect.select a
-        // continuación usa '&&' (doble especificidad) y lo sobreescribe siempre.
-        input: { padding: '16px 18px' },
+        // ── CORRECCIÓN APLICADA AQUÍ ──
+        // Se añade el selector compuesto '&.MuiInputBase-inputSizeSmall' para
+        // reducir el padding vertical en size="small" y eliminar el desbordamiento.
+        // El selector '&.MuiInputBase-inputSizeSmall' apunta al elemento que tiene
+        // AMBAS clases simultáneamente (MuiOutlinedInput-input Y MuiInputBase-inputSizeSmall).
+        // Especificidad 0-2-0 garantiza que gana sobre la regla base (0-1-0)
+        // independientemente del orden de inyección de Emotion.
+        input: {
+          padding: '16px 18px',
+          '&.MuiInputBase-inputSizeSmall': {
+            padding: '10px 14px',
+          },
+        },
         notchedOutline: { borderColor: JAGUAR.border, borderWidth: 1.5 },
       },
     },
@@ -191,16 +218,34 @@ const theme = createTheme({
         },
       },
     },
-    /* ── FIX 2b: Select — especificidad CSS corregida + MenuProps estables ── */
+
+    // ─────────────────────────────────────────────────────────────────────
+    // FIX CAUSA RAÍZ: MuiSelect
+    //
+    // PROBLEMA ORIGINAL:
+    //   '.MuiInputBase-sizeSmall &&' es un selector DESCENDENTE:
+    //   Genera: ".MuiInputBase-sizeSmall .css-HASH.css-HASH"
+    //   Requiere que .MuiInputBase-sizeSmall sea un ANCESTRO del elemento
+    //   con el hash doble. Aunque la estructura del DOM lo cumple, la
+    //   especificidad (0-3-0) solo gana si Emotion inyecta esta regla
+    //   DESPUÉS de MuiOutlinedInput.input (0-1-0). Esto NO está garantizado
+    //   y varía según el orden de renderizado de componentes → comportamiento
+    //   intermitente.
+    //
+    // CORRECCIÓN:
+    //   '&&.MuiInputBase-inputSizeSmall' es un selector COMPUESTO:
+    //   Genera: ".css-HASH.css-HASH.MuiInputBase-inputSizeSmall"
+    //   Apunta al MISMO elemento que tiene las tres clases simultáneamente.
+    //   Especificidad: 0-3-0 → gana siempre sobre la regla base (0-2-0).
+    //   Funcionamiento determinista, independiente del orden de Emotion.
+    // ─────────────────────────────────────────────────────────────────────
     MuiSelect: {
       defaultProps: {
         MenuProps: {
-          // disableScrollLock evita que MUI añada padding compensatorio al <body>
-          // al abrir el dropdown. Ese padding desplazaba el layout, movía la
-          // posición ancla del Popover, y MUI detectaba el input fuera → cerraba.
+          // disableScrollLock: evita que MUI añada padding compensatorio al
+          // <body> al abrir el dropdown, previniendo desplazamientos de layout
+          // que causaban que el Popover recalculara su posición ancla y cerrara.
           disableScrollLock: true,
-          // Ancla fija debajo del input: elimina el recálculo de posición
-          // en re-renders que causaba cierres espontáneos.
           anchorOrigin: {
             vertical: 'bottom',
             horizontal: 'left',
@@ -223,52 +268,24 @@ const theme = createTheme({
       styleOverrides: {
         root: { borderRadius: 0, fontSize: '1.05rem' },
         select: {
-          // ─────────────────────────────────────────────────────────────────
-          // CAUSA RAÍZ DEL BUG:
-          //
-          // El override MuiOutlinedInput.input { padding: '16px 18px' } aplica
-          // TAMBIÉN al div display del Select (que tiene la clase
-          // MuiOutlinedInput-input). Tanto ese override como el de abajo tienen
-          // especificidad CSS 0-2-0 (dos clases), por lo que gana el que
-          // emotion inyecta DESPUÉS. Como OutlinedInput se renderiza DENTRO de
-          // Select, sus estilos se inyectan DESPUÉS → { padding: 16px 18px }
-          // GANA sobre el override de tamaño small.
-          //
-          // Consecuencia: en size="small" (minHeight: 44px), el div display
-          // queda con padding 16+16=32px + ~20px contenido = ~52px → DESBORDA
-          // los 44px del contenedor. Al hacer click en la zona de overflow
-          // (Y > 44px), MUI abre el Popover anclado al borde inferior del
-          // contenedor (Y=44), pero el mouseup registra en Y≈52, que cae
-          // FUERA del papel del Popover → el backdrop lo interpreta como
-          // "click fuera" → cierra inmediatamente.
-          //
-          // Por qué el ícono ▾ sí funcionaba: el SVG se posiciona en
-          // top:calc(50%-12px)≈10px (dentro de los 44px del contenedor).
-          // Su pointer-events:none pasa el click al div display. Las
-          // coordenadas Y del click quedan dentro del contenedor → el
-          // mouseup también → el Popover no detecta click fuera → stays open.
-          //
-          // FIX: usar '&&' (double-class selector) para elevar la especificidad
-          // del override de Select de 0-2-0 a 0-2-0 (base) y 0-3-0 (small).
-          // Esto garantiza que el padding correcto gane SIEMPRE sin importar
-          // el orden de inyección de emotion.
-          // ─────────────────────────────────────────────────────────────────
-
-          // Tamaño medium (default): especificidad 0-2-0.
-          // Para el valor base (16px 18px) el empate con OutlinedInput.input
-          // es irrelevante porque tienen el MISMO valor. Lo importante es
-          // paddingRight: 32px para que el texto no quede bajo el ícono ▾.
+          // Base (size="medium" y todos los tamaños): especificidad 0-2-0.
+          // paddingRight: 32px deja espacio para el ícono ▾ (posicionado right:7px).
           '&&': {
             padding: '16px 18px',
-            paddingRight: '32px', // espacio para el ícono ▾ (posicionado right:7px ~24px ancho)
+            paddingRight: '32px',
           },
-
-          // Tamaño small: especificidad 0-3-0 → GANA siempre sobre
-          // MuiOutlinedInput.input (0-2-0). El padding 10px+10px+~20px=~40px
-          // cabe sin overflow dentro del minHeight: 44px del contenedor.
-          '.MuiInputBase-sizeSmall &&': {
+          // ── CORRECCIÓN: selector COMPUESTO en lugar de DESCENDENTE ──
+          // ANTES  : '.MuiInputBase-sizeSmall &&'    → DESCENDENTE → FALLA
+          // AHORA  : '&&.MuiInputBase-inputSizeSmall' → COMPUESTO  → CORRECTO
+          //
+          // Especificidad: 0-3-0 (hash×2 + clase) > 0-2-0 (hash×2) de la regla base.
+          // El selector apunta al div-display que tiene SIMULTÁNEAMENTE:
+          //   1. la clase generada por Emotion (dos veces, por &&)
+          //   2. la clase MuiInputBase-inputSizeSmall (presente en size="small")
+          // Padding reducido: 10px+10px + ~19px contenido = 39px ≤ 44px  ✓
+          '&&.MuiInputBase-inputSizeSmall': {
             padding: '10px 14px',
-            paddingRight: '32px', // espacio para el ícono ▾
+            paddingRight: '32px',
           },
         },
       },
