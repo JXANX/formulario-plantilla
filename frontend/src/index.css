@@ -1,39 +1,35 @@
-/* =============================================
-   JAGUAR DESIGN SYSTEM — Tokens & Global Styles
-   Translated from VISIONFRONT (Stitch/Tailwind)
-   to Vanilla CSS for the current MUI stack
-   ============================================= */
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* ─── Color Tokens ─────────────────────────── */
 :root {
-  --bg-canvas:      #FFFFFF;
-  --bg-surface:     #F8F7F4;
-  --bg-muted:       #F0EEE9;
-  --sidebar-bg:     #1A1F2E;
-  --sidebar-text:   #C8D0E0;
-  --accent-ink:     #1A1F2E;
-  --accent-blue:    #2952CC;
-  --accent-gold:    #C9973A;
-  --success:        #2D7D4E;
-  --warning:        #B97D1A;
-  --danger:         #B83232;
-  --text-body:      #1A1F2E; /* Darker ink color for text body */
-  --text-muted:     #4A4A4A; /* Darker gray for muted text */
-  --border-line:    #E2DDD6;
+  --bg-canvas: #FFFFFF;
+  --bg-surface: #F8F7F4;
+  --bg-muted: #F0EEE9;
+  --sidebar-bg: #1A1F2E;
+  --sidebar-text: #C8D0E0;
+  --accent-ink: #1A1F2E;
+  --accent-blue: #2952CC;
+  --accent-gold: #C9973A;
+  --success: #2D7D4E;
+  --warning: #B97D1A;
+  --danger: #B83232;
+  --text-body: #1A1F2E;
+  --text-muted: #4A4A4A;
+  --border-line: #E2DDD6;
 
-  /* Legacy aliases — kept so existing inline styles still resolve */
-  --text:           var(--text-body);
-  --text-h:         var(--accent-ink);
-  --bg:             var(--bg-canvas);
-  --border:         var(--border-line);
-  --sans:           'Inter', system-ui, -apple-system, sans-serif;
-  --heading:        'Inter', system-ui, -apple-system, sans-serif;
-  --mono:           'Inter', ui-monospace, monospace;
+  /* Legacy aliases */
+  --text: var(--text-body);
+  --text-h: var(--accent-ink);
+  --bg: var(--bg-canvas);
+  --border: var(--border-line);
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --heading: 'Inter', system-ui, -apple-system, sans-serif;
+  --mono: 'Inter', ui-monospace, monospace;
 
-  font: 16px/150% var(--sans);
-  letter-spacing: 0.12px;
+  /* Base: 18px for elderly readability */
+  font-size: 18px;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
   color: var(--text-body);
   background: var(--bg-surface);
   font-synthesis: none;
@@ -43,13 +39,24 @@
 }
 
 /* ─── Reset ────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
   background: var(--bg-surface);
   color: var(--text-body);
   font-family: var(--sans);
+  font-size: 1rem;
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
 }
 
 #root {
@@ -69,12 +76,27 @@ input:-webkit-autofill:active {
 }
 
 /* ─── Typography ───────────────────────────── */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--heading);
   color: var(--accent-ink);
   margin: 0;
+  line-height: 1.25;
 }
-p { margin: 0; }
+
+p {
+  margin: 0;
+}
+
+/* ─── Focus styles — important for accessibility ── */
+:focus-visible {
+  outline: 3px solid var(--accent-blue);
+  outline-offset: 2px;
+}
 
 /* ─── Sidebar rail ─────────────────────────── */
 .jaguar-sidebar {
@@ -93,7 +115,7 @@ p { margin: 0; }
 
 .jaguar-sidebar .brand-tag {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.2em;
   color: var(--accent-gold);
   text-transform: uppercase;
@@ -103,18 +125,19 @@ p { margin: 0; }
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
+  gap: 14px;
+  padding: 16px 24px;
+  min-height: 56px;
   border: none;
   background: transparent;
   color: rgba(200, 208, 224, 0.7);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
   transition: background 0.18s ease, color 0.18s ease;
-  border-left: 2px solid transparent;
+  border-left: 3px solid transparent;
 }
 
 .jaguar-nav-item:hover {
@@ -125,7 +148,7 @@ p { margin: 0; }
 .jaguar-nav-item.active {
   background: rgba(255, 255, 255, 0.06);
   color: var(--accent-gold);
-  border-left: 2px solid var(--accent-gold);
+  border-left: 3px solid var(--accent-gold);
   font-weight: 700;
 }
 
@@ -137,7 +160,7 @@ p { margin: 0; }
 
 .jaguar-breadcrumb-parent {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-muted);
@@ -146,7 +169,7 @@ p { margin: 0; }
 .jaguar-breadcrumb-current {
   font-family: var(--heading);
   font-style: italic;
-  font-size: 20px;
+  font-size: clamp(20px, 4vw, 26px);
   font-weight: 700;
   color: var(--accent-ink);
 }
@@ -162,7 +185,7 @@ p { margin: 0; }
 /* ─── Stat card ────────────────────────────── */
 .jaguar-stat-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -170,7 +193,7 @@ p { margin: 0; }
 
 .jaguar-stat-value {
   font-family: var(--heading);
-  font-size: 2.4rem;
+  font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 700;
   color: var(--accent-ink);
   line-height: 1;
@@ -182,11 +205,13 @@ p { margin: 0; }
   color: #ffffff !important;
   border-radius: 0 !important;
   font-family: var(--mono) !important;
-  font-size: 11px !important;
-  letter-spacing: 0.15em !important;
+  font-size: 13px !important;
+  letter-spacing: 0.12em !important;
   text-transform: uppercase !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   box-shadow: none !important;
+  min-height: 52px !important;
+  padding: 14px 28px !important;
   transition: background 0.18s ease !important;
 }
 
@@ -197,14 +222,16 @@ p { margin: 0; }
 .jaguar-btn-secondary {
   background: transparent !important;
   color: var(--accent-ink) !important;
-  border: 1px solid var(--border-line) !important;
+  border: 2px solid var(--border-line) !important;
   border-radius: 0 !important;
   font-family: var(--mono) !important;
-  font-size: 11px !important;
-  letter-spacing: 0.15em !important;
+  font-size: 13px !important;
+  letter-spacing: 0.12em !important;
   text-transform: uppercase !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   box-shadow: none !important;
+  min-height: 52px !important;
+  padding: 14px 28px !important;
   transition: background 0.18s ease !important;
 }
 
@@ -220,10 +247,10 @@ p { margin: 0; }
 .jaguar-table-head th {
   color: #ffffff !important;
   font-family: var(--mono) !important;
-  font-size: 10px !important;
+  font-size: 11px !important;
   letter-spacing: 0.12em !important;
   text-transform: uppercase !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   border-bottom: none !important;
 }
 
@@ -234,8 +261,8 @@ p { margin: 0; }
   border: 1px solid rgba(41, 82, 204, 0.25) !important;
   border-radius: 2px !important;
   font-family: var(--mono) !important;
-  font-size: 10px !important;
-  font-weight: 600 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
   letter-spacing: 0.1em !important;
 }
 
@@ -245,8 +272,8 @@ p { margin: 0; }
   border: 1px solid rgba(185, 125, 26, 0.25) !important;
   border-radius: 2px !important;
   font-family: var(--mono) !important;
-  font-size: 10px !important;
-  font-weight: 600 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
   letter-spacing: 0.1em !important;
 }
 
@@ -259,17 +286,17 @@ p { margin: 0; }
 /* ─── Section heading ──────────────────────── */
 .jaguar-section-title {
   font-family: var(--mono) !important;
-  font-size: 10px !important;
+  font-size: 11px !important;
   letter-spacing: 0.2em !important;
   text-transform: uppercase !important;
   color: var(--accent-gold) !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 
 /* ─── Live indicator ───────────────────────── */
 .live-indicator {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background-color: var(--success);
   border-radius: 50%;
   display: inline-block;
@@ -304,6 +331,7 @@ p { margin: 0; }
   justify-content: center;
   position: relative;
   overflow: hidden;
+  padding: 20px;
 }
 
 .jaguar-login-wrap::before {
@@ -320,39 +348,101 @@ p { margin: 0; }
   background: var(--bg-canvas);
   border: 1px solid var(--border-line);
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
   padding: 48px 40px;
   position: relative;
   z-index: 1;
 }
 
+@media (max-width: 480px) {
+  .jaguar-login-card {
+    padding: 36px 24px;
+  }
+}
+
+/* ─── Responsive table wrapper ─────────────── */
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Mobile content padding ───────────────── */
+@media (max-width: 600px) {
+  .jaguar-page-padding {
+    padding: 16px !important;
+  }
+}
+
 /* ─── Keyframes ────────────────────────────── */
 @keyframes jaguar-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(45, 125, 78, 0.7); }
-  70%  { box-shadow: 0 0 0 8px rgba(45, 125, 78, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(45, 125, 78, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(45, 125, 78, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(45, 125, 78, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(45, 125, 78, 0);
+  }
 }
 
 @keyframes pulse-glow {
-  0%   { box-shadow: 0 0 0 0 rgba(41, 82, 204, 0.4); }
-  50%  { box-shadow: 0 0 20px 5px rgba(41, 82, 204, 0.2); }
-  100% { box-shadow: 0 0 0 0 rgba(41, 82, 204, 0.4); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(41, 82, 204, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 20px 5px rgba(41, 82, 204, 0.2);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(41, 82, 204, 0.4);
+  }
 }
 
 @keyframes step-pulse {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.08); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
-@keyframes gradient-shift {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
+/* ─── MUI global overrides ─────────────────── */
+.MuiCard-root {
+  border-radius: 0 !important;
 }
 
-/* ─── MUI overrides via global classes ─────── */
-/* Remove MUI default border-radius on Cards */
-.MuiCard-root { border-radius: 0 !important; }
-.MuiPaper-root { border-radius: 0 !important; }
-.MuiButton-root { border-radius: 0 !important; }
-.MuiChip-root  { border-radius: 2px !important; }
+.MuiPaper-root {
+  border-radius: 0 !important;
+}
+
+.MuiButton-root {
+  border-radius: 0 !important;
+}
+
+.MuiChip-root {
+  border-radius: 2px !important;
+}
+
+/* Larger text in table cells on mobile */
+@media (max-width: 600px) {
+  .MuiTableCell-body {
+    font-size: 0.95rem !important;
+    padding: 12px 14px !important;
+  }
+
+  .MuiTableCell-head {
+    font-size: 0.75rem !important;
+    padding: 14px !important;
+  }
+}

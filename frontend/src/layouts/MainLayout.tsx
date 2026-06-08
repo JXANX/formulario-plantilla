@@ -5,54 +5,61 @@ import {
 } from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import PersonAddIcon  from '@mui/icons-material/PersonAdd';
-import PeopleIcon     from '@mui/icons-material/People';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PeopleIcon from '@mui/icons-material/People';
 import AssessmentIcon from '@mui/icons-material/Assessment';
-import MenuIcon       from '@mui/icons-material/Menu';
-import LogoutIcon     from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
+import LogoutIcon from '@mui/icons-material/Logout';
+import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from 'react';
 
-const drawerWidth = 260;
+// Responsive drawer: narrower on phone, wider on desktop
+const drawerWidth = 270;
 
 const JAGUAR = {
-  ink:    '#1A1F2E',
-  blue:   '#2952CC',
-  gold:   '#C9973A',
+  ink: '#1A1F2E',
+  blue: '#2952CC',
+  gold: '#C9973A',
   border: '#E2DDD6',
-  surface:'#F8F7F4',
+  surface: '#F8F7F4',
   canvas: '#FFFFFF',
-  muted:  '#7A7A7A',
+  muted: '#7A7A7A',
 };
 
 interface NavItem {
   label: string;
-  path:  string;
-  icon:  React.ReactNode;
+  path: string;
+  icon: React.ReactNode;
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard',           path: '/dashboard',     icon: <DashboardIcon  sx={{ fontSize: 22 }} /> },
-  { label: 'Registrar Testigo',   path: '/registro',      icon: <PersonAddIcon  sx={{ fontSize: 22 }} /> },
-  { label: 'Listado de Testigos', path: '/testigos',      icon: <PeopleIcon     sx={{ fontSize: 22 }} /> },
-  { label: 'Reporte de Mesas',    path: '/reporte-mesas', icon: <AssessmentIcon sx={{ fontSize: 22 }} /> },
+  { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon sx={{ fontSize: 26 }} /> },
+  { label: 'Registrar Testigo', path: '/registro', icon: <PersonAddIcon sx={{ fontSize: 26 }} /> },
+  { label: 'Listado de Testigos', path: '/testigos', icon: <PeopleIcon sx={{ fontSize: 26 }} /> },
+  { label: 'Reporte de Mesas', path: '/reporte-mesas', icon: <AssessmentIcon sx={{ fontSize: 26 }} /> },
 ];
 
 const breadcrumbMap: Record<string, { parent: string; current: string }> = {
-  '/dashboard':     { parent: 'MÓDULO PRINCIPAL /', current: 'Panel General' },
-  '/registro':      { parent: 'REGISTRO INSTITUCIONAL /', current: 'Alta de Testigo' },
-  '/testigos':      { parent: 'REGISTRO INSTITUCIONAL /', current: 'Listado de Testigos' },
+  '/dashboard': { parent: 'MÓDULO PRINCIPAL /', current: 'Panel General' },
+  '/registro': { parent: 'REGISTRO /', current: 'Alta de Testigo' },
+  '/testigos': { parent: 'REGISTRO /', current: 'Listado de Testigos' },
   '/reporte-mesas': { parent: 'MONITOREO /', current: 'Reporte de Mesas' },
 };
 
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) navigate('/login');
   }, [navigate]);
+
+  // Close drawer on route change (mobile UX)
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     if (window.confirm('¿Está seguro de que desea cerrar su sesión?')) {
@@ -69,29 +76,45 @@ export default function MainLayout() {
   const sidebarContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: JAGUAR.ink }}>
 
-      {/* Brand */}
-      <Box sx={{ px: 3, pt: 5, pb: 4 }}>
-        <Typography
+      {/* Brand + close btn on mobile */}
+      <Box sx={{ px: 3, pt: 4, pb: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography
+            sx={{
+              fontWeight: 700,
+              fontSize: '30px',
+              letterSpacing: '0.08em',
+              color: '#fff',
+              lineHeight: 1,
+            }}
+          >
+            TRACTO
+          </Typography>
+          <Typography
+            sx={{
+              fontWeight: 500,
+              fontSize: '17px',
+              color: JAGUAR.gold,
+              mt: 0.5,
+            }}
+          >
+            Control de Testigos
+          </Typography>
+        </Box>
+        {/* Close button — only visible when mobile drawer is open */}
+        <IconButton
+          onClick={() => setMobileOpen(false)}
           sx={{
-            fontWeight: 700,
-            fontSize: '28px',
-            letterSpacing: '0.08em',
-            color: '#fff',
-            lineHeight: 1,
+            display: { xs: 'flex', sm: 'none' },
+            color: 'rgba(200,208,224,0.6)',
+            ml: 1,
+            mt: -0.5,
+            '&:hover': { color: '#fff' },
           }}
+          aria-label="Cerrar menú"
         >
-          TRACTO
-        </Typography>
-        <Typography
-          sx={{
-            fontWeight: 500,
-            fontSize: '16px',
-            color: JAGUAR.gold,
-            mt: 0.5,
-          }}
-        >
-          Control de Testigos
-        </Typography>
+          <CloseIcon sx={{ fontSize: 26 }} />
+        </IconButton>
       </Box>
 
       {/* Gold rule */}
@@ -104,24 +127,25 @@ export default function MainLayout() {
           return (
             <ListItemButton
               key={item.path}
-              onClick={() => { navigate(item.path); setMobileOpen(false); }}
+              onClick={() => navigate(item.path)}
               disableRipple
               sx={{
                 px: 3,
-                py: 2,
-                borderLeft: active ? `3px solid ${JAGUAR.gold}` : '3px solid transparent',
+                py: 1.75,
+                minHeight: 58,
+                borderLeft: active ? `4px solid ${JAGUAR.gold}` : '4px solid transparent',
                 bgcolor: active ? 'rgba(255,255,255,0.055)' : 'transparent',
                 transition: 'all 0.18s ease',
                 '&:hover': {
                   bgcolor: 'rgba(255,255,255,0.05)',
-                  borderLeft: `3px solid rgba(201,151,58,0.45)`,
+                  borderLeft: `4px solid rgba(201,151,58,0.45)`,
                 },
               }}
             >
               <ListItemIcon
                 sx={{
                   color: active ? JAGUAR.gold : 'rgba(200,208,224,0.6)',
-                  minWidth: 40,
+                  minWidth: 44,
                   transition: 'color 0.18s',
                 }}
               >
@@ -132,9 +156,9 @@ export default function MainLayout() {
                 slotProps={{
                   primary: {
                     sx: {
-                      fontSize: '16px',
+                      fontSize: '17px',
                       fontWeight: active ? 700 : 500,
-                      color: active ? JAGUAR.gold : 'rgba(200,208,224,0.75)',
+                      color: active ? JAGUAR.gold : 'rgba(200,208,224,0.8)',
                       transition: 'color 0.18s',
                     },
                   },
@@ -149,15 +173,17 @@ export default function MainLayout() {
       <Box sx={{ p: 3, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <Button
           fullWidth
-          startIcon={<LogoutIcon sx={{ fontSize: '16px !important' }} />}
+          startIcon={<LogoutIcon sx={{ fontSize: '20px !important' }} />}
           onClick={handleLogout}
           disableRipple
           sx={{
             justifyContent: 'flex-start',
-            color: 'rgba(200,208,224,0.45)',
-            fontSize: '13px',
-            letterSpacing: '0.15em',
+            color: 'rgba(200,208,224,0.5)',
+            fontSize: '14px',
+            letterSpacing: '0.12em',
             textTransform: 'uppercase',
+            fontWeight: 600,
+            minHeight: 48,
             px: 0,
             '&:hover': { color: '#fff', background: 'transparent' },
           }}
@@ -184,7 +210,11 @@ export default function MainLayout() {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' },
+            '& .MuiDrawer-paper': {
+              width: '85vw',
+              maxWidth: 300,
+              border: 'none',
+            },
           }}
         >
           {sidebarContent}
@@ -208,7 +238,7 @@ export default function MainLayout() {
       </Box>
 
       {/* ── MAIN COLUMN ─────────────────────────── */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', minWidth: 0 }}>
 
         {/* ── HEADER ──────────────────────────────── */}
         <AppBar
@@ -218,27 +248,44 @@ export default function MainLayout() {
             bgcolor: JAGUAR.canvas,
             borderBottom: `1px solid ${JAGUAR.border}`,
             color: JAGUAR.ink,
+            zIndex: (theme) => theme.zIndex.drawer - 1,
           }}
         >
-          <Toolbar sx={{ height: 72, display: 'flex', justifyContent: 'space-between', px: { xs: 2, sm: 4 } }}>
+          <Toolbar
+            sx={{
+              height: { xs: 64, sm: 72 },
+              display: 'flex',
+              justifyContent: 'space-between',
+              px: { xs: 2, sm: 4 },
+              gap: 1,
+            }}
+          >
             {/* Left: hamburger + breadcrumb */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, minWidth: 0 }}>
               <IconButton
                 color="inherit"
                 edge="start"
                 onClick={() => setMobileOpen(true)}
-                sx={{ display: { sm: 'none' } }}
+                sx={{
+                  display: { sm: 'none' },
+                  minWidth: 48,
+                  minHeight: 48,
+                  flexShrink: 0,
+                }}
+                aria-label="Abrir menú"
               >
-                <MenuIcon />
+                <MenuIcon sx={{ fontSize: 28 }} />
               </IconButton>
 
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, minWidth: 0, overflow: 'hidden' }}>
                 <Typography
                   sx={{
-                    fontSize: '13px',
-                    letterSpacing: '0.12em',
+                    fontSize: { xs: '11px', sm: '13px' },
+                    letterSpacing: '0.1em',
                     textTransform: 'uppercase',
                     color: JAGUAR.muted,
+                    flexShrink: 0,
+                    display: { xs: 'none', md: 'block' },
                   }}
                 >
                   {crumb.parent}
@@ -246,9 +293,12 @@ export default function MainLayout() {
                 <Typography
                   sx={{
                     fontWeight: 700,
-                    fontSize: '26px',
+                    fontSize: { xs: '20px', sm: '24px', md: '26px' },
                     color: JAGUAR.ink,
                     lineHeight: 1,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                   }}
                 >
                   {crumb.current}
@@ -257,9 +307,9 @@ export default function MainLayout() {
             </Box>
 
             {/* Right: user chip */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
               {/* Vertical rule */}
-              <Box sx={{ width: 1, height: 32, bgcolor: JAGUAR.border, display: { xs: 'none', md: 'block' } }} />
+              <Box sx={{ width: 1, height: 32, bgcolor: JAGUAR.border, display: { xs: 'none', lg: 'block' } }} />
 
               {/* Avatar + label */}
               <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5 }}>
@@ -267,7 +317,7 @@ export default function MainLayout() {
                   <Typography
                     sx={{
                       fontSize: '15px',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       color: JAGUAR.ink,
                       lineHeight: 1.2,
                     }}
@@ -287,8 +337,8 @@ export default function MainLayout() {
                 </Box>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: 44,
+                    height: 44,
                     bgcolor: JAGUAR.ink,
                     display: 'flex',
                     alignItems: 'center',
@@ -296,16 +346,27 @@ export default function MainLayout() {
                     flexShrink: 0,
                   }}
                 >
-                  <Typography
-                    sx={{
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      color: JAGUAR.gold,
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '15px', fontWeight: 700, color: JAGUAR.gold }}>
                     CP
                   </Typography>
                 </Box>
+              </Box>
+
+              {/* Mobile: just the avatar square */}
+              <Box
+                sx={{
+                  display: { xs: 'flex', md: 'none' },
+                  width: 42,
+                  height: 42,
+                  bgcolor: JAGUAR.ink,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Typography sx={{ fontSize: '14px', fontWeight: 700, color: JAGUAR.gold }}>
+                  CP
+                </Typography>
               </Box>
             </Box>
           </Toolbar>
@@ -316,11 +377,13 @@ export default function MainLayout() {
           component="main"
           sx={{
             flex: 1,
-            p: { xs: 2.5, sm: 5 },
+            p: { xs: 2, sm: 3, md: 5 },
             bgcolor: '#F8F7F4',
-            /* subtle dot grid atmosphere */
-            backgroundImage: 'radial-gradient(rgba(26,31,46,0.035) 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(rgba(26,31,46,0.03) 1px, transparent 1px)',
             backgroundSize: '28px 28px',
+            // Prevent content from overflowing on mobile
+            minWidth: 0,
+            overflowX: 'hidden',
           }}
         >
           <Outlet />
