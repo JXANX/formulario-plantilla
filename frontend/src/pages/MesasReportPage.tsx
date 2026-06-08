@@ -6,220 +6,145 @@ import {
   Tabs, Tab, Button
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import WarningIcon from '@mui/icons-material/Warning';
-import CancelIcon from '@mui/icons-material/Cancel';
-import DownloadIcon from '@mui/icons-material/Download';
+import WarningIcon     from '@mui/icons-material/Warning';
+import CancelIcon      from '@mui/icons-material/Cancel';
+import DownloadIcon    from '@mui/icons-material/Download';
 import { useWebSocket } from '../hooks/useWebSocket';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-interface Witness {
-  id: number;
-  documento: string;
-  nombreCompleto: string;
-  celular: string;
-  tipoTestigo: string;
-  mesaId: number;
+const J = {
+  ink:     '#1A1F2E',
+  blue:    '#2952CC',
+  gold:    '#C9973A',
+  border:  '#E2DDD6',
+  surface: '#F8F7F4',
+  muted:   '#F0EEE9',
+  textMuted:'#7A7A7A',
+  success: '#2D7D4E',
+  warning: '#B97D1A',
+  danger:  '#B83232',
+};
+
+interface Witness { id: number; documento: string; nombreCompleto: string; celular: string; tipoTestigo: string; mesaId: number; }
+interface Mesa    { id: number; numeroMesa: number; capacidad: number; ocupados: number; estadoSemaforo: string; }
+interface CoberturaMunicipio { municipioId: number; municipioNombre: string; codigoMunicipio: string; departamentoId: number; departamentoNombre: string; totalMesas: number; mesasConTestigo: number; mesasSinTestigo: number; porcentajeCobertura: number; }
+
+/* ── Mini stat card ───────────────────────────────── */
+function StatMini({ title, value, color }: { title: string; value: number | string; color: string }) {
+  return (
+    <Card sx={{ border: `1px solid ${J.border}`, borderTop: `3px solid ${color}`, borderRadius: 0, boxShadow: 'none', bgcolor: '#fff' }}>
+      <CardContent sx={{ py: 2, px: 2.5, '&:last-child': { pb: 2 } }}>
+        <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: J.textMuted, mb: 1, display: 'block' }}>
+          {title}
+        </Typography>
+        <Typography sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 700, fontSize: '1.9rem', color, lineHeight: 1 }}>
+          {value}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
 }
 
-interface Mesa {
-  id: number;
-  numeroMesa: number;
-  capacidad: number;
-  ocupados: number;
-  estadoSemaforo: string;
-}
-
-interface CoberturaMunicipio {
-  municipioId: number;
-  municipioNombre: string;
-  codigoMunicipio: string;
-  departamentoId: number;
-  departamentoNombre: string;
-  totalMesas: number;
-  mesasConTestigo: number;
-  mesasSinTestigo: number;
-  porcentajeCobertura: number;
+/* ── Coverage badge ───────────────────────────────── */
+function CoverageBadge({ occupied, capacity }: { occupied: number; capacity: number }) {
+  if (occupied >= capacity) return <Chip icon={<CheckCircleIcon />} label="Completa"     size="small" sx={{ bgcolor: 'rgba(45,125,78,0.1)', color: J.success, border: `1px solid rgba(45,125,78,0.25)`, fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', height: 22, letterSpacing: '0.08em' }} />;
+  if (occupied === 1)       return <Chip icon={<WarningIcon />}     label="Parcial"      size="small" sx={{ bgcolor: 'rgba(185,125,26,0.1)', color: J.warning, border: `1px solid rgba(185,125,26,0.25)`, fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', height: 22, letterSpacing: '0.08em' }} />;
+  return                           <Chip icon={<CancelIcon />}      label="Sin Cobertura" size="small" sx={{ bgcolor: 'rgba(184,50,50,0.1)',  color: J.danger,  border: `1px solid rgba(184,50,50,0.25)`,  fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', height: 22, letterSpacing: '0.08em' }} />;
 }
 
 export default function MesasReportPage() {
   const { dashboardUpdates } = useWebSocket();
   const [activeTab, setActiveTab] = useState(0);
 
-  // Catalog states
-  const [departamentos, setDepartamentos] = useState<any[]>([]);
-  const [municipios, setMunicipios] = useState<any[]>([]);
-  const [puestos, setPuestos] = useState<any[]>([]);
-  
-  // Selection states
+  const [departamentos,      setDepartamentos]      = useState<any[]>([]);
+  const [municipios,         setMunicipios]         = useState<any[]>([]);
+  const [puestos,            setPuestos]            = useState<any[]>([]);
   const [selectedDepartamento, setSelectedDepartamento] = useState('');
-  const [selectedMunicipio, setSelectedMunicipio] = useState('');
-  const [selectedPuesto, setSelectedPuesto] = useState('');
+  const [selectedMunicipio,    setSelectedMunicipio]    = useState('');
+  const [selectedPuesto,       setSelectedPuesto]       = useState('');
 
-  // Report data states
-  const [mesas, setMesas] = useState<Mesa[]>([]);
-  const [allWitnesses, setAllWitnesses] = useState<Witness[]>([]);
+  const [mesas,             setMesas]             = useState<Mesa[]>([]);
+  const [allWitnesses,      setAllWitnesses]      = useState<Witness[]>([]);
   const [municipioCoberturas, setMunicipioCoberturas] = useState<CoberturaMunicipio[]>([]);
 
-  // Loading states
-  const [loadingMesas, setLoadingMesas] = useState(false);
+  const [loadingMesas,     setLoadingMesas]     = useState(false);
   const [loadingWitnesses, setLoadingWitnesses] = useState(true);
-  const [loadingCoberturas, setLoadingCoberturas] = useState(false);
+  const [loadingCoberturas,setLoadingCoberturas]= useState(false);
   const [exportingCoberturas, setExportingCoberturas] = useState(false);
-  const [error, setError] = useState('');
+  const [error,            setError]            = useState('');
 
-  const [stats, setStats] = useState({
-    total: 0,
-    verdes: 0,
-    amarillas: 0,
-    rojas: 0,
-    porcentaje: 0
-  });
+  const [stats, setStats] = useState({ total: 0, verdes: 0, amarillas: 0, rojas: 0, porcentaje: 0 });
 
-  useEffect(() => {
-    fetchInitialData();
-  }, [dashboardUpdates]);
+  useEffect(() => { fetchInitialData(); },                                 [dashboardUpdates]);
+  useEffect(() => { if (selectedPuesto) fetchMesas(selectedPuesto); else setMesas([]); }, [selectedPuesto, allWitnesses]);
+  useEffect(() => { if (activeTab === 1 && selectedDepartamento) fetchMunicipioCoberturas(selectedDepartamento); }, [activeTab, selectedDepartamento]);
 
-  useEffect(() => {
-    if (selectedPuesto) {
-      fetchMesas(selectedPuesto);
-    } else {
-      setMesas([]);
-    }
-  }, [selectedPuesto, allWitnesses]);
-
-  useEffect(() => {
-    if (activeTab === 1 && selectedDepartamento) {
-      fetchMunicipioCoberturas(selectedDepartamento);
-    }
-  }, [activeTab, selectedDepartamento]);
-
+  /* ── Data logic (unchanged) ───────────────────── */
   const fetchInitialData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      
-      // Fetch witnesses
-      const witRes = await fetch(`${API_URL}/api/testigos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const witData = await witRes.json();
-      if (witData.success) {
-        setAllWitnesses(witData.data);
-      }
+      const token    = localStorage.getItem('token');
+      const witRes   = await fetch(`${API_URL}/api/testigos`,                { headers: { 'Authorization': `Bearer ${token}` } });
+      const witData  = await witRes.json();
+      if (witData.success) setAllWitnesses(witData.data);
       setLoadingWitnesses(false);
 
-      // Fetch departments
-      const deptosRes = await fetch(`${API_URL}/api/catalogo/departamentos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const deptosRes  = await fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` } });
       const deptosData = await deptosRes.json();
-      
       if (deptosData.success && deptosData.data.length > 0) {
         setDepartamentos(deptosData.data);
-        
-        // Select first department by default if none selected yet
         let deptoId = selectedDepartamento;
-        if (!deptoId) {
-          deptoId = deptosData.data[0].id.toString();
-          setSelectedDepartamento(deptoId);
-        }
-
-        // Fetch municipios of that department
-        const mpiosRes = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        if (!deptoId) { deptoId = deptosData.data[0].id.toString(); setSelectedDepartamento(deptoId); }
+        const mpiosRes  = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
         const mpiosData = await mpiosRes.json();
-        if (mpiosData.success) {
-          setMunicipios(mpiosData.data);
-        }
-
-        // Fetch municipality coverages
+        if (mpiosData.success) setMunicipios(mpiosData.data);
         fetchMunicipioCoberturas(deptoId);
       }
-    } catch (e) {
-      setError('Error al obtener datos iniciales');
-      setLoadingWitnesses(false);
-    }
+    } catch { setError('Error al obtener datos iniciales'); setLoadingWitnesses(false); }
   };
 
   const handleDepartamentoChange = async (e: any) => {
     const deptoId = e.target.value;
-    setSelectedDepartamento(deptoId);
-    setSelectedMunicipio('');
-    setSelectedPuesto('');
-    setMunicipios([]);
-    setPuestos([]);
-    setMesas([]);
-
+    setSelectedDepartamento(deptoId); setSelectedMunicipio(''); setSelectedPuesto('');
+    setMunicipios([]); setPuestos([]); setMesas([]);
     if (!deptoId) return;
-
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMunicipios(data.data);
-      }
-      
-      // Load coverage report for this department
+      const res   = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
+      if (data.success) setMunicipios(data.data);
       fetchMunicipioCoberturas(deptoId);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleMunicipioChange = async (e: any) => {
     const mpioId = e.target.value;
-    setSelectedMunicipio(mpioId);
-    setSelectedPuesto('');
-    setPuestos([]);
-    setMesas([]);
-
+    setSelectedMunicipio(mpioId); setSelectedPuesto(''); setPuestos([]); setMesas([]);
     if (!mpioId) return;
-
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res   = await fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
       if (data.success) setPuestos(data.data);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const fetchMesas = async (puestoId: string) => {
     setLoadingMesas(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/puestos/${puestoId}/mesas`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res   = await fetch(`${API_URL}/api/catalogo/puestos/${puestoId}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
       if (data.success) {
-        const fetchedMesas: Mesa[] = data.data;
-        setMesas(fetchedMesas);
-
-        let verdes = 0;
-        let amarillas = 0;
-        let rojas = 0;
-        fetchedMesas.forEach(m => {
-          if (m.ocupados === 0) rojas++;
-          else if (m.ocupados === 1) amarillas++;
-          else verdes++;
-        });
-        const total = fetchedMesas.length;
-        const porcentaje = total > 0 ? Math.round(((verdes + amarillas) / total) * 100) : 0;
-        setStats({ total, verdes, amarillas, rojas, porcentaje });
+        const fetched: Mesa[] = data.data;
+        setMesas(fetched);
+        let v = 0, a = 0, r = 0;
+        fetched.forEach(m => { if (m.ocupados === 0) r++; else if (m.ocupados === 1) a++; else v++; });
+        const total = fetched.length;
+        setStats({ total, verdes: v, amarillas: a, rojas: r, porcentaje: total > 0 ? Math.round(((v + a) / total) * 100) : 0 });
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingMesas(false);
-    }
+    } catch (e) { console.error(e); }
+    finally    { setLoadingMesas(false); }
   };
 
   const fetchMunicipioCoberturas = async (deptoId: string) => {
@@ -227,140 +152,96 @@ export default function MesasReportPage() {
     setLoadingCoberturas(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/dashboard/cobertura-municipios?departamentoId=${deptoId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMunicipioCoberturas(data.data);
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Error al obtener coberturas de municipios');
-    } finally {
-      setLoadingCoberturas(false);
-    }
+      const res   = await fetch(`${API_URL}/api/dashboard/cobertura-municipios?departamentoId=${deptoId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
+      if (data.success) setMunicipioCoberturas(data.data);
+    } catch { setError('Error al obtener coberturas de municipios'); }
+    finally  { setLoadingCoberturas(false); }
   };
 
   const handleExportMunicipioExcel = async () => {
     setExportingCoberturas(true);
     try {
       const token = localStorage.getItem('token');
-      const url = selectedDepartamento
+      const url   = selectedDepartamento
         ? `${API_URL}/api/excel/export-cobertura?departamentoId=${selectedDepartamento}`
         : `${API_URL}/api/excel/export-cobertura`;
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res   = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) {
         const blob = await res.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `Cobertura_Municipios_Export.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      } else {
-        setError('Error al generar la exportación');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Error al conectar con el servidor para exportar');
-    } finally {
-      setExportingCoberturas(false);
-    }
+        const a    = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob); a.download = 'Cobertura_Municipios_Export.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+      } else setError('Error al generar la exportación');
+    } catch { setError('Error al conectar con el servidor para exportar'); }
+    finally  { setExportingCoberturas(false); }
   };
 
-  const StatMiniCard = ({ title, value, color }: { title: string; value: number | string; color: string }) => (
-    <Card sx={{ bgcolor: `${color}10`, borderLeft: `5px solid ${color}`, height: '100%' }}>
-      <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Typography variant="overline" color="textSecondary" sx={{ fontWeight: 'bold' }}>{title}</Typography>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color }}>{value}</Typography>
-      </CardContent>
-    </Card>
-  );
+  /* ── Shared table head style ──────────────────── */
+  const thSx = { color: '#fff', fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase' as const, fontWeight: 600, borderBottom: 'none', py: 1.5 };
 
+  /* ── Render ───────────────────────────────────── */
   return (
     <Box>
+      {/* Page heading */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }} color="primary.main">
+        <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+          Monitoreo
+        </Typography>
+        <Typography sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700, fontSize: '28px', color: J.ink }}>
           Reportes de Cobertura
         </Typography>
-        <Typography variant="body1" color="textSecondary">
-          Consulta y exportación detallada del estado de las mesas y cobertura de testigos electorales.
+        <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13px', color: J.textMuted, mt: 0.5 }}>
+          Consulta y exportación del estado de mesas y cobertura de testigos electorales.
         </Typography>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 0 }} onClose={() => setError('')}>{error}</Alert>}
 
-      {/* Tabs Selector */}
+      {/* Tabs */}
       <Tabs
         value={activeTab}
-        onChange={(_, val) => setActiveTab(val)}
-        indicatorColor="primary"
-        textColor="primary"
-        sx={{ mb: 4, borderBottom: 1, borderColor: 'divider' }}
+        onChange={(_, v) => setActiveTab(v)}
+        sx={{ mb: 4, borderBottom: `1px solid ${J.border}`, '& .MuiTabs-indicator': { bgcolor: J.gold, height: 2 } }}
       >
-        <Tab label="Cobertura por Puesto" sx={{ fontWeight: 'bold' }} />
-        <Tab label="Cobertura por Municipio" sx={{ fontWeight: 'bold' }} />
+        <Tab label="Cobertura por Puesto"    sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
+        <Tab label="Cobertura por Municipio" sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
       </Tabs>
 
-      {/* TAB 0: COBERTURA POR PUESTO */}
+      {/* ══ TAB 0: por Puesto ══════════════════════════ */}
       {activeTab === 0 && (
         <Box>
-          {/* FILTER PANEL */}
-          <Card sx={{ mb: 4 }}>
-            <CardContent>
+          {/* Filter card */}
+          <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2.5 }}>
+              <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+                Seleccionar ubicación
+              </Typography>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
-                    <Select
-                      value={selectedDepartamento}
-                      label="Departamento"
-                      onChange={handleDepartamentoChange}
-                    >
-                      <MenuItem value="">Selecciona Departamento...</MenuItem>
-                      {departamentos.map((d: any) => (
-                        <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>
-                      ))}
+                    <Select value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                      <MenuItem value="">Selecciona Departamento…</MenuItem>
+                      {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
-
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedDepartamento}>
                     <InputLabel>Municipio</InputLabel>
-                    <Select
-                      value={selectedMunicipio}
-                      label="Municipio"
-                      onChange={handleMunicipioChange}
-                    >
-                      <MenuItem value="">Selecciona Municipio...</MenuItem>
-                      {[...municipios]
-                        .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
-                        .map((m: any) => (
-                          <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>
-                        ))}
+                    <Select value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange}>
+                      <MenuItem value="">Selecciona Municipio…</MenuItem>
+                      {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
-
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
                     <InputLabel>Puesto de Votación</InputLabel>
-                    <Select
-                      value={selectedPuesto}
-                      label="Puesto de Votación"
-                      onChange={(e) => setSelectedPuesto(e.target.value as string)}
-                    >
-                      <MenuItem value="">Selecciona Puesto...</MenuItem>
-                      {[...puestos]
-                        .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
-                        .map((p: any) => (
-                          <MenuItem key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>
-                        ))}
+                    <Select value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)}>
+                      <MenuItem value="">Selecciona Puesto…</MenuItem>
+                      {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <MenuItem key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -368,108 +249,76 @@ export default function MesasReportPage() {
             </CardContent>
           </Card>
 
-          {/* RENDER REPORT MESAS */}
           {selectedPuesto ? (
             loadingMesas || loadingWitnesses ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}>
-                <CircularProgress />
-              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}><CircularProgress size={32} sx={{ color: J.blue }} /></Box>
             ) : (
               <Box>
-                {/* STATS PANEL */}
+                {/* Stats */}
                 <Grid container spacing={2} sx={{ mb: 4 }}>
-                  <Grid size={{ xs: 6, sm: 2.4 }}>
-                    <StatMiniCard title="Total Mesas" value={stats.total} color="#0d1b3e" />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}>
-                    <StatMiniCard title="Cubiertas (Verde)" value={stats.verdes} color="#43a047" />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}>
-                    <StatMiniCard title="Parciales (Amarillo)" value={stats.amarillas} color="#ffb300" />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}>
-                    <StatMiniCard title="Faltantes (Rojo)" value={stats.rojas} color="#e53935" />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}>
-                    <StatMiniCard title="Cobertura" value={`${stats.porcentaje}%`} color="#1976d2" />
-                  </Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Total Mesas"        value={stats.total}      color={J.ink}    /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Cubiertas (Verde)"  value={stats.verdes}     color={J.success}/></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Parciales (Amarillo)"value={stats.amarillas} color={J.warning}/></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Faltantes (Rojo)"   value={stats.rojas}      color={J.danger} /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="% Cobertura"        value={`${stats.porcentaje}%`} color={J.blue}/></Grid>
                 </Grid>
 
-                {/* DETAILED TABLES */}
-                <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2 }}>
+                {/* Table */}
+                <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
                   <Table>
-                    <TableHead sx={{ bgcolor: '#0d1b3e' }}>
+                    <TableHead sx={{ bgcolor: J.ink }}>
                       <TableRow>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '15%' }}>Mesa</TableCell>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '20%' }}>Estado Cobertura</TableCell>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '32.5%' }}>Testigo 1</TableCell>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '32.5%' }}>Testigo 2</TableCell>
+                        <TableCell sx={{ ...thSx, width: '12%' }}>Mesa</TableCell>
+                        <TableCell sx={{ ...thSx, width: '20%' }}>Estado</TableCell>
+                        <TableCell sx={{ ...thSx, width: '34%' }}>Testigo Principal</TableCell>
+                        <TableCell sx={{ ...thSx, width: '34%' }}>Testigo Suplente</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {mesas.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4} align="center" sx={{ py: 3, color: 'text.secondary' }}>
-                            No hay mesas registradas en este puesto.
-                          </TableCell>
-                        </TableRow>
+                        <TableRow><TableCell colSpan={4} align="center" sx={{ py: 4, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px' }}>No hay mesas registradas en este puesto.</TableCell></TableRow>
                       ) : (
-                        [...mesas]
-                          .sort((a, b) => a.numeroMesa - b.numeroMesa)
-                          .map((m) => {
-                            const witnessesInMesa = allWitnesses
-                              .filter(w => w.mesaId === m.id)
-                              .sort((a, b) => a.id - b.id);
-                            
-                            const testigo1 = witnessesInMesa[0] || null;
-                            const testigo2 = witnessesInMesa[1] || null;
-
-                            let statusChip = <Chip icon={<CancelIcon />} label="Sin Cobertura" color="error" size="small" variant="outlined" />;
-                            if (m.ocupados === 1) {
-                              statusChip = <Chip icon={<WarningIcon />} label="Parcial" color="warning" size="small" variant="outlined" sx={{ borderColor: '#ffb300', color: '#b8860b' }} />;
-                            } else if (m.ocupados >= m.capacidad) {
-                              statusChip = <Chip icon={<CheckCircleIcon />} label="Completa" color="success" size="small" variant="outlined" />;
-                            }
-
-                            return (
-                              <TableRow key={m.id} hover>
-                                <TableCell sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                                  Mesa {m.numeroMesa}
-                                </TableCell>
-                                <TableCell>
-                                  {statusChip}
-                                </TableCell>
-                                <TableCell>
-                                  {testigo1 ? (
-                                    <Box>
-                                      <Typography sx={{ fontWeight: 'medium' }}>{testigo1.nombreCompleto}</Typography>
-                                      <Typography variant="caption" color="textSecondary">
-                                        C.C: {testigo1.documento} | Cel: {testigo1.celular}
-                                      </Typography>
-                                    </Box>
-                                  ) : (
-                                    <Typography color="error" sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>
-                                      🔴 Pendiente asignar
+                        [...mesas].sort((a, b) => a.numeroMesa - b.numeroMesa).map((m) => {
+                          const witnesses = allWitnesses.filter(w => w.mesaId === m.id).sort((a, b) => a.id - b.id);
+                          const t1 = witnesses[0] || null;
+                          const t2 = witnesses[1] || null;
+                          return (
+                            <TableRow key={m.id} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
+                              <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, fontSize: '14px', color: J.ink }}>
+                                {m.numeroMesa}
+                              </TableCell>
+                              <TableCell><CoverageBadge occupied={m.ocupados} capacity={m.capacidad} /></TableCell>
+                              <TableCell>
+                                {t1 ? (
+                                  <Box>
+                                    <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13px', fontWeight: 600, color: J.ink }}>{t1.nombreCompleto}</Typography>
+                                    <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', color: J.textMuted, mt: 0.3 }}>
+                                      C.C: {t1.documento} · {t1.celular}
                                     </Typography>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  {testigo2 ? (
-                                    <Box>
-                                      <Typography sx={{ fontWeight: 'medium' }}>{testigo2.nombreCompleto}</Typography>
-                                      <Typography variant="caption" color="textSecondary">
-                                        C.C: {testigo2.documento} | Cel: {testigo2.celular}
-                                      </Typography>
-                                    </Box>
-                                  ) : (
-                                    <Typography color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>
-                                      ⚪ Sin asignar
+                                  </Box>
+                                ) : (
+                                  <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.08em', color: J.danger, fontStyle: 'italic' }}>
+                                    Pendiente asignar
+                                  </Typography>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {t2 ? (
+                                  <Box>
+                                    <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13px', fontWeight: 600, color: J.ink }}>{t2.nombreCompleto}</Typography>
+                                    <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', color: J.textMuted, mt: 0.3 }}>
+                                      C.C: {t2.documento} · {t2.celular}
                                     </Typography>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })
+                                  </Box>
+                                ) : (
+                                  <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.08em', color: J.textMuted, fontStyle: 'italic' }}>
+                                    Sin asignar
+                                  </Typography>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -477,92 +326,80 @@ export default function MesasReportPage() {
               </Box>
             )
           ) : (
-            <Paper sx={{ p: 5, textAlign: 'center', color: 'text.secondary', border: '1px dashed #ccc' }}>
-              Selecciona Departamento, Municipio y Puesto de Votación arriba para generar el reporte de cobertura de las mesas en tiempo real.
+            <Paper sx={{ p: 6, textAlign: 'center', border: `1px dashed ${J.border}`, borderRadius: 0, boxShadow: 'none', bgcolor: 'transparent' }}>
+              <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', letterSpacing: '0.12em', color: J.textMuted, textTransform: 'uppercase' }}>
+                Selecciona Departamento → Municipio → Puesto para ver el reporte de cobertura en tiempo real.
+              </Typography>
             </Paper>
           )}
         </Box>
       )}
 
-      {/* TAB 1: COBERTURA POR MUNICIPIO */}
+      {/* ══ TAB 1: por Municipio ══════════════════════ */}
       {activeTab === 1 && (
         <Box>
-          {/* FILTER PANEL */}
-          <Card sx={{ mb: 4 }}>
-            <CardContent>
-              <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2.5 }}>
+              <Grid container spacing={2} alignItems="center" justifyContent="space-between">
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
-                    <Select
-                      value={selectedDepartamento}
-                      label="Departamento"
-                      onChange={handleDepartamentoChange}
-                    >
-                      <MenuItem value="">Selecciona Departamento...</MenuItem>
-                      {departamentos.map((d: any) => (
-                        <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>
-                      ))}
+                    <Select value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                      <MenuItem value="">Selecciona Departamento…</MenuItem>
+                      {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
-                
                 <Grid size={{ xs: 12, sm: 'auto' }}>
                   <Button
                     variant="contained"
-                    startIcon={<DownloadIcon />}
+                    startIcon={<DownloadIcon sx={{ fontSize: '16px !important' }} />}
                     onClick={handleExportMunicipioExcel}
                     disabled={exportingCoberturas || !selectedDepartamento}
-                    sx={{ textTransform: 'none', fontWeight: 'bold' }}
+                    sx={{ bgcolor: J.ink, color: '#fff', borderRadius: 0, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: 'none', '&:hover': { bgcolor: J.blue, boxShadow: 'none' } }}
                   >
-                    {exportingCoberturas ? 'Exportando...' : 'Exportar a Excel'}
+                    {exportingCoberturas ? 'Exportando…' : 'Exportar a Excel'}
                   </Button>
                 </Grid>
               </Grid>
             </CardContent>
           </Card>
 
-          {/* RENDER TABLE */}
           {selectedDepartamento ? (
             loadingCoberturas ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}>
-                <CircularProgress />
-              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}><CircularProgress size={32} sx={{ color: J.blue }} /></Box>
             ) : (
-              <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2 }}>
+              <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
                 <Table>
-                  <TableHead sx={{ bgcolor: '#0d1b3e' }}>
+                  <TableHead sx={{ bgcolor: J.ink }}>
                     <TableRow>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Municipio</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Total Mesas</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Mesas con Testigo (Cubiertas)</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Mesas sin Testigo (Vacías)</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>% Cobertura</TableCell>
+                      {['Municipio','Total Mesas','Cubiertas','Vacías','% Cobertura'].map(h => (
+                        <TableCell key={h} sx={thSx}>{h}</TableCell>
+                      ))}
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {municipioCoberturas.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} align="center" sx={{ py: 3, color: 'text.secondary' }}>
-                          No hay municipios registrados para este departamento.
-                        </TableCell>
-                      </TableRow>
+                      <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px' }}>No hay municipios registrados para este departamento.</TableCell></TableRow>
                     ) : (
                       municipioCoberturas.map((item) => {
-                        let pctColor = 'error.main';
-                        if (item.porcentajeCobertura >= 80) pctColor = 'success.main';
-                        else if (item.porcentajeCobertura >= 40) pctColor = 'warning.main';
-
+                        const pct = item.porcentajeCobertura;
+                        const pctColor = pct >= 80 ? J.success : pct >= 40 ? J.warning : J.danger;
                         return (
-                          <TableRow key={item.municipioId} hover>
-                            <TableCell sx={{ fontWeight: 'bold' }}>
-                              {item.municipioNombre}
-                            </TableCell>
-                            <TableCell>{item.totalMesas}</TableCell>
-                            <TableCell sx={{ color: '#2e7d32', fontWeight: 'medium' }}>{item.mesasConTestigo}</TableCell>
-                            <TableCell sx={{ color: '#d32f2f', fontWeight: 'medium' }}>{item.mesasSinTestigo}</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', color: pctColor }}>
-                              {item.porcentajeCobertura}%
+                          <TableRow key={item.municipioId} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
+                            <TableCell sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontWeight: 600, fontSize: '13.5px', color: J.ink }}>{item.municipioNombre}</TableCell>
+                            <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '13px' }}>{item.totalMesas}</TableCell>
+                            <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '13px', color: J.success, fontWeight: 700 }}>{item.mesasConTestigo}</TableCell>
+                            <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '13px', color: J.danger,  fontWeight: 700 }}>{item.mesasSinTestigo}</TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Box sx={{ flex: 1, height: 4, bgcolor: J.border, position: 'relative' }}>
+                                  <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, bgcolor: pctColor, transition: 'width 0.4s ease' }} />
+                                </Box>
+                                <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontWeight: 700, fontSize: '12px', color: pctColor, minWidth: 36 }}>
+                                  {pct}%
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         );
@@ -573,8 +410,10 @@ export default function MesasReportPage() {
               </TableContainer>
             )
           ) : (
-            <Paper sx={{ p: 5, textAlign: 'center', color: 'text.secondary', border: '1px dashed #ccc' }}>
-              Selecciona un Departamento arriba para cargar el reporte de cobertura por municipio en tiempo real.
+            <Paper sx={{ p: 6, textAlign: 'center', border: `1px dashed ${J.border}`, borderRadius: 0, boxShadow: 'none', bgcolor: 'transparent' }}>
+              <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', letterSpacing: '0.12em', color: J.textMuted, textTransform: 'uppercase' }}>
+                Selecciona un Departamento para cargar el reporte de cobertura por municipio.
+              </Typography>
             </Paper>
           )}
         </Box>

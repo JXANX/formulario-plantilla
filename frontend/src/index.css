@@ -1,117 +1,358 @@
+/* =============================================
+   JAGUAR DESIGN SYSTEM — Tokens & Global Styles
+   Translated from VISIONFRONT (Stitch/Tailwind)
+   to Vanilla CSS for the current MUI stack
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+/* ─── Color Tokens ─────────────────────────── */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --bg-canvas:      #FFFFFF;
+  --bg-surface:     #F8F7F4;
+  --bg-muted:       #F0EEE9;
+  --sidebar-bg:     #1A1F2E;
+  --sidebar-text:   #C8D0E0;
+  --accent-ink:     #1A1F2E;
+  --accent-blue:    #2952CC;
+  --accent-gold:    #C9973A;
+  --success:        #2D7D4E;
+  --warning:        #B97D1A;
+  --danger:         #B83232;
+  --text-body:      #2C2C2C;
+  --text-muted:     #7A7A7A;
+  --border-line:    #E2DDD6;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Legacy aliases — kept so existing inline styles still resolve */
+  --text:           var(--text-body);
+  --text-h:         var(--accent-ink);
+  --bg:             var(--bg-canvas);
+  --border:         var(--border-line);
+  --sans:           'IBM Plex Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading:        'Playfair Display', Georgia, serif;
+  --mono:           'IBM Plex Mono', ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  font: 16px/150% var(--sans);
+  letter-spacing: 0.12px;
+  color: var(--text-body);
+  background: var(--bg-surface);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* ─── Reset ────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+body {
+  margin: 0;
+  background: var(--bg-surface);
+  color: var(--text-body);
+  font-family: var(--sans);
 }
 
-/* Clean reset for app layout */
 #root {
   width: 100%;
   min-height: 100vh;
   display: block;
-  box-sizing: border-box;
 }
 
-/* Fix browser autofill changing input background to blue/yellow */
+/* ─── Autofill fix ─────────────────────────── */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 100px #ffffff inset !important;
-  -webkit-text-fill-color: #0d1b3e !important; /* matches primary dark text */
+  -webkit-text-fill-color: var(--accent-ink) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-body {
-  margin: 0;
-}
-
-h1,
-h2 {
+/* ─── Typography ───────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+  color: var(--accent-ink);
+  margin: 0;
+}
+p { margin: 0; }
+
+/* ─── Sidebar rail ─────────────────────────── */
+.jaguar-sidebar {
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  border-right: 1px solid rgba(226, 221, 214, 0.08);
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+.jaguar-sidebar .brand-title {
+  font-family: var(--heading);
+  font-style: italic;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.1;
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+
+.jaguar-sidebar .brand-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--accent-gold);
+  text-transform: uppercase;
 }
-p {
+
+.jaguar-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  color: rgba(200, 208, 224, 0.7);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+  border-left: 2px solid transparent;
+}
+
+.jaguar-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.jaguar-nav-item.active {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent-gold);
+  border-left: 2px solid var(--accent-gold);
+  font-weight: 700;
+}
+
+/* ─── Header bar ───────────────────────────── */
+.jaguar-header {
+  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--border-line);
+}
+
+.jaguar-breadcrumb-parent {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.jaguar-breadcrumb-current {
+  font-family: var(--heading);
+  font-style: italic;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-ink);
+}
+
+/* ─── Card surface ─────────────────────────── */
+.jaguar-card {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-line);
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ─── Stat card ────────────────────────────── */
+.jaguar-stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.jaguar-stat-value {
+  font-family: var(--heading);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--accent-ink);
+  line-height: 1;
+}
+
+/* ─── Accent CTAs ──────────────────────────── */
+.jaguar-btn-primary {
+  background: var(--accent-ink) !important;
+  color: #ffffff !important;
+  border-radius: 0 !important;
+  font-family: var(--mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transition: background 0.18s ease !important;
+}
+
+.jaguar-btn-primary:hover {
+  background: var(--accent-blue) !important;
+}
+
+.jaguar-btn-secondary {
+  background: transparent !important;
+  color: var(--accent-ink) !important;
+  border: 1px solid var(--border-line) !important;
+  border-radius: 0 !important;
+  font-family: var(--mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transition: background 0.18s ease !important;
+}
+
+.jaguar-btn-secondary:hover {
+  background: var(--bg-muted) !important;
+}
+
+/* ─── Table header ─────────────────────────── */
+.jaguar-table-head {
+  background: var(--accent-ink) !important;
+}
+
+.jaguar-table-head th {
+  color: #ffffff !important;
+  font-family: var(--mono) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+  border-bottom: none !important;
+}
+
+/* ─── Badge / chip ─────────────────────────── */
+.jaguar-badge-primary {
+  background: rgba(41, 82, 204, 0.1) !important;
+  color: var(--accent-blue) !important;
+  border: 1px solid rgba(41, 82, 204, 0.25) !important;
+  border-radius: 2px !important;
+  font-family: var(--mono) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1em !important;
+}
+
+.jaguar-badge-warning {
+  background: rgba(185, 125, 26, 0.1) !important;
+  color: var(--warning) !important;
+  border: 1px solid rgba(185, 125, 26, 0.25) !important;
+  border-radius: 2px !important;
+  font-family: var(--mono) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1em !important;
+}
+
+/* ─── Page canvas ──────────────────────────── */
+.jaguar-page {
+  background: var(--bg-surface);
+  min-height: 100vh;
+}
+
+/* ─── Section heading ──────────────────────── */
+.jaguar-section-title {
+  font-family: var(--mono) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+  color: var(--accent-gold) !important;
+  font-weight: 600 !important;
+}
+
+/* ─── Live indicator ───────────────────────── */
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: var(--success);
+  border-radius: 50%;
+  display: inline-block;
+  animation: jaguar-pulse 1.5s infinite;
+}
+
+/* ─── Divider line ─────────────────────────── */
+.jaguar-divider {
+  border: none;
+  border-top: 1px solid var(--border-line);
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+/* ─── Atmospheric grid bg ──────────────────── */
+.jaguar-grid-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.025;
+  background-image: radial-gradient(var(--accent-ink) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* ─── Login page ───────────────────────────── */
+.jaguar-login-wrap {
+  min-height: 100vh;
+  background: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
+
+.jaguar-login-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: radial-gradient(#ffffff 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.jaguar-login-card {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-line);
+  width: 100%;
+  max-width: 440px;
+  padding: 48px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Keyframes ────────────────────────────── */
+@keyframes jaguar-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(45, 125, 78, 0.7); }
+  70%  { box-shadow: 0 0 0 8px rgba(45, 125, 78, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 125, 78, 0); }
+}
+
+@keyframes pulse-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(41, 82, 204, 0.4); }
+  50%  { box-shadow: 0 0 20px 5px rgba(41, 82, 204, 0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(41, 82, 204, 0.4); }
+}
+
+@keyframes step-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* ─── MUI overrides via global classes ─────── */
+/* Remove MUI default border-radius on Cards */
+.MuiCard-root { border-radius: 0 !important; }
+.MuiPaper-root { border-radius: 0 !important; }
+.MuiButton-root { border-radius: 0 !important; }
+.MuiChip-root  { border-radius: 2px !important; }

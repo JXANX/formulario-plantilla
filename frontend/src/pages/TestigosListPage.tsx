@@ -5,12 +5,25 @@ import {
   TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent,
   DialogActions, Alert, TablePagination, CircularProgress, Tooltip
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon    from '@mui/icons-material/Delete';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import SearchIcon from '@mui/icons-material/Search';
+import SearchIcon    from '@mui/icons-material/Search';
 import { useWebSocket } from '../hooks/useWebSocket';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+const J = {
+  ink:     '#1A1F2E',
+  blue:    '#2952CC',
+  gold:    '#C9973A',
+  border:  '#E2DDD6',
+  surface: '#F8F7F4',
+  muted:   '#F0EEE9',
+  textMuted:'#7A7A7A',
+  success: '#2D7D4E',
+  warning: '#B97D1A',
+  danger:  '#B83232',
+};
 
 interface Testigo {
   id: number;
@@ -39,422 +52,268 @@ interface Testigo {
 export default function TestigosListPage() {
   const { dashboardUpdates } = useWebSocket();
 
-  const [testigos, setTestigos] = useState<Testigo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [testigos,  setTestigos]  = useState<Testigo[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState('');
+  const [success,   setSuccess]   = useState('');
 
-  // Search and Filter States
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery,       setSearchQuery]       = useState('');
   const [selectedMunicipio, setSelectedMunicipio] = useState('');
-  const [selectedPuesto, setSelectedPuesto] = useState('');
-  const [selectedMesa, setSelectedMesa] = useState('');
+  const [selectedPuesto,    setSelectedPuesto]    = useState('');
+  const [selectedMesa,      setSelectedMesa]      = useState('');
 
   const [municipios, setMunicipios] = useState<any[]>([]);
-  const [puestos, setPuestos] = useState<any[]>([]);
-  const [mesas, setMesas] = useState<any[]>([]);
+  const [puestos,    setPuestos]    = useState<any[]>([]);
+  const [mesas,      setMesas]      = useState<any[]>([]);
 
-  // Dialog States
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedTestigoForDelete, setSelectedTestigoForDelete] = useState<Testigo | null>(null);
+  const [deleteDialogOpen,          setDeleteDialogOpen]          = useState(false);
+  const [selectedTestigoForDelete,  setSelectedTestigoForDelete]  = useState<Testigo | null>(null);
+  const [moveDialogOpen,            setMoveDialogOpen]            = useState(false);
+  const [selectedTestigoForMove,    setSelectedTestigoForMove]    = useState<Testigo | null>(null);
 
-  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
-  const [selectedTestigoForMove, setSelectedTestigoForMove] = useState<Testigo | null>(null);
-
-  // Move location states
-  const [moveDepto, setMoveDepto] = useState('');
-  const [moveMpio, setMoveMpio] = useState('');
-  const [movePuesto, setMovePuesto] = useState('');
-  const [moveMesa, setMoveMesa] = useState('');
-
+  const [moveDepto,      setMoveDepto]      = useState('');
+  const [moveMpio,       setMoveMpio]       = useState('');
+  const [movePuesto,     setMovePuesto]     = useState('');
+  const [moveMesa,       setMoveMesa]       = useState('');
   const [moveDeptosList, setMoveDeptosList] = useState<any[]>([]);
-  const [moveMpiosList, setMoveMpiosList] = useState<any[]>([]);
-  const [movePuestosList, setMovePuestosList] = useState<any[]>([]);
-  const [moveMesasList, setMoveMesasList] = useState<any[]>([]);
-  const [moveError, setMoveError] = useState('');
+  const [moveMpiosList,  setMoveMpiosList]  = useState<any[]>([]);
+  const [movePuestosList,setMovePuestosList]= useState<any[]>([]);
+  const [moveMesasList,  setMoveMesasList]  = useState<any[]>([]);
+  const [moveError,      setMoveError]      = useState('');
 
-  // Pagination
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page,         setPage]         = useState(0);
+  const [rowsPerPage,  setRowsPerPage]  = useState(10);
 
-  useEffect(() => {
-    fetchTestigos();
-    fetchFilterCatalog();
-  }, [dashboardUpdates]);
+  useEffect(() => { fetchTestigos(); fetchFilterCatalog(); }, [dashboardUpdates]);
 
+  /* ── Data fetching (unchanged logic) ───────────── */
   const fetchTestigos = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setTestigos(data.data);
-      } else {
-        setError(data.message || 'Error al cargar los testigos');
-      }
-    } catch (err) {
-      setError('Error de conexión con el servidor');
-    } finally {
-      setLoading(false);
-    }
+      const res   = await fetch(`${API_URL}/api/testigos`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
+      if (data.success) setTestigos(data.data);
+      else              setError(data.message || 'Error al cargar los testigos');
+    } catch { setError('Error de conexión con el servidor'); }
+    finally  { setLoading(false); }
   };
 
   const fetchFilterCatalog = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const deptosRes = await fetch(`${API_URL}/api/catalogo/departamentos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const token    = localStorage.getItem('token');
+      const deptosRes  = await fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` } });
       const deptosData = await deptosRes.json();
       if (deptosData.success && deptosData.data.length > 0) {
-        const firstDeptoId = deptosData.data[0].id;
-        const mpiosRes = await fetch(`${API_URL}/api/catalogo/departamentos/${firstDeptoId}/municipios`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const firstId = deptosData.data[0].id;
+        const mpiosRes  = await fetch(`${API_URL}/api/catalogo/departamentos/${firstId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
         const mpiosData = await mpiosRes.json();
-        if (mpiosData.success) {
-          setMunicipios(mpiosData.data);
-        }
+        if (mpiosData.success) setMunicipios(mpiosData.data);
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleMunicipioChange = async (e: any) => {
     const mpioId = e.target.value;
-    setSelectedMunicipio(mpioId);
-    setSelectedPuesto('');
-    setSelectedMesa('');
-    setPuestos([]);
-    setMesas([]);
-
+    setSelectedMunicipio(mpioId); setSelectedPuesto(''); setSelectedMesa(''); setPuestos([]); setMesas([]);
     if (!mpioId) return;
-
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res   = await fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
       if (data.success) setPuestos(data.data);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handlePuestoChange = async (e: any) => {
     const puestoId = e.target.value;
-    setSelectedPuesto(puestoId);
-    setSelectedMesa('');
-    setMesas([]);
-
+    setSelectedPuesto(puestoId); setSelectedMesa(''); setMesas([]);
     if (!puestoId) return;
-
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/puestos/${puestoId}/mesas`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res   = await fetch(`${API_URL}/api/catalogo/puestos/${puestoId}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
       if (data.success) setMesas(data.data);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  // Delete Action handlers
-  const handleOpenDelete = (testigo: Testigo) => {
-    setSelectedTestigoForDelete(testigo);
-    setDeleteDialogOpen(true);
-  };
+  const handleOpenDelete = (t: Testigo) => { setSelectedTestigoForDelete(t); setDeleteDialogOpen(true); };
 
   const handleConfirmDelete = async () => {
     if (!selectedTestigoForDelete) return;
-    setError('');
-    setSuccess('');
-
+    setError(''); setSuccess('');
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos/${selectedTestigoForDelete.id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSuccess('Testigo eliminado correctamente');
-        fetchTestigos();
-      } else {
-        setError(data.message || 'Error al eliminar');
-      }
-    } catch (err) {
-      setError('Error de conexión');
-    } finally {
-      setDeleteDialogOpen(false);
-      setSelectedTestigoForDelete(null);
-    }
+      const res   = await fetch(`${API_URL}/api/testigos/${selectedTestigoForDelete.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
+      if (data.success) { setSuccess('Testigo eliminado correctamente'); fetchTestigos(); }
+      else               setError(data.message || 'Error al eliminar');
+    } catch { setError('Error de conexión'); }
+    finally  { setDeleteDialogOpen(false); setSelectedTestigoForDelete(null); }
   };
 
-  // Move Action handlers
   const handleOpenMove = async (testigo: Testigo) => {
     setSelectedTestigoForMove(testigo);
-    setMoveError('');
-    setMoveDepto('');
-    setMoveMpio('');
-    setMovePuesto('');
-    setMoveMesa('');
-    setMoveMpiosList([]);
-    setMovePuestosList([]);
-    setMoveMesasList([]);
-
+    setMoveError(''); setMoveDepto(''); setMoveMpio(''); setMovePuesto(''); setMoveMesa('');
+    setMoveMpiosList([]); setMovePuestosList([]); setMoveMesasList([]);
     setMoveDialogOpen(true);
-
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/departamentos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res   = await fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
       if (data.success) {
         setMoveDeptosList(data.data);
-
         if (testigo.departamentoId) {
           setMoveDepto(String(testigo.departamentoId));
-
-          const mpiosRes = await fetch(`${API_URL}/api/catalogo/departamentos/${testigo.departamentoId}/municipios`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
+          const mpiosRes  = await fetch(`${API_URL}/api/catalogo/departamentos/${testigo.departamentoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
           const mpiosData = await mpiosRes.json();
           if (mpiosData.success) {
             setMoveMpiosList(mpiosData.data);
             if (testigo.municipioId) {
               setMoveMpio(String(testigo.municipioId));
-
-              const puestosRes = await fetch(`${API_URL}/api/catalogo/municipios/${testigo.municipioId}/puestos`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
+              const puestosRes  = await fetch(`${API_URL}/api/catalogo/municipios/${testigo.municipioId}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } });
               const puestosData = await puestosRes.json();
               if (puestosData.success) {
                 setMovePuestosList(puestosData.data);
                 if (testigo.puestoId) {
                   setMovePuesto(String(testigo.puestoId));
-
-                  const mesasRes = await fetch(`${API_URL}/api/catalogo/puestos/${testigo.puestoId}/mesas`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                  });
+                  const mesasRes  = await fetch(`${API_URL}/api/catalogo/puestos/${testigo.puestoId}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } });
                   const mesasData = await mesasRes.json();
-                  if (mesasData.success) {
-                    setMoveMesasList(mesasData.data);
-                    if (testigo.mesaId) {
-                      setMoveMesa(String(testigo.mesaId));
-                    }
-                  }
+                  if (mesasData.success) { setMoveMesasList(mesasData.data); if (testigo.mesaId) setMoveMesa(String(testigo.mesaId)); }
                 }
               }
             }
           }
         }
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleMoveDeptoChange = async (e: any) => {
     const deptoId = e.target.value;
-    setMoveDepto(deptoId);
-    setMoveMpio('');
-    setMovePuesto('');
-    setMoveMesa('');
-    setMoveMpiosList([]);
-    setMovePuestosList([]);
-    setMoveMesasList([]);
-
+    setMoveDepto(deptoId); setMoveMpio(''); setMovePuesto(''); setMoveMesa('');
+    setMoveMpiosList([]); setMovePuestosList([]); setMoveMesasList([]);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res   = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
       if (data.success) setMoveMpiosList(data.data);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleMoveMpioChange = async (e: any) => {
     const mpioId = e.target.value;
-    setMoveMpio(mpioId);
-    setMovePuesto('');
-    setMoveMesa('');
-    setMovePuestosList([]);
-    setMoveMesasList([]);
-
+    setMoveMpio(mpioId); setMovePuesto(''); setMoveMesa(''); setMovePuestosList([]); setMoveMesasList([]);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res   = await fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
       if (data.success) setMovePuestosList(data.data);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleMovePuestoChange = async (e: any) => {
     const puestoId = e.target.value;
-    setMovePuesto(puestoId);
-    setMoveMesa('');
-    setMoveMesasList([]);
-
+    setMovePuesto(puestoId); setMoveMesa(''); setMoveMesasList([]);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/puestos/${puestoId}/mesas`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const res   = await fetch(`${API_URL}/api/catalogo/puestos/${puestoId}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
       if (data.success) setMoveMesasList(data.data);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleConfirmMove = async () => {
-    if (!selectedTestigoForMove || !moveMesa) {
-      setMoveError('Por favor selecciona una mesa de destino');
-      return;
-    }
-
+    if (!selectedTestigoForMove || !moveMesa) { setMoveError('Por favor selecciona una mesa de destino'); return; }
     setMoveError('');
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos/${selectedTestigoForMove.id}/mover?nuevaMesaId=${moveMesa}`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSuccess('Testigo trasladado de mesa correctamente');
-        setMoveDialogOpen(false);
-        fetchTestigos();
-      } else {
-        setMoveError(data.message || 'Error al trasladar');
-      }
-    } catch (err) {
-      setMoveError('Error de conexión');
-    }
+      const res   = await fetch(`${API_URL}/api/testigos/${selectedTestigoForMove.id}/mover?nuevaMesaId=${moveMesa}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
+      const data  = await res.json();
+      if (data.success) { setSuccess('Testigo trasladado de mesa correctamente'); setMoveDialogOpen(false); fetchTestigos(); }
+      else               setMoveError(data.message || 'Error al trasladar');
+    } catch { setMoveError('Error de conexión'); }
   };
 
-  // Filter clientside witnesses
   const filteredTestigos = testigos.filter(t => {
-    const query = searchQuery.trim().toLowerCase();
-    const matchesSearch = query === '' ||
-      t.documento.toLowerCase().includes(query) ||
-      t.nombreCompleto.toLowerCase().includes(query);
-
-    const matchesMpio = selectedMunicipio === '' || String(t.municipioId) === String(selectedMunicipio);
-    const matchesPuesto = selectedPuesto === '' || String(t.puestoId) === String(selectedPuesto);
-    const matchesMesa = selectedMesa === '' || String(t.mesaId) === String(selectedMesa);
-
-    return matchesSearch && matchesMpio && matchesPuesto && matchesMesa;
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch = q === '' || t.documento.toLowerCase().includes(q) || t.nombreCompleto.toLowerCase().includes(q);
+    return matchesSearch
+      && (selectedMunicipio === '' || String(t.municipioId) === String(selectedMunicipio))
+      && (selectedPuesto    === '' || String(t.puestoId)    === String(selectedPuesto))
+      && (selectedMesa      === '' || String(t.mesaId)      === String(selectedMesa));
   });
 
-  const handleChangePage = (_event: any, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: any) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
+  /* ── Render ─────────────────────────────────────── */
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }} color="primary.main">
-          Listado de Testigos Electorales
-        </Typography>
-        <Typography variant="body1" color="textSecondary" sx={{ fontWeight: 'medium' }}>
-          Total registrados: <strong>{testigos.length}</strong> | Filtrados: <strong>{filteredTestigos.length}</strong>
-        </Typography>
+      {/* Page heading */}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+            Registro Institucional
+          </Typography>
+          <Typography sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700, fontSize: '28px', color: J.ink }}>
+            Listado de Testigos
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', color: J.textMuted }}>
+            Total: <strong style={{ color: J.ink }}>{testigos.length}</strong>
+            &nbsp;·&nbsp;
+            Filtrados: <strong style={{ color: J.blue }}>{filteredTestigos.length}</strong>
+          </Typography>
+        </Box>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
+      {error   && <Alert severity="error"   sx={{ mb: 2.5, borderRadius: 0 }} onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2.5, borderRadius: 0 }} onClose={() => setSuccess('')}>{success}</Alert>}
 
-      {/* FILTROS Y BÚSQUEDA */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+      {/* ── Filters ── */}
+      <Card sx={{ mb: 3, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+        <CardContent sx={{ p: 2.5 }}>
+          <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+            Filtros de búsqueda
+          </Typography>
+          <Grid container spacing={2} alignItems="center">
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
-                fullWidth
-                size="small"
+                fullWidth size="small"
                 label="Buscar por Nombre o Documento"
-                variant="outlined"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
-                slotProps={{
-                  input: {
-                    startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />
-                  }
-                }}
+                slotProps={{ input: { startAdornment: <SearchIcon sx={{ color: J.textMuted, mr: 1, fontSize: 18 }} /> } }}
               />
             </Grid>
-
             <Grid size={{ xs: 12, sm: 4, md: 2.6 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Municipio</InputLabel>
-                <Select
-                  value={selectedMunicipio}
-                  label="Municipio"
-                  onChange={(e) => { handleMunicipioChange(e); setPage(0); }}
-                >
+                <Select value={selectedMunicipio} label="Municipio" onChange={(e) => { handleMunicipioChange(e); setPage(0); }}>
                   <MenuItem value="">Todos</MenuItem>
-                  {[...municipios]
-                    .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
-                    .map((m: any) => (
-                      <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
-                    ))}
+                  {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => (
+                    <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
                 <InputLabel>Puesto</InputLabel>
-                <Select
-                  value={selectedPuesto}
-                  label="Puesto"
-                  onChange={(e) => { handlePuestoChange(e); setPage(0); }}
-                >
+                <Select value={selectedPuesto} label="Puesto" onChange={(e) => { handlePuestoChange(e); setPage(0); }}>
                   <MenuItem value="">Todos</MenuItem>
-                  {[...puestos]
-                    .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
-                    .map((p: any) => (
-                      <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
-                    ))}
+                  {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => (
+                    <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth size="small" disabled={!selectedPuesto}>
                 <InputLabel>Mesa</InputLabel>
-                <Select
-                  value={selectedMesa}
-                  label="Mesa"
-                  onChange={(e) => { setSelectedMesa(e.target.value as string); setPage(0); }}
-                >
+                <Select value={selectedMesa} label="Mesa" onChange={(e) => { setSelectedMesa(e.target.value as string); setPage(0); }}>
                   <MenuItem value="">Todas</MenuItem>
-                  {[...mesas]
-                    .sort((a: any, b: any) => a.numeroMesa - b.numeroMesa)
-                    .map((m: any) => (
-                      <MenuItem key={m.id} value={m.id}>Mesa {m.numeroMesa}</MenuItem>
-                    ))}
+                  {[...mesas].sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => (
+                    <MenuItem key={m.id} value={m.id}>Mesa {m.numeroMesa}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -462,74 +321,74 @@ export default function TestigosListPage() {
         </CardContent>
       </Card>
 
-      {/* TABLA DE RESULTADOS */}
+      {/* ── Table ── */}
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}>
-          <CircularProgress />
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}>
+          <CircularProgress size={32} sx={{ color: J.blue }} />
         </Box>
       ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2 }}>
+        <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
           <Table>
-            <TableHead sx={{ bgcolor: '#0d1b3e' }}>
+            <TableHead sx={{ bgcolor: J.ink }}>
               <TableRow>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Documento</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Nombre Completo</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Celular</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Tipo</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Municipio</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Puesto</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Mesa</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Registrado por</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Acciones</TableCell>
+                {['Documento','Nombre Completo','Celular','Tipo','Municipio','Puesto','Mesa','Registrado por','Acciones'].map(h => (
+                  <TableCell key={h} sx={{ color: '#fff', fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, borderBottom: 'none', py: 1.5, whiteSpace: 'nowrap' }}>
+                    {h}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredTestigos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                  <TableCell colSpan={9} align="center" sx={{ py: 5, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', letterSpacing: '0.1em' }}>
                     No se encontraron testigos con los filtros seleccionados.
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredTestigos
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((t) => (
-                    <TableRow key={t.id} hover>
-                      <TableCell sx={{ fontWeight: 'bold' }}>{t.documento}</TableCell>
-                      <TableCell>{t.nombreCompleto}</TableCell>
-                      <TableCell>{t.celular}</TableCell>
-                      <TableCell>
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold',
-                          backgroundColor: t.tipoTestigo === 'PRINCIPAL' ? '#e3f2fd' : '#fff3e0',
-                          color: t.tipoTestigo === 'PRINCIPAL' ? '#1976d2' : '#f57c00'
-                        }}>
-                          {t.tipoTestigo}
-                        </span>
-                      </TableCell>
-                      <TableCell>{t.nombreMunicipio}</TableCell>
-                      <TableCell>{t.nombrePuesto}</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }}>Mesa {t.numeroMesa}</TableCell>
-                      <TableCell sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{t.registradoPor}</TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                          <Tooltip title="Mover de Mesa">
-                            <IconButton color="primary" onClick={() => handleOpenMove(t)}>
-                              <SwapHorizIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Eliminar Testigo">
-                            <IconButton color="error" onClick={() => handleOpenDelete(t)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                filteredTestigos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((t) => (
+                  <TableRow key={t.id} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
+                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '12px', fontWeight: 600, color: J.ink }}>{t.documento}</TableCell>
+                    <TableCell sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13.5px' }}>{t.nombreCompleto}</TableCell>
+                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '12px' }}>{t.celular}</TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          px: 1, py: 0.3,
+                          fontFamily: '"IBM Plex Mono", monospace',
+                          fontSize: '9px',
+                          letterSpacing: '0.1em',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          bgcolor: t.tipoTestigo === 'PRINCIPAL' ? 'rgba(41,82,204,0.09)' : 'rgba(185,125,26,0.1)',
+                          color:   t.tipoTestigo === 'PRINCIPAL' ? J.blue : J.warning,
+                          border:  t.tipoTestigo === 'PRINCIPAL' ? `1px solid rgba(41,82,204,0.22)` : `1px solid rgba(185,125,26,0.22)`,
+                        }}
+                      >
+                        {t.tipoTestigo}
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '13px' }}>{t.nombreMunicipio}</TableCell>
+                    <TableCell sx={{ fontSize: '13px' }}>{t.nombrePuesto}</TableCell>
+                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '12px', fontWeight: 600 }}>Mesa {t.numeroMesa}</TableCell>
+                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', color: J.textMuted }}>{t.registradoPor}</TableCell>
+                    <TableCell align="center">
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                        <Tooltip title="Mover de Mesa">
+                          <IconButton size="small" onClick={() => handleOpenMove(t)} sx={{ color: J.blue, '&:hover': { bgcolor: 'rgba(41,82,204,0.08)' } }}>
+                            <SwapHorizIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Eliminar Testigo">
+                          <IconButton size="small" onClick={() => handleOpenDelete(t)} sx={{ color: J.danger, '&:hover': { bgcolor: 'rgba(184,50,50,0.08)' } }}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
@@ -539,140 +398,91 @@ export default function TestigosListPage() {
             count={filteredTestigos.length}
             rowsPerPage={rowsPerPage}
             page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
+            onPageChange={(_, p) => setPage(p)}
+            onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
             labelRowsPerPage="Filas por página:"
+            sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', borderTop: `1px solid ${J.border}` }}
           />
         </TableContainer>
       )}
 
-      {/* DIÁLOGO ELIMINAR */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle sx={{ fontWeight: 'bold', color: 'error.main' }}>
+      {/* ── Delete Dialog ── */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} slotProps={{ paper: { sx: { borderRadius: 0, border: `1px solid ${J.border}` } } }}>
+        <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontWeight: 700, color: J.danger, fontSize: '18px', borderBottom: `1px solid ${J.border}` }}>
           ¿Eliminar Testigo?
         </DialogTitle>
-        <DialogContent>
-          <Typography>
-            ¿Estás seguro de que deseas eliminar al testigo{' '}
+        <DialogContent sx={{ pt: 3 }}>
+          <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '14px', color: J.ink }}>
+            ¿Estás seguro de que deseas eliminar a{' '}
             <strong>{selectedTestigoForDelete?.nombreCompleto}</strong> con documento{' '}
             <strong>{selectedTestigoForDelete?.documento}</strong>? Esta acción no se puede deshacer.
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ borderRadius: 0, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em' }}>
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmDelete} sx={{ bgcolor: J.danger, color: '#fff', borderRadius: 0, px: 3, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', '&:hover': { bgcolor: '#8f2020' } }}>
             Confirmar Eliminación
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* DIÁLOGO MOVER DE MESA */}
-      <Dialog open={moveDialogOpen} onClose={() => setMoveDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+      {/* ── Move Dialog ── */}
+      <Dialog open={moveDialogOpen} onClose={() => setMoveDialogOpen(false)} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 0, border: `1px solid ${J.border}` } } }}>
+        <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontWeight: 700, color: J.ink, fontSize: '18px', borderBottom: `1px solid ${J.border}` }}>
           Trasladar Testigo Electoral
         </DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-            Selecciona la nueva ubicación electoral para el testigo{' '}
-            <strong>{selectedTestigoForMove?.nombreCompleto}</strong> (Documento: {selectedTestigoForMove?.documento}).
+        <DialogContent dividers sx={{ borderColor: J.border }}>
+          <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13px', color: J.textMuted, mb: 3 }}>
+            Selecciona la nueva ubicación para <strong style={{ color: J.ink }}>{selectedTestigoForMove?.nombreCompleto}</strong> (Doc: {selectedTestigoForMove?.documento}).
           </Typography>
-
-          {moveError && <Alert severity="error" sx={{ mb: 2 }}>{moveError}</Alert>}
-
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid size={{ xs: 12 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Departamento</InputLabel>
-                <Select
-                  value={moveDepto}
-                  label="Departamento"
-                  onChange={handleMoveDeptoChange}
-                >
-                  {[...moveDeptosList]
-                    .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
-                    .map((d: any) => (
-                      <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>
+          {moveError && <Alert severity="error" sx={{ mb: 2, borderRadius: 0 }}>{moveError}</Alert>}
+          <Grid container spacing={2}>
+            {[
+              { label: 'Departamento', value: moveDepto, handler: handleMoveDeptoChange, items: moveDeptosList, disabled: false,     nameKey: 'nombre' },
+              { label: 'Municipio',    value: moveMpio,  handler: handleMoveMpioChange,  items: moveMpiosList,  disabled: !moveDepto, nameKey: 'nombre' },
+              { label: 'Puesto',       value: movePuesto,handler: handleMovePuestoChange,items: movePuestosList,disabled: !moveMpio,  nameKey: 'nombrePuesto' },
+            ].map(({ label, value, handler, items, disabled, nameKey }) => (
+              <Grid key={label} size={{ xs: 12 }}>
+                <FormControl fullWidth size="small" disabled={disabled}>
+                  <InputLabel>{label}</InputLabel>
+                  <Select value={value} label={label} onChange={handler}>
+                    {[...items].sort((a: any, b: any) => (a[nameKey] || '').localeCompare(b[nameKey] || '', 'es')).map((d: any) => (
+                      <MenuItem key={d.id} value={d.id}>{d[nameKey]}</MenuItem>
                     ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <FormControl fullWidth size="small" disabled={!moveDepto}>
-                <InputLabel>Municipio</InputLabel>
-                <Select
-                  value={moveMpio}
-                  label="Municipio"
-                  onChange={handleMoveMpioChange}
-                >
-                  {[...moveMpiosList]
-                    .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
-                    .map((m: any) => (
-                      <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <FormControl fullWidth size="small" disabled={!moveMpio}>
-                <InputLabel>Puesto</InputLabel>
-                <Select
-                  value={movePuesto}
-                  label="Puesto"
-                  onChange={handleMovePuestoChange}
-                >
-                  {[...movePuestosList]
-                    .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
-                    .map((p: any) => (
-                      <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
+                  </Select>
+                </FormControl>
+              </Grid>
+            ))}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!movePuesto}>
                 <InputLabel>Mesa</InputLabel>
-                <Select
-                  value={moveMesa}
-                  label="Mesa"
-                  onChange={(e) => setMoveMesa(e.target.value as string)}
-                >
-                  {[...moveMesasList]
-                    .sort((a: any, b: any) => a.numeroMesa - b.numeroMesa)
-                    .map((m: any) => {
-                      const isAvailable = m.ocupados < m.capacidad;
-                      const isCurrent = selectedTestigoForMove?.mesaId === m.id;
-                      return (
-                        <MenuItem
-                          key={m.id}
-                          value={m.id}
-                          disabled={!isAvailable && !isCurrent}
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            color: isCurrent ? 'primary.main' : (!isAvailable ? 'text.disabled' : 'inherit'),
-                            fontWeight: isCurrent ? 'bold' : 'normal'
-                          }}
-                        >
-                          <span>Mesa {m.numeroMesa} {isCurrent ? '(Actual)' : ''}</span>
-                          <span>({m.ocupados}/{m.capacidad} ocupados)</span>
-                        </MenuItem>
-                      );
-                    })}
+                <Select value={moveMesa} label="Mesa" onChange={(e) => setMoveMesa(e.target.value as string)}>
+                  {[...moveMesasList].sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => {
+                    const isAvailable = m.ocupados < m.capacidad;
+                    const isCurrent   = selectedTestigoForMove?.mesaId === m.id;
+                    return (
+                      <MenuItem key={m.id} value={m.id} disabled={!isAvailable && !isCurrent}
+                        sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: '"IBM Plex Mono", monospace', fontSize: '12px', color: isCurrent ? J.blue : (!isAvailable ? J.textMuted : 'inherit'), fontWeight: isCurrent ? 700 : 400 }}>
+                        <span>Mesa {m.numeroMesa}{isCurrent ? ' (Actual)' : ''}</span>
+                        <span style={{ opacity: 0.65 }}>({m.ocupados}/{m.capacidad} ocupados)</span>
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setMoveDialogOpen(false)}>Cancelar</Button>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button onClick={() => setMoveDialogOpen(false)} sx={{ borderRadius: 0, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em' }}>
+            Cancelar
+          </Button>
           <Button
             onClick={handleConfirmMove}
-            color="primary"
-            variant="contained"
             disabled={!moveMesa || moveMesa === String(selectedTestigoForMove?.mesaId)}
+            sx={{ bgcolor: J.ink, color: '#fff', borderRadius: 0, px: 3, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', '&:hover': { bgcolor: J.blue }, '&:disabled': { bgcolor: 'rgba(26,31,46,0.35)', color: '#fff' } }}
           >
             Guardar Traslado
           </Button>
