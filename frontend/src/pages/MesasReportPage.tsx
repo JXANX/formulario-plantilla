@@ -297,7 +297,7 @@ export default function MesasReportPage() {
       {/* Tabs Selector */}
       <Tabs
         value={activeTab}
-        onChange={(e, val) => setActiveTab(val)}
+        onChange={(_, val) => setActiveTab(val)}
         indicatorColor="primary"
         textColor="primary"
         sx={{ mb: 4, borderBottom: 1, borderColor: 'divider' }}
@@ -490,7 +490,7 @@ export default function MesasReportPage() {
           {/* FILTER PANEL */}
           <Card sx={{ mb: 4 }}>
             <CardContent>
-              <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+              <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
