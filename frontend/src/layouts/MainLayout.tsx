@@ -120,19 +120,19 @@ export default function MainLayout() {
       </Box>
 
       {/* Logo */}
-      <Box
-        sx={{
-          mx: 3,
-          mb: 2,
-          height: 110,
-          width: 110,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'rgba(201,151,58,0.25)',
-        }}
-      >
-        <img src={logo} alt="Logo" style={{ height: 'auto', maxHeight: '95px', width: 'auto' }} />
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 3 }}>
+        <Box
+          sx={{
+            height: 140,
+            width: 140,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'rgba(201,151,58,0.25)',
+          }}
+        >
+          <img src={logo} alt="Logo" style={{ height: 'auto', maxHeight: '115px', width: 'auto' }} />
+        </Box>
       </Box>
 
       {/* Nav items */}
@@ -323,21 +323,18 @@ export default function MainLayout() {
 
             {/* Right: user chip */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-              {/* Vertical rule */}
-              <Box sx={{ width: 1, height: 32, bgcolor: JAGUAR.border, display: { xs: 'none', lg: 'block' } }} />
-
               {/* Avatar + label */}
               <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
                 <Box
                   sx={{
-                    height: 44,
+                    height: 56,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
                   }}
                 >
-                  <img src={logoBox} alt="TRACTO" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+                  <img src={logoBox} alt="TRACTO" style={{ height: '52px', width: 'auto', objectFit: 'contain' }} />
                 </Box>
                 <Box sx={{ textAlign: 'left' }}>
                   <Typography
@@ -367,13 +364,13 @@ export default function MainLayout() {
               <Box
                 sx={{
                   display: { xs: 'flex', md: 'none' },
-                  height: 38,
+                  height: 44,
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
                 }}
               >
-                <img src={logoBox} alt="TRACTO" style={{ height: '30px', width: 'auto', objectFit: 'contain' }} />
+                <img src={logoBox} alt="TRACTO" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
               </Box>
             </Box>
           </Toolbar>
