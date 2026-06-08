@@ -152,17 +152,16 @@ const theme = createTheme({
     MuiTextField: {
       defaultProps: { variant: 'outlined', size: 'medium' },
     },
-    /* ── FIX 2a: OutlinedInput — minHeight respeta el sistema de tamaños ── */
+    /* ── FIX 2a: OutlinedInput — minHeight condicional por tamaño ── */
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
           borderRadius: 0,
           fontFamily: '"IBM Plex Sans", "Inter", sans-serif',
           fontSize: '1.05rem',
-          // CORREGIDO: minHeight condicional por tamaño.
-          // Antes: minHeight: 56 global que ignoraba size="small", causando
-          // que el área de click excediera el componente visual y MUI
-          // interpretara el mouseup como "click fuera" → dropdown cerraba inmediatamente.
+          // minHeight condicional: evita que el área de click del contenedor
+          // exceda los bounds visuales, lo que causaría que MUI anclara el
+          // Popover en posición incorrecta.
           '&:not(.MuiInputBase-sizeSmall)': {
             minHeight: 56,
           },
@@ -173,6 +172,10 @@ const theme = createTheme({
           '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: JAGUAR.ink },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: JAGUAR.ink, borderWidth: 2 },
         },
+        // NOTA: este padding se aplica tanto a TextField como al div display
+        // de Select (ambos tienen clase MuiOutlinedInput-input). Para TextField
+        // funciona perfecto. Para Select, el override de MuiSelect.select a
+        // continuación usa '&&' (doble especificidad) y lo sobreescribe siempre.
         input: { padding: '16px 18px' },
         notchedOutline: { borderColor: JAGUAR.border, borderWidth: 1.5 },
       },
@@ -188,14 +191,13 @@ const theme = createTheme({
         },
       },
     },
-    /* ── FIX 2b: Select — MenuProps estables + padding por tamaño ── */
+    /* ── FIX 2b: Select — especificidad CSS corregida + MenuProps estables ── */
     MuiSelect: {
       defaultProps: {
         MenuProps: {
-          // CORREGIDO: disableScrollLock evita que MUI añada padding compensatorio
-          // al <body> al abrir el dropdown. Ese padding desplazaba el layout,
-          // movía la posición ancla del Popover, y MUI detectaba el input
-          // fuera del dropdown → cerraba inmediatamente.
+          // disableScrollLock evita que MUI añada padding compensatorio al <body>
+          // al abrir el dropdown. Ese padding desplazaba el layout, movía la
+          // posición ancla del Popover, y MUI detectaba el input fuera → cerraba.
           disableScrollLock: true,
           // Ancla fija debajo del input: elimina el recálculo de posición
           // en re-renders que causaba cierres espontáneos.
@@ -221,15 +223,53 @@ const theme = createTheme({
       styleOverrides: {
         root: { borderRadius: 0, fontSize: '1.05rem' },
         select: {
-          // CORREGIDO: padding condicional por tamaño.
-          // Antes: padding fijo 16px 18px en componentes size="small" creaba
-          // un área de hit más grande que el visual → cierres accidentales
-          // al mover el cursor ligeramente.
-          '.MuiInputBase-sizeSmall &': {
-            padding: '10px 14px',
-            paddingRight: '32px',
+          // ─────────────────────────────────────────────────────────────────
+          // CAUSA RAÍZ DEL BUG:
+          //
+          // El override MuiOutlinedInput.input { padding: '16px 18px' } aplica
+          // TAMBIÉN al div display del Select (que tiene la clase
+          // MuiOutlinedInput-input). Tanto ese override como el de abajo tienen
+          // especificidad CSS 0-2-0 (dos clases), por lo que gana el que
+          // emotion inyecta DESPUÉS. Como OutlinedInput se renderiza DENTRO de
+          // Select, sus estilos se inyectan DESPUÉS → { padding: 16px 18px }
+          // GANA sobre el override de tamaño small.
+          //
+          // Consecuencia: en size="small" (minHeight: 44px), el div display
+          // queda con padding 16+16=32px + ~20px contenido = ~52px → DESBORDA
+          // los 44px del contenedor. Al hacer click en la zona de overflow
+          // (Y > 44px), MUI abre el Popover anclado al borde inferior del
+          // contenedor (Y=44), pero el mouseup registra en Y≈52, que cae
+          // FUERA del papel del Popover → el backdrop lo interpreta como
+          // "click fuera" → cierra inmediatamente.
+          //
+          // Por qué el ícono ▾ sí funcionaba: el SVG se posiciona en
+          // top:calc(50%-12px)≈10px (dentro de los 44px del contenedor).
+          // Su pointer-events:none pasa el click al div display. Las
+          // coordenadas Y del click quedan dentro del contenedor → el
+          // mouseup también → el Popover no detecta click fuera → stays open.
+          //
+          // FIX: usar '&&' (double-class selector) para elevar la especificidad
+          // del override de Select de 0-2-0 a 0-2-0 (base) y 0-3-0 (small).
+          // Esto garantiza que el padding correcto gane SIEMPRE sin importar
+          // el orden de inyección de emotion.
+          // ─────────────────────────────────────────────────────────────────
+
+          // Tamaño medium (default): especificidad 0-2-0.
+          // Para el valor base (16px 18px) el empate con OutlinedInput.input
+          // es irrelevante porque tienen el MISMO valor. Lo importante es
+          // paddingRight: 32px para que el texto no quede bajo el ícono ▾.
+          '&&': {
+            padding: '16px 18px',
+            paddingRight: '32px', // espacio para el ícono ▾ (posicionado right:7px ~24px ancho)
           },
-          padding: '16px 18px',
+
+          // Tamaño small: especificidad 0-3-0 → GANA siempre sobre
+          // MuiOutlinedInput.input (0-2-0). El padding 10px+10px+~20px=~40px
+          // cabe sin overflow dentro del minHeight: 44px del contenedor.
+          '.MuiInputBase-sizeSmall &&': {
+            padding: '10px 14px',
+            paddingRight: '32px', // espacio para el ícono ▾
+          },
         },
       },
     },
@@ -360,12 +400,7 @@ const theme = createTheme({
     MuiTableRow: {
       styleOverrides: {
         root: {
-          // CORREGIDO: antes '&:hover' aplicaba a TODAS las filas incluyendo
-          // las de <thead> (clase .MuiTableRow-head). El background JAGUAR.surface
-          // (#F8F7F4, beige claro) sobre texto blanco (#fff) lo hacía invisible.
-          // Ahora solo las filas de tbody reciben el hover.
           '&:not(.MuiTableRow-head):hover': { background: JAGUAR.surface },
-          // Las filas de thead mantienen su fondo oscuro siempre, incluso en hover.
           '&.MuiTableRow-head': {
             background: JAGUAR.ink,
             '&:hover': { background: JAGUAR.ink },
