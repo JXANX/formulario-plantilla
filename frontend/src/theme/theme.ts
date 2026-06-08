@@ -194,7 +194,7 @@ const theme = createTheme({
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          fontFamily: '"IBM Plex Mono", monospace',
+          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
           fontSize: '0.75rem',
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
@@ -213,7 +213,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 2,
-          fontFamily: '"IBM Plex Mono", monospace',
+          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
           fontSize: '0.72rem',
           fontWeight: 600,
           letterSpacing: '0.1em',
@@ -250,7 +250,7 @@ const theme = createTheme({
     MuiTab: {
       styleOverrides: {
         root: {
-          fontFamily: '"IBM Plex Mono", monospace',
+          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
           fontSize: '0.75rem',
           fontWeight: 600,
           letterSpacing: '0.14em',
@@ -274,7 +274,7 @@ const theme = createTheme({
       styleOverrides: {
         head: {
           color: '#fff',
-          fontFamily: '"IBM Plex Mono", monospace',
+          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
           fontSize: '0.72rem',
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
@@ -283,7 +283,7 @@ const theme = createTheme({
           padding: '16px 20px',
         },
         body: {
-          fontFamily: '"IBM Plex Sans", sans-serif',
+          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
           fontSize: '0.975rem',
           borderBottom: `1px solid ${JAGUAR.border}`,
           padding: '14px 20px',
