@@ -120,7 +120,21 @@ export default function MainLayout() {
 
       {/* Logo */}
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: 2 }}>
-        <img src={logo} alt="Logo" style={{ height: 'auto', maxHeight: '120px', width: 'auto' }} />
+        <Box
+          sx={{
+            width: 110,
+            height: 110,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'rgba(201,151,58,0.25)',
+            border: `1px solid ${JAGUAR.gold}`,
+            borderRadius: '8px',
+            p: 1.5,
+          }}
+        >
+          <img src={logo} alt="Logo" style={{ height: 'auto', maxHeight: '90px', width: 'auto' }} />
+        </Box>
       </Box>
 
       {/* Nav items */}
