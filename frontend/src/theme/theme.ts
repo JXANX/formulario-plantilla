@@ -87,11 +87,11 @@ const theme = createTheme({
     overline: {
       fontWeight: 600,
       letterSpacing: '0.1em',
-      fontSize: '0.78rem',
+      fontSize: '0.84rem',
       color: JAGUAR.textMuted,
     },
     caption: {
-      fontSize: '0.8rem',
+      fontSize: '0.875rem',
       color: JAGUAR.textMuted,
     },
     button: {
@@ -100,12 +100,12 @@ const theme = createTheme({
       textTransform: 'uppercase' as const,
     },
     body1: {
-      fontSize: '1rem',
-      lineHeight: 1.6,
+      fontSize: '1.05rem',
+      lineHeight: 1.65,
       color: JAGUAR.textBody,
     },
     body2: {
-      fontSize: '0.9rem',
+      fontSize: '0.975rem',
       color: JAGUAR.textMuted,
     },
   },
@@ -158,7 +158,7 @@ const theme = createTheme({
     },
     MuiCardContent: {
       styleOverrides: {
-        root: { padding: 24, '&:last-child': { paddingBottom: 24 } },
+        root: { padding: 32, '&:last-child': { paddingBottom: 32 } },
       },
     },
     /* ── Paper ── */
@@ -173,7 +173,7 @@ const theme = createTheme({
     },
     /* ── Inputs ── */
     MuiTextField: {
-      defaultProps: { variant: 'outlined', size: 'small' },
+      defaultProps: { variant: 'outlined', size: 'medium' },
     },
     MuiOutlinedInput: {
       styleOverrides: {
@@ -214,11 +214,11 @@ const theme = createTheme({
         root: {
           borderRadius: 2,
           fontFamily: '"IBM Plex Mono", monospace',
-          fontSize: '0.65rem',
+          fontSize: '0.72rem',
           fontWeight: 600,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
-          height: 22,
+          height: 28,
         },
       },
     },
@@ -251,11 +251,11 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           fontFamily: '"IBM Plex Mono", monospace',
-          fontSize: '0.68rem',
+          fontSize: '0.75rem',
           fontWeight: 600,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          minHeight: 44,
+          minHeight: 52,
         },
       },
     },
@@ -275,18 +275,18 @@ const theme = createTheme({
         head: {
           color: '#fff',
           fontFamily: '"IBM Plex Mono", monospace',
-          fontSize: '0.65rem',
+          fontSize: '0.72rem',
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
           fontWeight: 600,
           borderBottom: 'none',
-          padding: '12px 16px',
+          padding: '16px 20px',
         },
         body: {
           fontFamily: '"IBM Plex Sans", sans-serif',
-          fontSize: '0.875rem',
+          fontSize: '0.975rem',
           borderBottom: `1px solid ${JAGUAR.border}`,
-          padding: '10px 16px',
+          padding: '14px 20px',
         },
       },
     },

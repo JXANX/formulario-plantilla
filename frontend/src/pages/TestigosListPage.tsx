@@ -247,17 +247,17 @@ export default function TestigosListPage() {
   return (
     <Box>
       {/* Page heading */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ mb: 5, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+          <Typography sx={{ fontSize: '12px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
             Registro Institucional
           </Typography>
-          <Typography sx={{ fontWeight: 700, fontSize: '32px', color: J.ink }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '36px', color: J.ink }}>
             Listado de Testigos
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Typography sx={{ fontSize: '13px', letterSpacing: '0.1em', color: J.textMuted }}>
+          <Typography sx={{ fontSize: '14px', letterSpacing: '0.1em', color: J.textMuted }}>
             Total: <strong style={{ color: J.ink }}>{testigos.length}</strong>
             &nbsp;·&nbsp;
             Filtrados: <strong style={{ color: J.blue }}>{filteredTestigos.length}</strong>
@@ -269,23 +269,23 @@ export default function TestigosListPage() {
       {success && <Alert severity="success" sx={{ mb: 2.5, borderRadius: 0 }} onClose={() => setSuccess('')}>{success}</Alert>}
 
       {/* ── Filters ── */}
-      <Card sx={{ mb: 3, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
-        <CardContent sx={{ p: 2.5 }}>
-          <Typography sx={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+      <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+        <CardContent sx={{ p: 3.5 }}>
+          <Typography sx={{ fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2.5 }}>
             Filtros de búsqueda
           </Typography>
-          <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+          <Grid container spacing={2.5} sx={{ alignItems: 'center' }}>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
-                fullWidth size="small"
+                fullWidth
                 label="Buscar por Nombre o Documento"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
-                slotProps={{ input: { startAdornment: <SearchIcon sx={{ color: J.textMuted, mr: 1, fontSize: 18 }} /> } }}
+                slotProps={{ input: { startAdornment: <SearchIcon sx={{ color: J.textMuted, mr: 1, fontSize: 20 }} /> } }}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4, md: 2.6 }}>
-              <FormControl fullWidth size="small">
+              <FormControl fullWidth>
                 <InputLabel>Municipio</InputLabel>
                 <Select value={selectedMunicipio} label="Municipio" onChange={(e) => { handleMunicipioChange(e); setPage(0); }}>
                   <MenuItem value="">Todos</MenuItem>
@@ -296,7 +296,7 @@ export default function TestigosListPage() {
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
-              <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
+              <FormControl fullWidth disabled={!selectedMunicipio}>
                 <InputLabel>Puesto</InputLabel>
                 <Select value={selectedPuesto} label="Puesto" onChange={(e) => { handlePuestoChange(e); setPage(0); }}>
                   <MenuItem value="">Todos</MenuItem>
@@ -307,7 +307,7 @@ export default function TestigosListPage() {
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
-              <FormControl fullWidth size="small" disabled={!selectedPuesto}>
+              <FormControl fullWidth disabled={!selectedPuesto}>
                 <InputLabel>Mesa</InputLabel>
                 <Select value={selectedMesa} label="Mesa" onChange={(e) => { setSelectedMesa(e.target.value as string); setPage(0); }}>
                   <MenuItem value="">Todas</MenuItem>
@@ -332,7 +332,7 @@ export default function TestigosListPage() {
             <TableHead sx={{ bgcolor: J.ink }}>
               <TableRow>
                 {['Documento','Nombre Completo','Celular','Tipo','Municipio','Puesto','Mesa','Registrado por','Acciones'].map(h => (
-                  <TableCell key={h} sx={{ color: '#fff', fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, borderBottom: 'none', py: 1.5, whiteSpace: 'nowrap' }}>
+                  <TableCell key={h} sx={{ color: '#fff', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, borderBottom: 'none', py: 2, whiteSpace: 'nowrap' }}>
                     {h}
                   </TableCell>
                 ))}
@@ -348,15 +348,15 @@ export default function TestigosListPage() {
               ) : (
                 filteredTestigos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((t) => (
                   <TableRow key={t.id} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600, color: J.ink }}>{t.documento}</TableCell>
-                    <TableCell sx={{ fontSize: '15.5px' }}>{t.nombreCompleto}</TableCell>
-                    <TableCell sx={{ fontSize: '14px' }}>{t.celular}</TableCell>
+                    <TableCell sx={{ fontSize: '15px', fontWeight: 600, color: J.ink }}>{t.documento}</TableCell>
+                    <TableCell sx={{ fontSize: '16px' }}>{t.nombreCompleto}</TableCell>
+                    <TableCell sx={{ fontSize: '15px' }}>{t.celular}</TableCell>
                     <TableCell>
                       <Box
                         sx={{
                           display: 'inline-block',
-                          px: 1.25, py: 0.4,
-                          fontSize: '11px',
+                          px: 1.5, py: 0.5,
+                          fontSize: '12px',
                           letterSpacing: '0.08em',
                           fontWeight: 700,
                           textTransform: 'uppercase',
@@ -368,20 +368,20 @@ export default function TestigosListPage() {
                         {t.tipoTestigo}
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ fontSize: '15px' }}>{t.nombreMunicipio}</TableCell>
-                    <TableCell sx={{ fontSize: '15px' }}>{t.nombrePuesto}</TableCell>
-                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Mesa {t.numeroMesa}</TableCell>
-                    <TableCell sx={{ fontSize: '13px', color: J.textMuted }}>{t.registradoPor}</TableCell>
+                    <TableCell sx={{ fontSize: '15.5px' }}>{t.nombreMunicipio}</TableCell>
+                    <TableCell sx={{ fontSize: '15.5px' }}>{t.nombrePuesto}</TableCell>
+                    <TableCell sx={{ fontSize: '15px', fontWeight: 600 }}>Mesa {t.numeroMesa}</TableCell>
+                    <TableCell sx={{ fontSize: '14px', color: J.textMuted }}>{t.registradoPor}</TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                         <Tooltip title="Mover de Mesa">
-                          <IconButton size="small" onClick={() => handleOpenMove(t)} sx={{ color: J.blue, '&:hover': { bgcolor: 'rgba(41,82,204,0.08)' } }}>
-                            <SwapHorizIcon fontSize="small" />
+                          <IconButton onClick={() => handleOpenMove(t)} sx={{ color: J.blue, '&:hover': { bgcolor: 'rgba(41,82,204,0.08)' } }}>
+                            <SwapHorizIcon />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Eliminar Testigo">
-                          <IconButton size="small" onClick={() => handleOpenDelete(t)} sx={{ color: J.danger, '&:hover': { bgcolor: 'rgba(184,50,50,0.08)' } }}>
-                            <DeleteIcon fontSize="small" />
+                          <IconButton onClick={() => handleOpenDelete(t)} sx={{ color: J.danger, '&:hover': { bgcolor: 'rgba(184,50,50,0.08)' } }}>
+                            <DeleteIcon />
                           </IconButton>
                         </Tooltip>
                       </Box>

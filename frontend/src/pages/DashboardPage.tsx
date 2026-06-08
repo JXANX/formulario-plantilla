@@ -66,26 +66,26 @@ function StatCard({
         height: '100%',
         bgcolor: J.canvas,
         border: `1px solid ${J.border}`,
-        borderTop: `3px solid ${accentColor}`,
+        borderTop: `4px solid ${accentColor}`,
         borderRadius: 0,
         boxShadow: 'none',
         transition: 'transform 0.18s ease, box-shadow 0.18s ease',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 6px 24px rgba(26,31,46,0.07)',
+          transform: 'translateY(-3px)',
+          boxShadow: '0 8px 28px rgba(26,31,46,0.09)',
         },
       }}
     >
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography
               sx={{
-                fontSize: '11px',
+                fontSize: '12px',
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
                 color: J.textMuted,
-                mb: 1.5,
+                mb: 2,
                 display: 'block',
               }}
             >
@@ -94,7 +94,7 @@ function StatCard({
             <Typography
               sx={{
                 fontWeight: 700,
-                fontSize: '2.8rem',
+                fontSize: '3.2rem',
                 color: J.ink,
                 lineHeight: 1,
               }}
@@ -104,8 +104,8 @@ function StatCard({
           </Box>
           <Box
             sx={{
-              p: 1.25,
-              bgcolor: `${accentColor}12`,
+              p: 1.75,
+              bgcolor: `${accentColor}14`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -360,10 +360,10 @@ export default function DashboardPage() {
       {/* Page header row */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+          <Typography sx={{ fontSize: '12px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
                   Panel General
                 </Typography>
-                <Typography sx={{ fontWeight: 700, fontSize: '32px', color: J.ink }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '36px', color: J.ink }}>
                   Dashboard Electoral
                 </Typography>
         </Box>
@@ -427,39 +427,39 @@ export default function DashboardPage() {
         Métricas Generales
       </Typography>
 
-      <Grid container spacing={2} sx={{ mb: 4 }}>
+      <Grid container spacing={3} sx={{ mb: 5 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Total Testigos"   value={stats.totalTestigos}   icon={<PeopleIcon       sx={{ fontSize: 28 }} />} accentColor={J.blue} />
+          <StatCard title="Total Testigos"   value={stats.totalTestigos}   icon={<PeopleIcon       sx={{ fontSize: 34 }} />} accentColor={J.blue} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Municipios"       value={stats.totalMunicipios} icon={<LocationCityIcon sx={{ fontSize: 28 }} />} accentColor={J.ink}  />
+          <StatCard title="Municipios"       value={stats.totalMunicipios} icon={<LocationCityIcon sx={{ fontSize: 34 }} />} accentColor={J.ink}  />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Puestos"          value={stats.totalPuestos}    icon={<SchoolIcon       sx={{ fontSize: 28 }} />} accentColor={J.ink}  />
+          <StatCard title="Puestos"          value={stats.totalPuestos}    icon={<SchoolIcon       sx={{ fontSize: 34 }} />} accentColor={J.ink}  />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Total Mesas"      value={stats.totalMesas}      icon={<TableBarIcon     sx={{ fontSize: 28 }} />} accentColor={J.ink}  />
+          <StatCard title="Total Mesas"      value={stats.totalMesas}      icon={<TableBarIcon     sx={{ fontSize: 34 }} />} accentColor={J.ink}  />
         </Grid>
       </Grid>
 
       {/* ── Semáforo ── */}
-      <Box sx={{ height: 1, bgcolor: J.border, mb: 3 }} />
-      <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+      <Box sx={{ height: 1, bgcolor: J.border, mb: 4 }} />
+      <Typography sx={{ fontSize: '12px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.textMuted, mb: 3 }}>
         Semáforo de Cobertura
       </Typography>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Cobertura Completa"   value={stats.mesasVerdes}            icon={<CheckCircleIcon sx={{ fontSize: 28 }} />} accentColor={J.success} />
+          <StatCard title="Cobertura Completa"   value={stats.mesasVerdes}            icon={<CheckCircleIcon sx={{ fontSize: 34 }} />} accentColor={J.success} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Cobertura Parcial"    value={stats.mesasAmarillas}          icon={<WarningIcon     sx={{ fontSize: 28 }} />} accentColor={J.warning} />
+          <StatCard title="Cobertura Parcial"    value={stats.mesasAmarillas}          icon={<WarningIcon     sx={{ fontSize: 34 }} />} accentColor={J.warning} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Sin Cobertura"        value={stats.mesasRojas}             icon={<CancelIcon      sx={{ fontSize: 28 }} />} accentColor={J.danger}  />
+          <StatCard title="Sin Cobertura"        value={stats.mesasRojas}             icon={<CancelIcon      sx={{ fontSize: 34 }} />} accentColor={J.danger}  />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Porcentaje Cobertura" value={`${stats.porcentajeCobertura}%`} icon={<CheckCircleIcon sx={{ fontSize: 28 }} />} accentColor={J.blue} />
+          <StatCard title="Porcentaje Cobertura" value={`${stats.porcentajeCobertura}%`} icon={<CheckCircleIcon sx={{ fontSize: 34 }} />} accentColor={J.blue} />
         </Grid>
       </Grid>
 
