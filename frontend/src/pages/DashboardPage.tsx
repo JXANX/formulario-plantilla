@@ -81,8 +81,7 @@ function StatCard({
           <Box>
             <Typography
               sx={{
-                fontFamily: '"IBM Plex Mono", monospace',
-                fontSize: '9px',
+                fontSize: '11px',
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
                 color: J.textMuted,
@@ -94,9 +93,8 @@ function StatCard({
             </Typography>
             <Typography
               sx={{
-                fontFamily: '"Playfair Display", Georgia, serif',
                 fontWeight: 700,
-                fontSize: '2.4rem',
+                fontSize: '2.8rem',
                 color: J.ink,
                 lineHeight: 1,
               }}
@@ -255,7 +253,7 @@ export default function DashboardPage() {
                                           <CloudUploadIcon  sx={{ fontSize: 48, color: 'rgba(255,255,255,0.8)' }} />}
             </Box>
 
-            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontWeight: 700, fontSize: '22px' }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '24px' }}>
               {importStatus === 'done'  ? '¡Importación Exitosa!'
                : importStatus === 'error' ? 'Error en la Importación'
                : 'Importando Plantilla'}
@@ -264,7 +262,7 @@ export default function DashboardPage() {
             {/* Gold separator */}
             <Box sx={{ mt: 1, mb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, opacity: 0.6 }}>
               <InsertDriveFileIcon sx={{ fontSize: 14 }} />
-              <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', letterSpacing: '0.1em' }}>
+              <Typography sx={{ fontSize: '13px', letterSpacing: '0.1em' }}>
                 {importFileName}
               </Typography>
             </Box>
@@ -285,7 +283,7 @@ export default function DashboardPage() {
                 }}>
                   {step.completed ? <CheckCircleIcon sx={{ fontSize: 22 }} /> : React.cloneElement(step.icon as React.ReactElement<any>, { sx: { fontSize: 22 } })}
                 </Box>
-                <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', color: step.active || step.completed ? 'white' : 'rgba(255,255,255,0.35)', fontWeight: step.active ? 700 : 400 }}>
+                <Typography sx={{ fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', color: step.active || step.completed ? 'white' : 'rgba(255,255,255,0.35)', fontWeight: step.active ? 700 : 400 }}>
                   {step.label}
                 </Typography>
                 {i < steps.length - 1 && (
@@ -300,8 +298,8 @@ export default function DashboardPage() {
             <Fade in>
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', opacity: 0.7 }}>Procesando registros...</Typography>
-                  <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', fontWeight: 700 }}>
+                  <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>Procesando registros...</Typography>
+                  <Typography sx={{ fontSize: '13px', fontWeight: 700 }}>
                     {importProgress ? `${importProgress.procesados.toLocaleString()} / ${importProgress.total.toLocaleString()}` : 'Iniciando...'}
                   </Typography>
                 </Box>
@@ -332,7 +330,7 @@ export default function DashboardPage() {
                 <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '14px', mb: 3, opacity: 0.85 }}>
                   Todos los registros fueron importados y actualizados correctamente.
                 </Typography>
-                <Button onClick={handleCloseImportDialog} sx={{ bgcolor: J.success, color: '#fff', borderRadius: 0, px: 4, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', '&:hover': { bgcolor: '#235f3b' } }}>
+                <Button onClick={handleCloseImportDialog} sx={{ bgcolor: J.success, color: '#fff', borderRadius: 0, px: 4, fontSize: '13px', letterSpacing: '0.14em', textTransform: 'uppercase', '&:hover': { bgcolor: '#235f3b' } }}>
                   Cerrar
                 </Button>
               </Box>
@@ -342,10 +340,10 @@ export default function DashboardPage() {
           {importStatus === 'error' && (
             <Fade in>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '14px', mb: 3, opacity: 0.85 }}>
+                <Typography sx={{ fontSize: '16px', mb: 3, opacity: 0.85 }}>
                   Ocurrió un error al importar el archivo. Verifica que el formato sea correcto.
                 </Typography>
-                <Button onClick={handleCloseImportDialog} sx={{ bgcolor: J.danger, color: '#fff', borderRadius: 0, px: 4, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', '&:hover': { bgcolor: '#8f2020' } }}>
+                <Button onClick={handleCloseImportDialog} sx={{ bgcolor: J.danger, color: '#fff', borderRadius: 0, px: 4, fontSize: '13px', letterSpacing: '0.14em', textTransform: 'uppercase', '&:hover': { bgcolor: '#8f2020' } }}>
                   Cerrar
                 </Button>
               </Box>
@@ -362,19 +360,19 @@ export default function DashboardPage() {
       {/* Page header row */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
-            Panel General
-          </Typography>
-          <Typography sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700, fontSize: '28px', color: J.ink }}>
-            Dashboard Electoral
-          </Typography>
+          <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+                  Panel General
+                </Typography>
+                <Typography sx={{ fontWeight: 700, fontSize: '32px', color: J.ink }}>
+                  Dashboard Electoral
+                </Typography>
         </Box>
 
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
           {dashboardUpdates > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <span className="live-indicator" />
-              <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase', color: J.success }}>
+              <Typography sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: J.success }}>
                 En vivo
               </Typography>
             </Box>
@@ -388,8 +386,7 @@ export default function DashboardPage() {
               borderColor: J.border,
               color: J.ink,
               borderRadius: 0,
-              fontFamily: '"IBM Plex Mono", monospace',
-              fontSize: '10px',
+              fontSize: '13px',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               py: 1,
@@ -409,8 +406,7 @@ export default function DashboardPage() {
               bgcolor: J.ink,
               color: '#fff',
               borderRadius: 0,
-              fontFamily: '"IBM Plex Mono", monospace',
-              fontSize: '10px',
+              fontSize: '13px',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               py: 1,
@@ -427,7 +423,7 @@ export default function DashboardPage() {
       <Box sx={{ height: 1, bgcolor: J.border, mb: 4 }} />
 
       {/* ── Stats grid ── */}
-      <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+      <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
         Métricas Generales
       </Typography>
 
@@ -448,7 +444,7 @@ export default function DashboardPage() {
 
       {/* ── Semáforo ── */}
       <Box sx={{ height: 1, bgcolor: J.border, mb: 3 }} />
-      <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+      <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
         Semáforo de Cobertura
       </Typography>
 

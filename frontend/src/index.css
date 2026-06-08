@@ -4,7 +4,7 @@
    to Vanilla CSS for the current MUI stack
    ============================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* ─── Color Tokens ─────────────────────────── */
 :root {
@@ -19,8 +19,8 @@
   --success:        #2D7D4E;
   --warning:        #B97D1A;
   --danger:         #B83232;
-  --text-body:      #2C2C2C;
-  --text-muted:     #7A7A7A;
+  --text-body:      #1A1F2E; /* Darker ink color for text body */
+  --text-muted:     #4A4A4A; /* Darker gray for muted text */
   --border-line:    #E2DDD6;
 
   /* Legacy aliases — kept so existing inline styles still resolve */
@@ -28,9 +28,9 @@
   --text-h:         var(--accent-ink);
   --bg:             var(--bg-canvas);
   --border:         var(--border-line);
-  --sans:           'IBM Plex Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading:        'Playfair Display', Georgia, serif;
-  --mono:           'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  --sans:           'Inter', system-ui, -apple-system, sans-serif;
+  --heading:        'Inter', system-ui, -apple-system, sans-serif;
+  --mono:           'Inter', ui-monospace, monospace;
 
   font: 16px/150% var(--sans);
   letter-spacing: 0.12px;

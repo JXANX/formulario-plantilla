@@ -11,8 +11,8 @@ const JAGUAR = {
   success: '#2D7D4E',
   warning: '#B97D1A',
   danger:  '#B83232',
-  textBody:'#2C2C2C',
-  textMuted:'#7A7A7A',
+  textBody:'#1A1F2E', // Much darker ink color for better legibility
+  textMuted:'#4A4A4A', // Darker gray for muted text
 };
 
 const theme = createTheme({
@@ -49,72 +49,63 @@ const theme = createTheme({
     divider: JAGUAR.border,
   },
   typography: {
-    fontFamily: '"IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
-      fontFamily: '"Playfair Display", Georgia, serif',
       fontWeight: 700,
       fontSize: '2.5rem',
       color: JAGUAR.ink,
     },
     h2: {
-      fontFamily: '"Playfair Display", Georgia, serif',
       fontWeight: 700,
       fontSize: '2rem',
       color: JAGUAR.ink,
     },
     h3: {
-      fontFamily: '"Playfair Display", Georgia, serif',
       fontWeight: 700,
       fontSize: '1.75rem',
       color: JAGUAR.ink,
     },
     h4: {
-      fontFamily: '"Playfair Display", Georgia, serif',
       fontStyle: 'italic',
       fontWeight: 700,
       fontSize: '1.5rem',
       color: JAGUAR.ink,
     },
     h5: {
-      fontFamily: '"Playfair Display", Georgia, serif',
       fontStyle: 'italic',
       fontWeight: 700,
       fontSize: '1.25rem',
       color: JAGUAR.ink,
     },
     h6: {
-      fontFamily: '"IBM Plex Mono", monospace',
       fontWeight: 600,
-      fontSize: '0.7rem',
-      letterSpacing: '0.18em',
+      fontSize: '0.95rem',
+      letterSpacing: '0.12em',
       textTransform: 'uppercase' as const,
       color: JAGUAR.gold,
     },
     overline: {
-      fontFamily: '"IBM Plex Mono", monospace',
       fontWeight: 600,
-      letterSpacing: '0.15em',
-      fontSize: '0.65rem',
+      letterSpacing: '0.1em',
+      fontSize: '0.78rem',
       color: JAGUAR.textMuted,
     },
     caption: {
-      fontFamily: '"IBM Plex Mono", monospace',
-      fontSize: '0.7rem',
+      fontSize: '0.8rem',
       color: JAGUAR.textMuted,
     },
     button: {
-      fontFamily: '"IBM Plex Mono", monospace',
       fontWeight: 600,
-      letterSpacing: '0.12em',
+      letterSpacing: '0.08em',
       textTransform: 'uppercase' as const,
     },
     body1: {
-      fontSize: '0.9375rem',
+      fontSize: '1rem',
       lineHeight: 1.6,
       color: JAGUAR.textBody,
     },
     body2: {
-      fontSize: '0.875rem',
+      fontSize: '0.9rem',
       color: JAGUAR.textMuted,
     },
   },

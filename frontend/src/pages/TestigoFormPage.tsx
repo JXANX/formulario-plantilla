@@ -30,11 +30,11 @@ function SectionLabel({ num, text }: { num: string; text: string }) {
           border: `1.5px solid ${J.border}`, flexShrink: 0,
         }}
       >
-        <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', fontWeight: 600, color: J.ink }}>
+        <Typography sx={{ fontSize: '13px', fontWeight: 600, color: J.ink }}>
           {num}
         </Typography>
       </Box>
-      <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.gold, fontWeight: 600 }}>
+      <Typography sx={{ fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.gold, fontWeight: 600 }}>
         {text}
       </Typography>
     </Box>
@@ -142,10 +142,10 @@ export default function TestigoFormPage() {
     <Box>
       {/* Page heading */}
       <Box sx={{ mb: 4 }}>
-        <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+        <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
           Registro Institucional
         </Typography>
-        <Typography sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700, fontSize: '28px', color: J.ink }}>
+        <Typography sx={{ fontWeight: 700, fontSize: '32px', color: J.ink }}>
           Registro de Testigos
         </Typography>
       </Box>
@@ -183,8 +183,7 @@ export default function TestigoFormPage() {
                       borderColor: J.border,
                       color: J.ink,
                       borderRadius: 0,
-                      fontFamily: '"IBM Plex Mono", monospace',
-                      fontSize: '10px',
+                      fontSize: '13px',
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
                       whiteSpace: 'nowrap',
@@ -286,7 +285,7 @@ export default function TestigoFormPage() {
                       return (
                         <MenuItem key={m.id} value={m.id} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
                           <span>Mesa {m.numeroMesa}</span>
-                          <span style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', color: isPartial ? J.gold : J.danger }}>
+                          <span style={{ fontSize: '13px', color: isPartial ? J.gold : J.danger }}>
                             {isPartial ? '◑ Parcial' : '○ Vacía'}
                           </span>
                         </MenuItem>
@@ -309,8 +308,7 @@ export default function TestigoFormPage() {
                     borderRadius: 0,
                     px: 4,
                     py: 1.4,
-                    fontFamily: '"IBM Plex Mono", monospace',
-                    fontSize: '11px',
+                    fontSize: '13px',
                     letterSpacing: '0.14em',
                     textTransform: 'uppercase',
                     fontWeight: 600,

@@ -73,9 +73,8 @@ export default function MainLayout() {
       <Box sx={{ px: 3, pt: 5, pb: 4 }}>
         <Typography
           sx={{
-            fontFamily: '"IBM Plex Mono", monospace',
-            fontWeight: 600,
-            fontSize: '22px',
+            fontWeight: 700,
+            fontSize: '24px',
             letterSpacing: '0.08em',
             color: '#fff',
             lineHeight: 1,
@@ -85,10 +84,8 @@ export default function MainLayout() {
         </Typography>
         <Typography
           sx={{
-            fontFamily: '"Playfair Display", Georgia, serif',
-            fontStyle: 'italic',
-            fontWeight: 400,
-            fontSize: '13px',
+            fontWeight: 500,
+            fontSize: '14px',
             color: JAGUAR.gold,
             mt: 0.5,
           }}
@@ -135,8 +132,7 @@ export default function MainLayout() {
                 slotProps={{
                   primary: {
                     sx: {
-                      fontFamily: '"IBM Plex Sans", sans-serif',
-                      fontSize: '13.5px',
+                      fontSize: '15px',
                       fontWeight: active ? 700 : 500,
                       color: active ? JAGUAR.gold : 'rgba(200,208,224,0.75)',
                       transition: 'color 0.18s',
@@ -159,8 +155,7 @@ export default function MainLayout() {
           sx={{
             justifyContent: 'flex-start',
             color: 'rgba(200,208,224,0.45)',
-            fontFamily: '"IBM Plex Mono", monospace',
-            fontSize: '10px',
+            fontSize: '13px',
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
             px: 0,
@@ -240,8 +235,7 @@ export default function MainLayout() {
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
                 <Typography
                   sx={{
-                    fontFamily: '"IBM Plex Mono", monospace',
-                    fontSize: '10px',
+                    fontSize: '12px',
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
                     color: JAGUAR.muted,
@@ -251,10 +245,8 @@ export default function MainLayout() {
                 </Typography>
                 <Typography
                   sx={{
-                    fontFamily: '"Playfair Display", Georgia, serif',
-                    fontStyle: 'italic',
                     fontWeight: 700,
-                    fontSize: '19px',
+                    fontSize: '22px',
                     color: JAGUAR.ink,
                     lineHeight: 1,
                   }}
@@ -274,8 +266,7 @@ export default function MainLayout() {
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography
                     sx={{
-                      fontFamily: '"IBM Plex Sans", sans-serif',
-                      fontSize: '12px',
+                      fontSize: '14px',
                       fontWeight: 600,
                       color: JAGUAR.ink,
                       lineHeight: 1.2,
@@ -285,8 +276,7 @@ export default function MainLayout() {
                   </Typography>
                   <Typography
                     sx={{
-                      fontFamily: '"IBM Plex Mono", monospace',
-                      fontSize: '9px',
+                      fontSize: '11px',
                       letterSpacing: '0.12em',
                       textTransform: 'uppercase',
                       color: JAGUAR.muted,
@@ -308,8 +298,7 @@ export default function MainLayout() {
                 >
                   <Typography
                     sx={{
-                      fontFamily: '"IBM Plex Mono", monospace',
-                      fontSize: '12px',
+                      fontSize: '14px',
                       fontWeight: 600,
                       color: JAGUAR.gold,
                     }}

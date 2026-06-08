@@ -249,15 +249,15 @@ export default function TestigosListPage() {
       {/* Page heading */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
+          <Typography sx={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: J.gold, mb: 0.5 }}>
             Registro Institucional
           </Typography>
-          <Typography sx={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700, fontSize: '28px', color: J.ink }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '32px', color: J.ink }}>
             Listado de Testigos
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', color: J.textMuted }}>
+          <Typography sx={{ fontSize: '13px', letterSpacing: '0.1em', color: J.textMuted }}>
             Total: <strong style={{ color: J.ink }}>{testigos.length}</strong>
             &nbsp;·&nbsp;
             Filtrados: <strong style={{ color: J.blue }}>{filteredTestigos.length}</strong>
@@ -271,7 +271,7 @@ export default function TestigosListPage() {
       {/* ── Filters ── */}
       <Card sx={{ mb: 3, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
         <CardContent sx={{ p: 2.5 }}>
-          <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
+          <Typography sx={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: J.textMuted, mb: 2 }}>
             Filtros de búsqueda
           </Typography>
           <Grid container spacing={2} sx={{ alignItems: 'center' }}>
@@ -332,7 +332,7 @@ export default function TestigosListPage() {
             <TableHead sx={{ bgcolor: J.ink }}>
               <TableRow>
                 {['Documento','Nombre Completo','Celular','Tipo','Municipio','Puesto','Mesa','Registrado por','Acciones'].map(h => (
-                  <TableCell key={h} sx={{ color: '#fff', fontFamily: '"IBM Plex Mono", monospace', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, borderBottom: 'none', py: 1.5, whiteSpace: 'nowrap' }}>
+                  <TableCell key={h} sx={{ color: '#fff', fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, borderBottom: 'none', py: 1.5, whiteSpace: 'nowrap' }}>
                     {h}
                   </TableCell>
                 ))}
@@ -341,24 +341,23 @@ export default function TestigosListPage() {
             <TableBody>
               {filteredTestigos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 5, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', letterSpacing: '0.1em' }}>
+                  <TableCell colSpan={9} align="center" sx={{ py: 5, color: J.textMuted, fontSize: '13px', letterSpacing: '0.1em' }}>
                     No se encontraron testigos con los filtros seleccionados.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredTestigos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((t) => (
                   <TableRow key={t.id} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '12px', fontWeight: 600, color: J.ink }}>{t.documento}</TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13.5px' }}>{t.nombreCompleto}</TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '12px' }}>{t.celular}</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600, color: J.ink }}>{t.documento}</TableCell>
+                    <TableCell sx={{ fontSize: '15.5px' }}>{t.nombreCompleto}</TableCell>
+                    <TableCell sx={{ fontSize: '14px' }}>{t.celular}</TableCell>
                     <TableCell>
                       <Box
                         sx={{
                           display: 'inline-block',
-                          px: 1, py: 0.3,
-                          fontFamily: '"IBM Plex Mono", monospace',
-                          fontSize: '9px',
-                          letterSpacing: '0.1em',
+                          px: 1.25, py: 0.4,
+                          fontSize: '11px',
+                          letterSpacing: '0.08em',
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           bgcolor: t.tipoTestigo === 'PRINCIPAL' ? 'rgba(41,82,204,0.09)' : 'rgba(185,125,26,0.1)',
@@ -369,10 +368,10 @@ export default function TestigosListPage() {
                         {t.tipoTestigo}
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ fontSize: '13px' }}>{t.nombreMunicipio}</TableCell>
-                    <TableCell sx={{ fontSize: '13px' }}>{t.nombrePuesto}</TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '12px', fontWeight: 600 }}>Mesa {t.numeroMesa}</TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', color: J.textMuted }}>{t.registradoPor}</TableCell>
+                    <TableCell sx={{ fontSize: '15px' }}>{t.nombreMunicipio}</TableCell>
+                    <TableCell sx={{ fontSize: '15px' }}>{t.nombrePuesto}</TableCell>
+                    <TableCell sx={{ fontSize: '14px', fontWeight: 600 }}>Mesa {t.numeroMesa}</TableCell>
+                    <TableCell sx={{ fontSize: '13px', color: J.textMuted }}>{t.registradoPor}</TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                         <Tooltip title="Mover de Mesa">
@@ -401,28 +400,28 @@ export default function TestigosListPage() {
             onPageChange={(_, p) => setPage(p)}
             onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
             labelRowsPerPage="Filas por página:"
-            sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '11px', borderTop: `1px solid ${J.border}` }}
+            sx={{ fontSize: '13px', borderTop: `1px solid ${J.border}` }}
           />
         </TableContainer>
       )}
 
       {/* ── Delete Dialog ── */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} slotProps={{ paper: { sx: { borderRadius: 0, border: `1px solid ${J.border}` } } }}>
-        <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontWeight: 700, color: J.danger, fontSize: '18px', borderBottom: `1px solid ${J.border}` }}>
+        <DialogTitle sx={{ fontWeight: 700, color: J.danger, fontSize: '20px', borderBottom: `1px solid ${J.border}` }}>
           ¿Eliminar Testigo?
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
-          <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '14px', color: J.ink }}>
+          <Typography sx={{ fontSize: '16px', color: J.ink }}>
             ¿Estás seguro de que deseas eliminar a{' '}
             <strong>{selectedTestigoForDelete?.nombreCompleto}</strong> con documento{' '}
             <strong>{selectedTestigoForDelete?.documento}</strong>? Esta acción no se puede deshacer.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ borderRadius: 0, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em' }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ borderRadius: 0, color: J.textMuted, fontSize: '13px', letterSpacing: '0.1em' }}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirmDelete} sx={{ bgcolor: J.danger, color: '#fff', borderRadius: 0, px: 3, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', '&:hover': { bgcolor: '#8f2020' } }}>
+          <Button onClick={handleConfirmDelete} sx={{ bgcolor: J.danger, color: '#fff', borderRadius: 0, px: 3, fontSize: '13px', letterSpacing: '0.1em', '&:hover': { bgcolor: '#8f2020' } }}>
             Confirmar Eliminación
           </Button>
         </DialogActions>
@@ -430,11 +429,11 @@ export default function TestigosListPage() {
 
       {/* ── Move Dialog ── */}
       <Dialog open={moveDialogOpen} onClose={() => setMoveDialogOpen(false)} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 0, border: `1px solid ${J.border}` } } }}>
-        <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontWeight: 700, color: J.ink, fontSize: '18px', borderBottom: `1px solid ${J.border}` }}>
+        <DialogTitle sx={{ fontWeight: 700, color: J.ink, fontSize: '20px', borderBottom: `1px solid ${J.border}` }}>
           Trasladar Testigo Electoral
         </DialogTitle>
         <DialogContent dividers sx={{ borderColor: J.border }}>
-          <Typography sx={{ fontFamily: '"IBM Plex Sans", sans-serif', fontSize: '13px', color: J.textMuted, mb: 3 }}>
+          <Typography sx={{ fontSize: '15px', color: J.textMuted, mb: 3 }}>
             Selecciona la nueva ubicación para <strong style={{ color: J.ink }}>{selectedTestigoForMove?.nombreCompleto}</strong> (Doc: {selectedTestigoForMove?.documento}).
           </Typography>
           {moveError && <Alert severity="error" sx={{ mb: 2, borderRadius: 0 }}>{moveError}</Alert>}
@@ -464,7 +463,7 @@ export default function TestigosListPage() {
                     const isCurrent   = selectedTestigoForMove?.mesaId === m.id;
                     return (
                       <MenuItem key={m.id} value={m.id} disabled={!isAvailable && !isCurrent}
-                        sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: '"IBM Plex Mono", monospace', fontSize: '12px', color: isCurrent ? J.blue : (!isAvailable ? J.textMuted : 'inherit'), fontWeight: isCurrent ? 700 : 400 }}>
+                        sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: isCurrent ? J.blue : (!isAvailable ? J.textMuted : 'inherit'), fontWeight: isCurrent ? 700 : 400 }}>
                         <span>Mesa {m.numeroMesa}{isCurrent ? ' (Actual)' : ''}</span>
                         <span style={{ opacity: 0.65 }}>({m.ocupados}/{m.capacidad} ocupados)</span>
                       </MenuItem>
@@ -476,13 +475,13 @@ export default function TestigosListPage() {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-          <Button onClick={() => setMoveDialogOpen(false)} sx={{ borderRadius: 0, color: J.textMuted, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em' }}>
+          <Button onClick={() => setMoveDialogOpen(false)} sx={{ borderRadius: 0, color: J.textMuted, fontSize: '13px', letterSpacing: '0.1em' }}>
             Cancelar
           </Button>
           <Button
             onClick={handleConfirmMove}
             disabled={!moveMesa || moveMesa === String(selectedTestigoForMove?.mesaId)}
-            sx={{ bgcolor: J.ink, color: '#fff', borderRadius: 0, px: 3, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', '&:hover': { bgcolor: J.blue }, '&:disabled': { bgcolor: 'rgba(26,31,46,0.35)', color: '#fff' } }}
+            sx={{ bgcolor: J.ink, color: '#fff', borderRadius: 0, px: 3, fontSize: '13px', letterSpacing: '0.1em', '&:hover': { bgcolor: J.blue }, '&:disabled': { bgcolor: 'rgba(26,31,46,0.35)', color: '#fff' } }}
           >
             Guardar Traslado
           </Button>
