@@ -226,6 +226,25 @@ const theme = createTheme({
     MuiSelect: {
       defaultProps: {
         MenuProps: {
+          // ── FIX: auto-select al soltar el click ──────────────────────────
+          // El menú se ancla en la parte INFERIOR del Select. Así, cuando el
+          // usuario hace mousedown sobre el Select (abre el menú) y suelta el
+          // botón, el cursor sigue sobre el Select — no sobre ningún MenuItem.
+          // Sin esto, el menú puede aparecer superpuesto al trigger y el
+          // mouseup cae directamente sobre un ítem, seleccionándolo solo.
+          // disableScrollLock: evita que MUI añada padding compensatorio al
+          // <body> que desplazaría el layout y haría recalcular el ancla.
+          // ─────────────────────────────────────────────────────────────────
+          disableScrollLock: true,
+          anchorOrigin: {
+            vertical: 'bottom',
+            horizontal: 'left',
+          },
+          transformOrigin: {
+            vertical: 'top',
+            horizontal: 'left',
+          },
+          marginThreshold: 8,
           slotProps: {
             paper: {
               sx: {
