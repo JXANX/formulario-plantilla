@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, TextField, Button,
-  MenuItem, FormControl, InputLabel, Alert
+  MenuItem, FormControl, InputLabel, Select, Alert
 } from '@mui/material';
-import GuardedSelect from '../components/GuardedSelect';
 import SaveIcon      from '@mui/icons-material/Save';
 import SearchIcon    from '@mui/icons-material/Search';
 import { useToast }  from '../context/ToastContext';
@@ -227,10 +226,10 @@ export default function TestigoFormPage() {
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Tipo Testigo</InputLabel>
-                  <GuardedSelect name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange}>
+                  <Select name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange}>
                     <MenuItem value="PRINCIPAL">PRINCIPAL</MenuItem>
                     <MenuItem value="SUPLENTE">SUPLENTE</MenuItem>
-                  </GuardedSelect>
+                  </Select>
                 </FormControl>
               </Grid>
 
@@ -247,40 +246,40 @@ export default function TestigoFormPage() {
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Departamento</InputLabel>
-                  <GuardedSelect value={selectedDepto} label="Departamento" onChange={handleDeptoChange} required>
+                  <Select value={selectedDepto} label="Departamento" onChange={handleDeptoChange} required>
                     {[...departamentos].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((d: any) => (
                       <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>
                     ))}
-                  </GuardedSelect>
+                  </Select>
                 </FormControl>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedDepto}>
                   <InputLabel>Municipio</InputLabel>
-                  <GuardedSelect value={selectedMpio} label="Municipio" onChange={handleMpioChange} required>
+                  <Select value={selectedMpio} label="Municipio" onChange={handleMpioChange} required>
                     {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => (
                       <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
                     ))}
-                  </GuardedSelect>
+                  </Select>
                 </FormControl>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedMpio}>
                   <InputLabel>Puesto</InputLabel>
-                  <GuardedSelect value={selectedPuesto} label="Puesto" onChange={handlePuestoChange} required>
+                  <Select value={selectedPuesto} label="Puesto" onChange={handlePuestoChange} required>
                     {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => (
                       <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
                     ))}
-                  </GuardedSelect>
+                  </Select>
                 </FormControl>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedPuesto}>
                   <InputLabel>Mesa</InputLabel>
-                  <GuardedSelect value={selectedMesa} label="Mesa" onChange={(e) => setSelectedMesa(e.target.value as string)} required>
+                  <Select value={selectedMesa} label="Mesa" onChange={(e) => setSelectedMesa(e.target.value as string)} required>
                     {[...mesas].filter((m: any) => m.ocupados < m.capacidad).sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => {
                       const isPartial = m.ocupados > 0 && m.ocupados < m.capacidad;
                       return (
@@ -292,7 +291,7 @@ export default function TestigoFormPage() {
                         </MenuItem>
                       );
                     })}
-                  </GuardedSelect>
+                  </Select>
                 </FormControl>
               </Grid>
 

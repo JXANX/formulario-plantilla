@@ -226,28 +226,6 @@ const theme = createTheme({
     MuiSelect: {
       defaultProps: {
         MenuProps: {
-          // disablePortal: el menú se renderiza dentro del árbol DOM del
-          // Select, evitando que el mouseup se pierda en el backdrop del body.
-          disablePortal: false,
-          // disableScrollLock: evita padding compensatorio en <body> que
-          // desplaza el layout y hace que el Popover recalcule su ancla.
-          disableScrollLock: true,
-          // disableAutoFocusItem: evita que MUI enfoque automáticamente el
-          // primer MenuItem al abrir el menú. Sin esto, el touchpad genera
-          // un touchend/mouseup que aterriza sobre el ítem ya enfocado y lo
-          // "selecciona" de inmediato antes de que el usuario mueva el dedo.
-          disableAutoFocusItem: true,
-          anchorOrigin: {
-            vertical: 'bottom',
-            horizontal: 'left',
-          },
-          transformOrigin: {
-            vertical: 'top',
-            horizontal: 'left',
-          },
-          // marginThreshold=0 evita que MUI reposicione el menú cuando
-          // queda cerca del borde de la ventana (otro origen de cierres).
-          marginThreshold: 0,
           slotProps: {
             paper: {
               sx: {
