@@ -286,7 +286,7 @@ export default function TestigosListPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 4, md: 2.6 }}>
               <FormControl fullWidth>
-                <InputLabel>Municipio</InputLabel>
+                <InputLabel shrink>Municipio</InputLabel>
                 <Select native value={selectedMunicipio} label="Municipio" onChange={(e) => { handleMunicipioChange(e); setPage(0); }}>
                   <option value="">Todos</option>
                   {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => (
@@ -297,7 +297,7 @@ export default function TestigosListPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth disabled={!selectedMunicipio}>
-                <InputLabel>Puesto</InputLabel>
+                <InputLabel shrink>Puesto</InputLabel>
                 <Select native value={selectedPuesto} label="Puesto" onChange={(e) => { handlePuestoChange(e); setPage(0); }}>
                   <option value="">Todos</option>
                   {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => (
@@ -308,7 +308,7 @@ export default function TestigosListPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth disabled={!selectedPuesto}>
-                <InputLabel>Mesa</InputLabel>
+                <InputLabel shrink>Mesa</InputLabel>
                 <Select native value={selectedMesa} label="Mesa" onChange={(e) => { setSelectedMesa(e.target.value as string); setPage(0); }}>
                   <option value="">Todas</option>
                   {[...mesas].sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => (
@@ -445,7 +445,7 @@ export default function TestigosListPage() {
             ].map(({ label, value, handler, items, disabled, nameKey }) => (
               <Grid key={label} size={{ xs: 12 }}>
                 <FormControl fullWidth size="small" disabled={disabled}>
-                  <InputLabel>{label}</InputLabel>
+                  <InputLabel shrink>{label}</InputLabel>
                   <Select native value={value} label={label} onChange={handler}>
                     <option value="">Seleccione...</option>
                     {[...items].sort((a: any, b: any) => (a[nameKey] || '').localeCompare(b[nameKey] || '', 'es')).map((d: any) => (
@@ -457,7 +457,7 @@ export default function TestigosListPage() {
             ))}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!movePuesto}>
-                <InputLabel>Mesa</InputLabel>
+                <InputLabel shrink>Mesa</InputLabel>
                 <Select native value={moveMesa} label="Mesa" onChange={(e) => setMoveMesa(e.target.value as string)}>
                   <option value="">Seleccione Mesa...</option>
                   {[...moveMesasList].sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => {

@@ -225,7 +225,7 @@ export default function TestigoFormPage() {
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
-                  <InputLabel>Tipo Testigo</InputLabel>
+                  <InputLabel shrink>Tipo Testigo</InputLabel>
                   <Select native name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange}>
                     <option value="PRINCIPAL">PRINCIPAL</option>
                     <option value="SUPLENTE">SUPLENTE</option>
@@ -245,7 +245,7 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
-                  <InputLabel>Departamento</InputLabel>
+                  <InputLabel shrink>Departamento</InputLabel>
                   <Select native value={selectedDepto} label="Departamento" onChange={handleDeptoChange} required>
                     <option value="">Seleccione...</option>
                     {[...departamentos].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((d: any) => (
@@ -257,7 +257,7 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedDepto}>
-                  <InputLabel>Municipio</InputLabel>
+                  <InputLabel shrink>Municipio</InputLabel>
                   <Select native value={selectedMpio} label="Municipio" onChange={handleMpioChange} required>
                     <option value="">Seleccione...</option>
                     {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => (
@@ -269,7 +269,7 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedMpio}>
-                  <InputLabel>Puesto</InputLabel>
+                  <InputLabel shrink>Puesto</InputLabel>
                   <Select native value={selectedPuesto} label="Puesto" onChange={handlePuestoChange} required>
                     <option value="">Seleccione...</option>
                     {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => (
@@ -281,7 +281,7 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedPuesto}>
-                  <InputLabel>Mesa</InputLabel>
+                  <InputLabel shrink>Mesa</InputLabel>
                   <Select native value={selectedMesa} label="Mesa" onChange={(e) => setSelectedMesa(e.target.value as string)} required>
                     <option value="">Seleccione...</option>
                     {[...mesas].filter((m: any) => m.ocupados < m.capacidad).sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => {
