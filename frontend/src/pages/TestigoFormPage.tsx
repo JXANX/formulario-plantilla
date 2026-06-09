@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, TextField, Button,
-  FormControl, InputLabel, Select, Alert
+  FormControl, InputLabel, Select, MenuItem, Alert
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
@@ -23,41 +23,15 @@ const J = {
 };
 
 
-/* ─── sx reutilizable para todos los Select native ── */
+/* ─── sx reutilizable para todos los Select ── */
 const sxSelect = {
-  '& .MuiSelect-nativeInput': { opacity: 1 },
-  '& select': {
-    fontFamily: '"IBM Plex Sans", sans-serif',
-    fontSize: '14px',
-    color: J.ink,
-    backgroundColor: J.surface,
-    paddingLeft: '12px',
-    paddingRight: '32px',
-    cursor: 'pointer',
-  },
-  '& select:focus': {
-    backgroundColor: '#fff',
-    outline: 'none',
-  },
-  '& select option[value=""]': {
-    color: J.textMuted,
-    fontStyle: 'italic',
-  },
   '& .MuiOutlinedInput-notchedOutline': {
     borderColor: J.border,
     transition: 'border-color 0.15s ease',
   },
-  '&:hover .MuiOutlinedInput-notchedOutline': {
-    borderColor: J.blue,
-  },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: J.blue,
-    borderWidth: '1.5px',
-  },
-  '&.Mui-disabled': {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-  },
+  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
+  '&.Mui-disabled': { opacity: 0.5 },
 };
 
 /* ─── sx para InputLabel de selects ─────────────── */
@@ -276,10 +250,16 @@ export default function TestigoFormPage() {
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
-                  <InputLabel shrink sx={sxLabel}>Tipo Testigo</InputLabel>
-                  <Select native name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange} sx={sxSelect}>
-                    <option value="PRINCIPAL">⬛ PRINCIPAL</option>
-                    <option value="SUPLENTE">🔷 SUPLENTE</option>
+                  <InputLabel sx={sxLabel}>Tipo Testigo</InputLabel>
+                  <Select
+                    name="tipoTestigo"
+                    value={formData.tipoTestigo}
+                    label="Tipo Testigo"
+                    onChange={handleChange}
+                    sx={sxSelect}
+                  >
+                    <MenuItem value="PRINCIPAL">PRINCIPAL</MenuItem>
+                    <MenuItem value="SUPLENTE">SUPLENTE</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -296,11 +276,17 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
-                  <InputLabel shrink sx={sxLabel}>Departamento</InputLabel>
-                  <Select native value={selectedDepto} label="Departamento" onChange={handleDeptoChange} required sx={sxSelect}>
-                    <option value="">Seleccione...</option>
+                  <InputLabel sx={sxLabel}>Departamento</InputLabel>
+                  <Select
+                    value={selectedDepto}
+                    label="Departamento"
+                    onChange={handleDeptoChange}
+                    required
+                    sx={sxSelect}
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
                     {[...departamentos].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((d: any) => (
-                      <option key={d.id} value={d.id}>{d.nombre}</option>
+                      <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -308,11 +294,17 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedDepto}>
-                  <InputLabel shrink sx={sxLabel}>Municipio</InputLabel>
-                  <Select native value={selectedMpio} label="Municipio" onChange={handleMpioChange} required sx={sxSelect}>
-                    <option value="">Seleccione...</option>
+                  <InputLabel sx={sxLabel}>Municipio</InputLabel>
+                  <Select
+                    value={selectedMpio}
+                    label="Municipio"
+                    onChange={handleMpioChange}
+                    required
+                    sx={sxSelect}
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
                     {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => (
-                      <option key={m.id} value={m.id}>{m.nombre}</option>
+                      <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -320,11 +312,17 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedMpio}>
-                  <InputLabel shrink sx={sxLabel}>Puesto</InputLabel>
-                  <Select native value={selectedPuesto} label="Puesto" onChange={handlePuestoChange} required sx={sxSelect}>
-                    <option value="">Seleccione...</option>
+                  <InputLabel sx={sxLabel}>Puesto</InputLabel>
+                  <Select
+                    value={selectedPuesto}
+                    label="Puesto"
+                    onChange={handlePuestoChange}
+                    required
+                    sx={sxSelect}
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
                     {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => (
-                      <option key={p.id} value={p.id}>{p.nombrePuesto}</option>
+                      <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -332,19 +330,30 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedPuesto}>
-                  <InputLabel shrink sx={sxLabel}>Mesa</InputLabel>
-                  <Select native value={selectedMesa} label="Mesa" onChange={(e) => setSelectedMesa(e.target.value as string)} required sx={sxSelect}>
-                    <option value="">Seleccione...</option>
-                    {[...mesas].filter((m: any) => m.ocupados < m.capacidad).sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => {
-                      const pct = m.capacidad > 0 ? m.ocupados / m.capacidad : 0;
-                      const emoji = pct >= 0.75 ? '🟡' : m.ocupados === 0 ? '🟢' : '🟢';
-                      const estado = m.ocupados === 0 ? 'Vacía' : 'Parcial';
-                      return (
-                        <option key={m.id} value={m.id}>
-                          {emoji} Mesa {m.numeroMesa} — {estado} ({m.ocupados}/{m.capacidad})
-                        </option>
-                      );
-                    })}
+                  <InputLabel sx={sxLabel}>Mesa</InputLabel>
+                  <Select
+                    value={selectedMesa}
+                    label="Mesa"
+                    onChange={(e) => setSelectedMesa(e.target.value as string)}
+                    required
+                    sx={sxSelect}
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {[...mesas]
+                      .filter((m: any) => m.ocupados < m.capacidad)
+                      .sort((a: any, b: any) => a.numeroMesa - b.numeroMesa)
+                      .map((m: any) => {
+                        const isPartial = m.ocupados > 0 && m.ocupados < m.capacidad;
+                        return (
+                          <MenuItem key={m.id} value={m.id} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                            <span>Mesa {m.numeroMesa}</span>
+                            <span style={{ fontSize: '13px', color: isPartial ? J.gold : J.danger }}>
+                              {isPartial ? '◑ Parcial' : '○ Vacía'}
+                            </span>
+                          </MenuItem>
+                        );
+                      })
+                    }
                   </Select>
                 </FormControl>
               </Grid>

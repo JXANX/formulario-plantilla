@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, FormControl,
-  InputLabel, Table, TableBody, TableCell, TableContainer, Select,
+  InputLabel, Table, TableBody, TableCell, TableContainer, Select, MenuItem,
   TableHead, TableRow, Paper, Chip, CircularProgress, Alert,
   Tabs, Tab, Button, useMediaQuery, useTheme
 } from '@mui/material';
@@ -112,17 +112,8 @@ function computeExtendedCoverage(
 }
 
 
-/* ─── sx reutilizable para todos los Select native ── */
+/* ─── sx reutilizable para todos los Select ── */
 const sxSelect = {
-  '& select': {
-    fontFamily: '"IBM Plex Sans", sans-serif',
-    fontSize: '14px',
-    color: J.ink,
-    backgroundColor: J.surface,
-    paddingLeft: '12px',
-    cursor: 'pointer',
-  },
-  '& select:focus': { backgroundColor: '#fff' },
   '& .MuiOutlinedInput-notchedOutline': {
     borderColor: J.border,
     transition: 'border-color 0.15s ease',
@@ -511,28 +502,43 @@ export default function MesasReportPage() {
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small">
-                    <InputLabel shrink sx={sxLabel}>Departamento</InputLabel>
-                    <Select native value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange} sx={sxSelect}>
-                      <option value="">Selecciona Departamento…</option>
-                      {departamentos.map((d: any) => <option key={d.id} value={d.id.toString()}>{d.nombre}</option>)}
+                    <InputLabel sx={sxLabel}>Departamento</InputLabel>
+                    <Select
+                      value={selectedDepartamento}
+                      label="Departamento"
+                      onChange={handleDepartamentoChange}
+                      sx={sxSelect}
+                    >
+                      <MenuItem value="">Selecciona Departamento…</MenuItem>
+                      {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedDepartamento}>
-                    <InputLabel shrink sx={sxLabel}>Municipio</InputLabel>
-                    <Select native value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange} sx={sxSelect}>
-                      <option value="">Selecciona Municipio…</option>
-                      {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <option key={m.id} value={m.id.toString()}>{m.nombre}</option>)}
+                    <InputLabel sx={sxLabel}>Municipio</InputLabel>
+                    <Select
+                      value={selectedMunicipio}
+                      label="Municipio"
+                      onChange={handleMunicipioChange}
+                      sx={sxSelect}
+                    >
+                      <MenuItem value="">Selecciona Municipio…</MenuItem>
+                      {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
-                    <InputLabel shrink sx={sxLabel}>Puesto de Votación</InputLabel>
-                    <Select native value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)} sx={sxSelect}>
-                      <option value="">Selecciona Puesto…</option>
-                      {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <option key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</option>)}
+                    <InputLabel sx={sxLabel}>Puesto de Votación</InputLabel>
+                    <Select
+                      value={selectedPuesto}
+                      label="Puesto de Votación"
+                      onChange={(e) => setSelectedPuesto(e.target.value as string)}
+                      sx={sxSelect}
+                    >
+                      <MenuItem value="">Selecciona Puesto…</MenuItem>
+                      {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <MenuItem key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -623,10 +629,15 @@ export default function MesasReportPage() {
               <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth size="small">
-                    <InputLabel shrink sx={sxLabel}>Departamento</InputLabel>
-                    <Select native value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange} sx={sxSelect}>
-                      <option value="">Selecciona Departamento…</option>
-                      {departamentos.map((d: any) => <option key={d.id} value={d.id.toString()}>{d.nombre}</option>)}
+                    <InputLabel sx={sxLabel}>Departamento</InputLabel>
+                    <Select
+                      value={selectedDepartamento}
+                      label="Departamento"
+                      onChange={handleDepartamentoChange}
+                      sx={sxSelect}
+                    >
+                      <MenuItem value="">Selecciona Departamento…</MenuItem>
+                      {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
