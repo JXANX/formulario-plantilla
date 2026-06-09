@@ -594,10 +594,10 @@ export default function MesasReportPage() {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
-                    <Select value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                    <GuardedSelect value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
                       <MenuItem value="">Selecciona Departamento…</MenuItem>
                       {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
-                    </Select>
+                    </GuardedSelect>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 'auto' }}>
