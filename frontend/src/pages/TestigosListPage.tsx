@@ -4,7 +4,7 @@ import {
   FormControl, InputLabel, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent,
   DialogActions, Alert, TablePagination, CircularProgress, Tooltip, Divider,
-  ListSubheader, InputAdornment,
+  ListSubheader,
 } from '@mui/material';
 import GuardedSelect from '../components/GuardedSelect';
 import DeleteIcon from '@mui/icons-material/Delete';
