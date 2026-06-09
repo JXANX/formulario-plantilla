@@ -494,13 +494,13 @@ export default function MesasReportPage() {
                     <GuardedSelect value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange}>
                       <MenuItem value="">Selecciona Municipio…</MenuItem>
                       {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>)}
-                    </Select>
+                    </GuardedSelect>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
                     <InputLabel>Puesto de Votación</InputLabel>
-                    <Select value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)}>
+                    <GuardedSelect value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)}>
                       <MenuItem value="">Selecciona Puesto…</MenuItem>
                       {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <MenuItem key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>)}
                     </GuardedSelect>
