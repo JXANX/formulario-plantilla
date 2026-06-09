@@ -16,7 +16,7 @@ import { useRef } from 'react';
 import { Select } from '@mui/material';
 import type { SelectProps } from '@mui/material';
 
-const GUARD_MS = 400; // ms a ignorar onClose tras abrir
+const GUARD_MS = 500; // ms a ignorar clics en el fondo tras abrir
 
 export default function GuardedSelect<T = unknown>({
   onOpen,
@@ -31,16 +31,26 @@ export default function GuardedSelect<T = unknown>({
     onOpen?.(event);
   };
 
-  const handleClose: SelectProps['onClose'] = (event) => {
-    // Si el cierre llega antes de GUARD_MS desde la apertura, lo ignoramos
-    if (Date.now() - openedAt.current < GUARD_MS) return;
-    onClose?.(event);
+  const handleClose = (event: React.SyntheticEvent, reason?: string) => {
+    // Solo ignoramos el cierre si es un clic en el fondo (backdrop) OCURRIDO
+    // justo después de abrir. Esto permite que seleccionar una opción real
+    // (donde reason es undefined) cierre el menú de inmediato, sin importar
+    // qué tan rápido se hizo el toque.
+    if (reason === 'backdropClick' && Date.now() - openedAt.current < GUARD_MS) {
+      return;
+    }
+    
+    // Para SelectProps, onClose espera solo (event), pero internamente MUI
+    // pasa (event, reason) que casteamos de forma segura.
+    if (onClose) {
+      (onClose as any)(event, reason);
+    }
   };
 
   return (
     <Select<T>
       onOpen={handleOpen}
-      onClose={handleClose}
+      onClose={handleClose as any}
       MenuProps={{
         disableAutoFocusItem: true,
         disableScrollLock: true,
