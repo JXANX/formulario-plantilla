@@ -232,6 +232,11 @@ const theme = createTheme({
           // disableScrollLock: evita padding compensatorio en <body> que
           // desplaza el layout y hace que el Popover recalcule su ancla.
           disableScrollLock: true,
+          // disableAutoFocusItem: evita que MUI enfoque automáticamente el
+          // primer MenuItem al abrir el menú. Sin esto, el touchpad genera
+          // un touchend/mouseup que aterriza sobre el ítem ya enfocado y lo
+          // "selecciona" de inmediato antes de que el usuario mueva el dedo.
+          disableAutoFocusItem: true,
           anchorOrigin: {
             vertical: 'bottom',
             horizontal: 'left',
