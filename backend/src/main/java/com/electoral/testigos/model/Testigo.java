@@ -1,6 +1,7 @@
 package com.electoral.testigos.model;
 
 import com.electoral.testigos.model.enums.TipoTestigo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -45,6 +46,7 @@ public class Testigo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)
+    @JsonIgnore
     private Mesa mesa;
 
     @Column(name = "fecha_registro", nullable = false)
@@ -53,6 +55,7 @@ public class Testigo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_registro_id")
+    @JsonIgnore
     private Usuario usuarioRegistro;
 
     /** Helper to get full name */

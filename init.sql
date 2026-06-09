@@ -1,8 +1,7 @@
 -- Archivo de inicialización de la base de datos
 -- Se ejecuta automáticamente al levantar el contenedor de PostgreSQL
 
-CREATE DATABASE testigos_electorales;
-\c testigos_electorales;
+-- Configuraciones de optimización
 
 -- Configuraciones de optimización
 ALTER SYSTEM SET max_connections = '200';
