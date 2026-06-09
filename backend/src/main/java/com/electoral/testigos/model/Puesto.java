@@ -22,6 +22,10 @@ public class Puesto {
     @JsonIgnore
     private Municipio municipio;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "coordinador_id")
+    private Testigo coordinador;
+
     @Column(name = "codigo_puesto", nullable = false)
     private String codigoPuesto;
 

@@ -66,4 +66,19 @@ public class ExcelController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/export-coordinadores")
+    public ResponseEntity<Resource> exportCoordinadores(@RequestParam Long municipioId) {
+        try {
+            File file = excelExportService.exportarCoordinadores(municipioId);
+            Resource resource = new FileSystemResource(file);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

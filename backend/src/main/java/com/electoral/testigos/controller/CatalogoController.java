@@ -5,13 +5,11 @@ import com.electoral.testigos.model.Departamento;
 import com.electoral.testigos.model.Mesa;
 import com.electoral.testigos.model.Municipio;
 import com.electoral.testigos.model.Puesto;
+import com.electoral.testigos.model.Testigo;
 import com.electoral.testigos.service.CatalogoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -44,5 +42,27 @@ public class CatalogoController {
     public ResponseEntity<?> getMesasByPuesto(@PathVariable Long id) {
         List<Mesa> mesas = catalogoService.getMesasByPuesto(id);
         return ResponseEntity.ok(new ApiResponse<>(true, "Mesas obtenidas", mesas));
+    }
+
+    @PutMapping("/puestos/{puestoId}/coordinador")
+    public ResponseEntity<?> asignarCoordinador(
+            @PathVariable Long puestoId,
+            @RequestParam(required = false) Long testigoId) {
+        try {
+            Puesto puesto = catalogoService.asignarCoordinador(puestoId, testigoId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Coordinador asignado exitosamente", puesto));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/puestos/{puestoId}/testigos")
+    public ResponseEntity<?> getTestigosPorPuesto(@PathVariable Long puestoId) {
+        try {
+            List<Testigo> testigos = catalogoService.getTestigosPorPuesto(puestoId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Testigos del puesto obtenidos", testigos));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
     }
 }

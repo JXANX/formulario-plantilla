@@ -34,6 +34,12 @@ public class ExcelExportService {
     @Autowired
     private DashboardService dashboardService;
 
+    @Autowired
+    private PuestoRepository puestoRepository;
+
+    @Autowired
+    private MunicipioRepository municipioRepository;
+
     private static final String[] HEADERS = {
         "COD_DEPTO", "COD_MPIO", "ZONA", "COD_PUESTO",
         "NOM_DEPTO", "NOM_MPIO", "NOM_PUESTO",
@@ -199,5 +205,100 @@ public class ExcelExportService {
 
     private String safe(String val) {
         return val != null ? val : "";
+    }
+
+    private static final String[] HEADERS_COORDINADORES = {
+        "MUNICIPIO", "ZONA", "COD_PUESTO", "PUESTO",
+        "DOCUMENTO_COORDINADOR", "NOMBRE_COORDINADOR", "CELULAR_COORDINADOR", "CORREO_COORDINADOR",
+        "MESA", "DOCUMENTO_TESTIGO", "NOMBRE_TESTIGO", "CELULAR_TESTIGO", "CORREO_TESTIGO", "ORGANIZACION_TESTIGO", "TIPO_TESTIGO"
+    };
+
+    @Transactional
+    public File exportarCoordinadores(Long municipioId) throws IOException {
+        logger.info("Iniciando exportación de Excel de coordinadores para municipio ID: {}...", municipioId);
+
+        Municipio municipio = municipioRepository.findById(municipioId)
+                .orElseThrow(() -> new IllegalArgumentException("Municipio no encontrado con ID: " + municipioId));
+
+        File outputFile = File.createTempFile("Coordinadores_" + municipio.getNombre().replace(" ", "_") + "_", ".xlsx");
+
+        List<Puesto> puestos = puestoRepository.findByMunicipioId(municipioId);
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Coordinadores y Testigos");
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < HEADERS_COORDINADORES.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(HEADERS_COORDINADORES[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (Puesto puesto : puestos) {
+                Testigo coord = puesto.getCoordinador();
+                List<Testigo> testigos = testigoRepository.findByPuestoId(puesto.getId());
+
+                if (testigos != null && !testigos.isEmpty()) {
+                    for (Testigo testigo : testigos) {
+                        Row row = sheet.createRow(rowIdx++);
+                        writePuestoAndCoordinator(row, municipio.getNombre(), puesto, coord);
+                        
+                        row.createCell(8).setCellValue(testigo.getMesa() != null && testigo.getMesa().getNumeroMesa() != null ? testigo.getMesa().getNumeroMesa().toString() : "");
+                        row.createCell(9).setCellValue(safe(testigo.getDocumento()));
+                        row.createCell(10).setCellValue(safe(testigo.getNombreCompleto()));
+                        row.createCell(11).setCellValue(safe(testigo.getCelular()));
+                        row.createCell(12).setCellValue(safe(testigo.getCorreo()));
+                        row.createCell(13).setCellValue(safe(testigo.getNombreOrganizacion()));
+                        row.createCell(14).setCellValue(testigo.getTipoTestigo() != null ? testigo.getTipoTestigo().name() : "");
+                    }
+                } else {
+                    Row row = sheet.createRow(rowIdx++);
+                    writePuestoAndCoordinator(row, municipio.getNombre(), puesto, coord);
+                }
+            }
+
+            for (int i = 0; i < HEADERS_COORDINADORES.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+                workbook.write(fos);
+            }
+        }
+
+        try {
+            auditService.log(AccionAuditoria.EXPORTACION_EXCEL, "Exportación de coordinadores de puestos de " + municipio.getNombre() + " generada", "Excel", null);
+        } catch (Exception e) {
+            logger.warn("No se pudo registrar auditoría de exportación de coordinadores: {}", e.getMessage());
+        }
+
+        return outputFile;
+    }
+
+    private void writePuestoAndCoordinator(Row row, String municipioNombre, Puesto puesto, Testigo coord) {
+        row.createCell(0).setCellValue(safe(municipioNombre));
+        row.createCell(1).setCellValue(puesto != null ? safe(puesto.getZona()) : "");
+        row.createCell(2).setCellValue(puesto != null ? safe(puesto.getCodigoPuesto()) : "");
+        row.createCell(3).setCellValue(puesto != null ? safe(puesto.getNombrePuesto()) : "");
+        
+        if (coord != null) {
+            row.createCell(4).setCellValue(safe(coord.getDocumento()));
+            row.createCell(5).setCellValue(safe(coord.getNombreCompleto()));
+            row.createCell(6).setCellValue(safe(coord.getCelular()));
+            row.createCell(7).setCellValue(safe(coord.getCorreo()));
+        } else {
+            row.createCell(4).setCellValue("");
+            row.createCell(5).setCellValue("SIN COORDINADOR ASIGNADO");
+            row.createCell(6).setCellValue("");
+            row.createCell(7).setCellValue("");
+        }
     }
 }
