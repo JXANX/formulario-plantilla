@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, MenuItem, FormControl,
-  InputLabel, Table, TableBody, TableCell, TableContainer,
+  InputLabel, Table, TableBody, TableCell, TableContainer, Select,
   TableHead, TableRow, Paper, Chip, CircularProgress, Alert,
   Tabs, Tab, Button, useMediaQuery, useTheme
 } from '@mui/material';
-import GuardedSelect from '../components/GuardedSelect';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -482,28 +481,28 @@ export default function MesasReportPage() {
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
-                    <GuardedSelect value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                    <Select value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
                       <MenuItem value="">Selecciona Departamento…</MenuItem>
                       {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
-                    </GuardedSelect>
+                    </Select>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedDepartamento}>
                     <InputLabel>Municipio</InputLabel>
-                    <GuardedSelect value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange}>
+                    <Select value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange}>
                       <MenuItem value="">Selecciona Municipio…</MenuItem>
                       {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>)}
-                    </GuardedSelect>
+                    </Select>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
                     <InputLabel>Puesto de Votación</InputLabel>
-                    <GuardedSelect value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)}>
+                    <Select value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)}>
                       <MenuItem value="">Selecciona Puesto…</MenuItem>
                       {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <MenuItem key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>)}
-                    </GuardedSelect>
+                    </Select>
                   </FormControl>
                 </Grid>
               </Grid>
@@ -594,10 +593,10 @@ export default function MesasReportPage() {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
-                    <GuardedSelect value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                    <Select value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
                       <MenuItem value="">Selecciona Departamento…</MenuItem>
                       {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
-                    </GuardedSelect>
+                    </Select>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 'auto' }}>
