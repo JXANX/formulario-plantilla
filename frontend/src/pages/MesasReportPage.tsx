@@ -481,27 +481,27 @@ export default function MesasReportPage() {
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
-                    <Select value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
-                      <MenuItem value="">Selecciona Departamento…</MenuItem>
-                      {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
+                    <Select native value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                      <option value="">Selecciona Departamento…</option>
+                      {departamentos.map((d: any) => <option key={d.id} value={d.id.toString()}>{d.nombre}</option>)}
                     </Select>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedDepartamento}>
                     <InputLabel>Municipio</InputLabel>
-                    <Select value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange}>
-                      <MenuItem value="">Selecciona Municipio…</MenuItem>
-                      {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>)}
+                    <Select native value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange}>
+                      <option value="">Selecciona Municipio…</option>
+                      {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <option key={m.id} value={m.id.toString()}>{m.nombre}</option>)}
                     </Select>
                   </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
                     <InputLabel>Puesto de Votación</InputLabel>
-                    <Select value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)}>
-                      <MenuItem value="">Selecciona Puesto…</MenuItem>
-                      {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <MenuItem key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>)}
+                    <Select native value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)}>
+                      <option value="">Selecciona Puesto…</option>
+                      {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <option key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</option>)}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -593,9 +593,9 @@ export default function MesasReportPage() {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Departamento</InputLabel>
-                    <Select value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
-                      <MenuItem value="">Selecciona Departamento…</MenuItem>
-                      {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
+                    <Select native value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                      <option value="">Selecciona Departamento…</option>
+                      {departamentos.map((d: any) => <option key={d.id} value={d.id.toString()}>{d.nombre}</option>)}
                     </Select>
                   </FormControl>
                 </Grid>
