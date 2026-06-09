@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, TextField, Button, MenuItem,
-  FormControl, InputLabel, Select, Table, TableBody, TableCell, TableContainer,
+  FormControl, InputLabel, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent,
   DialogActions, Alert, TablePagination, CircularProgress, Tooltip
 } from '@mui/material';
+import GuardedSelect from '../components/GuardedSelect';
 import DeleteIcon    from '@mui/icons-material/Delete';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import SearchIcon    from '@mui/icons-material/Search';
@@ -287,34 +288,34 @@ export default function TestigosListPage() {
             <Grid size={{ xs: 12, sm: 4, md: 2.6 }}>
               <FormControl fullWidth>
                 <InputLabel>Municipio</InputLabel>
-                <Select value={selectedMunicipio} label="Municipio" onChange={(e) => { handleMunicipioChange(e); setPage(0); }}>
+                <GuardedSelect value={selectedMunicipio} label="Municipio" onChange={(e) => { handleMunicipioChange(e); setPage(0); }}>
                   <MenuItem value="">Todos</MenuItem>
                   {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => (
                     <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
                   ))}
-                </Select>
+                </GuardedSelect>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth disabled={!selectedMunicipio}>
                 <InputLabel>Puesto</InputLabel>
-                <Select value={selectedPuesto} label="Puesto" onChange={(e) => { handlePuestoChange(e); setPage(0); }}>
+                <GuardedSelect value={selectedPuesto} label="Puesto" onChange={(e) => { handlePuestoChange(e); setPage(0); }}>
                   <MenuItem value="">Todos</MenuItem>
                   {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => (
                     <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
                   ))}
-                </Select>
+                </GuardedSelect>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth disabled={!selectedPuesto}>
                 <InputLabel>Mesa</InputLabel>
-                <Select value={selectedMesa} label="Mesa" onChange={(e) => { setSelectedMesa(e.target.value as string); setPage(0); }}>
+                <GuardedSelect value={selectedMesa} label="Mesa" onChange={(e) => { setSelectedMesa(e.target.value as string); setPage(0); }}>
                   <MenuItem value="">Todas</MenuItem>
                   {[...mesas].sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => (
                     <MenuItem key={m.id} value={m.id}>Mesa {m.numeroMesa}</MenuItem>
                   ))}
-                </Select>
+                </GuardedSelect>
               </FormControl>
             </Grid>
           </Grid>
@@ -446,18 +447,18 @@ export default function TestigosListPage() {
               <Grid key={label} size={{ xs: 12 }}>
                 <FormControl fullWidth size="small" disabled={disabled}>
                   <InputLabel>{label}</InputLabel>
-                  <Select value={value} label={label} onChange={handler}>
+                  <GuardedSelect value={value} label={label} onChange={handler}>
                     {[...items].sort((a: any, b: any) => (a[nameKey] || '').localeCompare(b[nameKey] || '', 'es')).map((d: any) => (
                       <MenuItem key={d.id} value={d.id}>{d[nameKey]}</MenuItem>
                     ))}
-                  </Select>
+                  </GuardedSelect>
                 </FormControl>
               </Grid>
             ))}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!movePuesto}>
                 <InputLabel>Mesa</InputLabel>
-                <Select value={moveMesa} label="Mesa" onChange={(e) => setMoveMesa(e.target.value as string)}>
+                <GuardedSelect value={moveMesa} label="Mesa" onChange={(e) => setMoveMesa(e.target.value as string)}>
                   {[...moveMesasList].sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => {
                     const isAvailable = m.ocupados < m.capacidad;
                     const isCurrent   = selectedTestigoForMove?.mesaId === m.id;
@@ -469,7 +470,7 @@ export default function TestigosListPage() {
                       </MenuItem>
                     );
                   })}
-                </Select>
+                </GuardedSelect>
               </FormControl>
             </Grid>
           </Grid>
