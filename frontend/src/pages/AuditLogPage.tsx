@@ -2,34 +2,34 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Card, CardContent, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, TablePagination,
-  CircularProgress, Alert, Chip, TextField, MenuItem, IconButton, Tooltip,
+  CircularProgress, Alert, TextField, MenuItem, IconButton, Tooltip,
   InputAdornment,
 } from '@mui/material';
-import RefreshIcon    from '@mui/icons-material/Refresh';
-import SearchIcon     from '@mui/icons-material/Search';
-import DeleteIcon     from '@mui/icons-material/DeleteForever';
-import SwapHorizIcon  from '@mui/icons-material/SwapHoriz';
-import PersonAddIcon  from '@mui/icons-material/PersonAdd';
-import LoginIcon      from '@mui/icons-material/Login';
-import LogoutIcon     from '@mui/icons-material/Logout';
-import DownloadIcon   from '@mui/icons-material/Download';
-import UploadIcon     from '@mui/icons-material/Upload';
-import WarningIcon    from '@mui/icons-material/Warning';
-import EditIcon       from '@mui/icons-material/Edit';
-import PersonIcon     from '@mui/icons-material/Person';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import SearchIcon from '@mui/icons-material/Search';
+import DeleteIcon from '@mui/icons-material/DeleteForever';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+import DownloadIcon from '@mui/icons-material/Download';
+import UploadIcon from '@mui/icons-material/Upload';
+import WarningIcon from '@mui/icons-material/Warning';
+import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const J = {
-  ink:      '#1A1F2E',
-  blue:     '#2952CC',
-  gold:     '#C9973A',
-  border:   '#E2DDD6',
-  surface:  '#F8F7F4',
-  textMuted:'#7A7A7A',
-  success:  '#2D7D4E',
-  warning:  '#B97D1A',
-  danger:   '#B83232',
+  ink: '#1A1F2E',
+  blue: '#2952CC',
+  gold: '#C9973A',
+  border: '#E2DDD6',
+  surface: '#F8F7F4',
+  textMuted: '#7A7A7A',
+  success: '#2D7D4E',
+  warning: '#B97D1A',
+  danger: '#B83232',
 };
 
 interface AuditEntry {
@@ -44,30 +44,30 @@ interface AuditEntry {
 }
 
 const ACTION_META: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  REGISTRO_TESTIGO:    { label: 'Registro',    color: J.success, bg: 'rgba(45,125,78,0.1)',    icon: <PersonAddIcon  sx={{ fontSize: 15 }} /> },
-  ELIMINACION_TESTIGO: { label: 'Eliminación', color: J.danger,  bg: 'rgba(184,50,50,0.09)',   icon: <DeleteIcon     sx={{ fontSize: 15 }} /> },
-  TRASLADO_TESTIGO:    { label: 'Traslado',    color: J.blue,    bg: 'rgba(41,82,204,0.09)',   icon: <SwapHorizIcon  sx={{ fontSize: 15 }} /> },
-  EDICION_TESTIGO:     { label: 'Edición',     color: J.gold,    bg: 'rgba(201,151,58,0.1)',   icon: <EditIcon       sx={{ fontSize: 15 }} /> },
-  LOGIN:               { label: 'Ingreso',     color: '#3A7AB8', bg: 'rgba(58,122,184,0.08)',  icon: <LoginIcon      sx={{ fontSize: 15 }} /> },
-  LOGOUT:              { label: 'Salida',      color: J.textMuted,bg:'rgba(122,122,122,0.08)', icon: <LogoutIcon     sx={{ fontSize: 15 }} /> },
-  EXPORTACION_EXCEL:   { label: 'Exportación', color: '#2D7D4E', bg: 'rgba(45,125,78,0.07)',   icon: <DownloadIcon   sx={{ fontSize: 15 }} /> },
-  IMPORTACION_EXCEL:   { label: 'Importación', color: '#4A6B2D', bg: 'rgba(74,107,45,0.08)',   icon: <UploadIcon     sx={{ fontSize: 15 }} /> },
-  DUPLICADO_DETECTADO: { label: 'Duplicado',   color: J.warning, bg: 'rgba(185,125,26,0.1)',   icon: <WarningIcon    sx={{ fontSize: 15 }} /> },
-  CREACION_USUARIO:    { label: 'Usr. creado', color: '#5555BB', bg: 'rgba(85,85,187,0.08)',   icon: <PersonIcon     sx={{ fontSize: 15 }} /> },
-  EDICION_USUARIO:     { label: 'Usr. editado',color: '#5555BB', bg: 'rgba(85,85,187,0.06)',   icon: <EditIcon       sx={{ fontSize: 15 }} /> },
-  ELIMINACION_USUARIO: { label: 'Usr. elim.',  color: J.danger,  bg: 'rgba(184,50,50,0.07)',   icon: <DeleteIcon     sx={{ fontSize: 15 }} /> },
+  REGISTRO_TESTIGO: { label: 'Registro', color: J.success, bg: 'rgba(45,125,78,0.1)', icon: <PersonAddIcon sx={{ fontSize: 15 }} /> },
+  ELIMINACION_TESTIGO: { label: 'Eliminación', color: J.danger, bg: 'rgba(184,50,50,0.09)', icon: <DeleteIcon sx={{ fontSize: 15 }} /> },
+  TRASLADO_TESTIGO: { label: 'Traslado', color: J.blue, bg: 'rgba(41,82,204,0.09)', icon: <SwapHorizIcon sx={{ fontSize: 15 }} /> },
+  EDICION_TESTIGO: { label: 'Edición', color: J.gold, bg: 'rgba(201,151,58,0.1)', icon: <EditIcon sx={{ fontSize: 15 }} /> },
+  LOGIN: { label: 'Ingreso', color: '#3A7AB8', bg: 'rgba(58,122,184,0.08)', icon: <LoginIcon sx={{ fontSize: 15 }} /> },
+  LOGOUT: { label: 'Salida', color: J.textMuted, bg: 'rgba(122,122,122,0.08)', icon: <LogoutIcon sx={{ fontSize: 15 }} /> },
+  EXPORTACION_EXCEL: { label: 'Exportación', color: '#2D7D4E', bg: 'rgba(45,125,78,0.07)', icon: <DownloadIcon sx={{ fontSize: 15 }} /> },
+  IMPORTACION_EXCEL: { label: 'Importación', color: '#4A6B2D', bg: 'rgba(74,107,45,0.08)', icon: <UploadIcon sx={{ fontSize: 15 }} /> },
+  DUPLICADO_DETECTADO: { label: 'Duplicado', color: J.warning, bg: 'rgba(185,125,26,0.1)', icon: <WarningIcon sx={{ fontSize: 15 }} /> },
+  CREACION_USUARIO: { label: 'Usr. creado', color: '#5555BB', bg: 'rgba(85,85,187,0.08)', icon: <PersonIcon sx={{ fontSize: 15 }} /> },
+  EDICION_USUARIO: { label: 'Usr. editado', color: '#5555BB', bg: 'rgba(85,85,187,0.06)', icon: <EditIcon sx={{ fontSize: 15 }} /> },
+  ELIMINACION_USUARIO: { label: 'Usr. elim.', color: J.danger, bg: 'rgba(184,50,50,0.07)', icon: <DeleteIcon sx={{ fontSize: 15 }} /> },
 };
 
 const FILTER_OPTIONS = [
   { value: '', label: 'Todas las acciones' },
-  { value: 'REGISTRO_TESTIGO',    label: 'Registro de testigo' },
+  { value: 'REGISTRO_TESTIGO', label: 'Registro de testigo' },
   { value: 'ELIMINACION_TESTIGO', label: 'Eliminación de testigo' },
-  { value: 'TRASLADO_TESTIGO',    label: 'Traslado de testigo' },
-  { value: 'EDICION_TESTIGO',     label: 'Edición de testigo' },
-  { value: 'LOGIN',               label: 'Inicio de sesión' },
-  { value: 'LOGOUT',              label: 'Cierre de sesión' },
-  { value: 'EXPORTACION_EXCEL',   label: 'Exportación Excel' },
-  { value: 'IMPORTACION_EXCEL',   label: 'Importación Excel' },
+  { value: 'TRASLADO_TESTIGO', label: 'Traslado de testigo' },
+  { value: 'EDICION_TESTIGO', label: 'Edición de testigo' },
+  { value: 'LOGIN', label: 'Inicio de sesión' },
+  { value: 'LOGOUT', label: 'Cierre de sesión' },
+  { value: 'EXPORTACION_EXCEL', label: 'Exportación Excel' },
+  { value: 'IMPORTACION_EXCEL', label: 'Importación Excel' },
   { value: 'DUPLICADO_DETECTADO', label: 'Duplicado detectado' },
 ];
 
@@ -80,26 +80,26 @@ function formatDate(iso: string) {
 }
 
 export default function AuditLogPage() {
-  const [logs,     setLogs]     = useState<AuditEntry[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState('');
-  const [search,   setSearch]   = useState('');
-  const [filter,   setFilter]   = useState('');
-  const [page,     setPage]     = useState(0);
-  const [rowsPP,   setRowsPP]   = useState(25);
+  const [logs, setLogs] = useState<AuditEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPP, setRowsPP] = useState(25);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true); setError('');
     try {
       const token = localStorage.getItem('token');
-      const res  = await fetch(`${API_URL}/api/audit-logs?page=0&size=500`, {
+      const res = await fetch(`${API_URL}/api/audit-logs?page=0&size=500`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success) setLogs(data.data);
-      else              setError(data.message || 'Error al cargar el historial');
+      else setError(data.message || 'Error al cargar el historial');
     } catch { setError('Error de conexión con el servidor'); }
-    finally  { setLoading(false); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
@@ -155,12 +155,14 @@ export default function AuditLogPage() {
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(0); }}
               sx={{ minWidth: 320, flex: 1 }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: J.textMuted, fontSize: 20 }} />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: J.textMuted, fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
             <TextField
