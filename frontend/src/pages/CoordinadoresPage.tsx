@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, Button,
-  FormControl, InputLabel, MenuItem, Alert, Dialog,
+  FormControl, InputLabel, MenuItem, Dialog,
   DialogTitle, DialogContent, DialogActions, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper,
   IconButton, Tooltip, TextField, CircularProgress, Autocomplete
@@ -10,7 +10,6 @@ import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import BusinessIcon from '@mui/icons-material/Business';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import PeopleIcon from '@mui/icons-material/People';
@@ -118,7 +117,6 @@ export default function CoordinadoresPage() {
   const [allTestigos, setAllTestigos] = useState<Testigo[]>([]);
   const [selectedTestigoForCoord, setSelectedTestigoForCoord] = useState<Testigo | null>(null);
   const [submittingCoord, setSubmittingCoord] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // 1. Initial Load: Departamentos
   useEffect(() => {
@@ -139,7 +137,7 @@ export default function CoordinadoresPage() {
           }
         }
       })
-      .catch(() => toast.showError('Error al cargar departamentos'));
+      .catch(() => toast.error('Error al cargar departamentos'));
   }, []);
 
   // 2. Load Municipios
@@ -164,7 +162,7 @@ export default function CoordinadoresPage() {
           }
         }
       })
-      .catch(() => toast.showError('Error al cargar municipios'));
+      .catch(() => toast.error('Error al cargar municipios'));
   };
 
   // 3. Load Puestos
@@ -188,7 +186,7 @@ export default function CoordinadoresPage() {
         setLoadingPuestos(false);
       })
       .catch(() => {
-        toast.showError('Error al cargar puestos');
+        toast.error('Error al cargar puestos');
         setLoadingPuestos(false);
       });
   };
@@ -208,7 +206,7 @@ export default function CoordinadoresPage() {
         setLoadingTestigos(false);
       })
       .catch(() => {
-        toast.showError('Error al cargar los testigos del puesto');
+        toast.error('Error al cargar los testigos del puesto');
         setLoadingTestigos(false);
       });
   };
@@ -249,7 +247,7 @@ export default function CoordinadoresPage() {
           setAllTestigos(data.data);
         }
       })
-      .catch(() => toast.showError('Error al cargar la lista de testigos'));
+      .catch(() => toast.error('Error al cargar la lista de testigos'));
   };
 
   // Save coordinator assignment
@@ -268,7 +266,7 @@ export default function CoordinadoresPage() {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          toast.showSuccess(selectedTestigoForCoord 
+          toast.success(selectedTestigoForCoord 
             ? 'Coordinador asignado correctamente' 
             : 'Coordinador removido correctamente'
           );
@@ -276,12 +274,12 @@ export default function CoordinadoresPage() {
           // Reload puestos and select current
           loadPuestos(Number(selectedMpio));
         } else {
-          toast.showError(data.message || 'Error al guardar el coordinador');
+          toast.error(data.message || 'Error al guardar el coordinador');
         }
         setSubmittingCoord(false);
       })
       .catch(() => {
-        toast.showError('Error de red al guardar coordinador');
+        toast.error('Error de red al guardar coordinador');
         setSubmittingCoord(false);
       });
   };
@@ -306,10 +304,10 @@ export default function CoordinadoresPage() {
         document.body.appendChild(a);
         a.click();
         a.remove();
-        toast.showSuccess('Excel descargado correctamente');
+        toast.success('Excel descargado correctamente');
       })
       .catch(() => {
-        toast.showError('Error al generar y descargar el reporte de coordinadores');
+        toast.error('Error al generar y descargar el reporte de coordinadores');
       });
   };
 
@@ -318,8 +316,8 @@ export default function CoordinadoresPage() {
       {/* HEADER SECTION */}
       <Card sx={{ mb: 4, borderRadius: 0, border: `1px solid ${J.border}`, boxShadow: 'none' }}>
         <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={3}>
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Typography sx={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, mb: 0.5 }}>
                 Ubicación Electoral
               </Typography>
@@ -329,7 +327,7 @@ export default function CoordinadoresPage() {
             </Grid>
             
             {/* SELECTORES */}
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <FormControl fullWidth required size="small">
                 <InputLabel id="depto-label" sx={sxLabel}>Departamento</InputLabel>
                 <GuardedSelect
@@ -346,7 +344,7 @@ export default function CoordinadoresPage() {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <FormControl fullWidth required size="small" disabled={!selectedDepto}>
                 <InputLabel id="mpio-label" sx={sxLabel}>Municipio</InputLabel>
                 <GuardedSelect
@@ -364,7 +362,7 @@ export default function CoordinadoresPage() {
             </Grid>
 
             {/* BOTÓN EXCEL */}
-            <Grid item xs={12} md={3} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+            <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
               <Button
                 variant="outlined"
                 disabled={!selectedMpio}
@@ -390,11 +388,11 @@ export default function CoordinadoresPage() {
           </Grid>
         </CardContent>
       </Card>
-
+ 
       {/* DETALLE Y TABLAS */}
       <Grid container spacing={4}>
         {/* TABLA DE PUESTOS (IZQUIERDA) */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, color: J.ink, mb: 2 }}>
             Puestos de Votación del Municipio
           </Typography>
@@ -497,13 +495,13 @@ export default function CoordinadoresPage() {
             </Table>
           </TableContainer>
         </Grid>
-
+ 
         {/* TESTIGOS COORDINADOS (DERECHA) */}
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, color: J.ink, mb: 2 }}>
             Detalle de Testigos Coordinados
           </Typography>
-
+ 
           {selectedPuesto ? (
             <Box>
               {/* CARD DEL COORDINADOR */}
@@ -553,12 +551,12 @@ export default function CoordinadoresPage() {
                             No hay un coordinador asignado a este puesto aún.
                           </Typography>
                           <Button 
-                            size="small"
-                            onClick={() => handleOpenAssignDialog(selectedPuesto)}
-                            sx={{
-                              mt: 1, textTransform: 'none', color: J.blue, fontWeight: 600, p: 0,
-                              '&:hover': { background: 'transparent', textDecoration: 'underline' }
-                            }}
+                             size="small"
+                             onClick={() => handleOpenAssignDialog(selectedPuesto)}
+                             sx={{
+                               mt: 1, textTransform: 'none', color: J.blue, fontWeight: 600, p: 0,
+                               '&:hover': { background: 'transparent', textDecoration: 'underline' }
+                             }}
                           >
                             Asignar ahora
                           </Button>
@@ -568,7 +566,7 @@ export default function CoordinadoresPage() {
                   </Box>
                 </CardContent>
               </Card>
-
+ 
               {/* LISTA DE TESTIGOS */}
               <Box sx={{ border: `1px solid ${J.border}`, bgcolor: '#fff', p: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -579,7 +577,7 @@ export default function CoordinadoresPage() {
                     Total: {testigosPuesto.length}
                   </Box>
                 </Box>
-
+ 
                 {loadingTestigos ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                     <CircularProgress size={24} sx={{ color: J.blue }} />
@@ -643,16 +641,13 @@ export default function CoordinadoresPage() {
           )}
         </Grid>
       </Grid>
-
+ 
       {/* DIALOG ASIGNAR COORDINADOR */}
       <Dialog 
         open={openDialog} 
         onClose={() => setOpenDialog(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: { borderRadius: 0, border: `1px solid ${J.border}`, boxShadow: 'none' }
-        }}
       >
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${J.border}`, p: 2 }}>
           <Typography sx={{ fontWeight: 800, fontSize: '17px', color: J.ink }}>
@@ -676,7 +671,7 @@ export default function CoordinadoresPage() {
               </Typography>
             </Box>
           )}
-
+ 
           <Typography sx={{ fontSize: '13px', fontWeight: 700, color: J.ink, mb: 1 }}>
             Seleccionar Testigo Coordinador
           </Typography>
@@ -685,7 +680,7 @@ export default function CoordinadoresPage() {
             options={allTestigos}
             getOptionLabel={(option) => `${option.nombreCompleto} (CC: ${option.documento})`}
             value={selectedTestigoForCoord}
-            onChange={(event, newValue) => {
+            onChange={(_event, newValue) => {
               setSelectedTestigoForCoord(newValue);
             }}
             renderInput={(params) => (
