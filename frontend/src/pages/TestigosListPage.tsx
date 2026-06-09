@@ -1,18 +1,13 @@
 import { useState, useEffect } from 'react';
 import {
-  Box, Typography, Card, CardContent, Grid, TextField, Button, MenuItem,
-  FormControl, InputLabel, Table, TableBody, TableCell, TableContainer,
+  Box, Typography, Card, CardContent, Grid, TextField, Button,
+  FormControl, InputLabel, Select, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent,
-  DialogActions, Alert, TablePagination, CircularProgress, Tooltip, Divider,
-  ListSubheader,
+  DialogActions, Alert, TablePagination, CircularProgress, Tooltip,
 } from '@mui/material';
-import GuardedSelect from '../components/GuardedSelect';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import SearchIcon from '@mui/icons-material/Search';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import ApartmentIcon from '@mui/icons-material/Apartment';
-import TableBarIcon from '@mui/icons-material/TableBar';
 import { useWebSocket } from '../hooks/useWebSocket';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -248,13 +243,6 @@ export default function TestigosListPage() {
       && (selectedMesa === '' || String(t.mesaId) === String(selectedMesa));
   });
 
-  /* ── Helper: select label with icon ─────────────── */
-  const SelectLabel = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-      <Box sx={{ display: 'flex', color: J.textMuted, fontSize: 18 }}>{icon}</Box>
-      <span>{text}</span>
-    </Box>
-  );
 
   /* ── Render ─────────────────────────────────────── */
   return (
@@ -298,60 +286,51 @@ export default function TestigosListPage() {
             {/* Municipio */}
             <Grid size={{ xs: 12, sm: 4, md: 2.6 }}>
               <FormControl fullWidth>
-                <InputLabel>Municipio</InputLabel>
-                <GuardedSelect value={selectedMunicipio} label="Municipio" onChange={e => { handleMunicipioChange(e); setPage(0); }}>
-                  <MenuItem value=""><em>Todos</em></MenuItem>
-                  <Divider />
+                <InputLabel shrink>Municipio</InputLabel>
+                <Select native value={selectedMunicipio} label="Municipio" onChange={e => { handleMunicipioChange(e); setPage(0); }}>
+                  <option value="">Todos</option>
                   {[...municipios]
                     .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
                     .map((m: any) => (
-                      <MenuItem key={m.id} value={m.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LocationOnIcon sx={{ fontSize: 16, color: J.textMuted, flexShrink: 0 }} />
-                        {m.nombre}
-                      </MenuItem>
+                      <option key={m.id} value={m.id}>{m.nombre}</option>
                     ))}
-                </GuardedSelect>
+                </Select>
               </FormControl>
             </Grid>
 
             {/* Puesto */}
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth disabled={!selectedMunicipio}>
-                <InputLabel>Puesto</InputLabel>
-                <GuardedSelect value={selectedPuesto} label="Puesto" onChange={e => { handlePuestoChange(e); setPage(0); }}>
-                  <MenuItem value=""><em>Todos</em></MenuItem>
-                  <Divider />
+                <InputLabel shrink>Puesto</InputLabel>
+                <Select native value={selectedPuesto} label="Puesto" onChange={e => { handlePuestoChange(e); setPage(0); }}>
+                  <option value="">Todos</option>
                   {[...puestos]
                     .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
                     .map((p: any) => (
-                      <MenuItem key={p.id} value={p.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ApartmentIcon sx={{ fontSize: 16, color: J.textMuted, flexShrink: 0 }} />
-                        {p.nombrePuesto}
-                      </MenuItem>
+                      <option key={p.id} value={p.id}>{p.nombrePuesto}</option>
                     ))}
-                </GuardedSelect>
+                </Select>
               </FormControl>
             </Grid>
 
             {/* Mesa */}
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth disabled={!selectedPuesto}>
-                <InputLabel>Mesa</InputLabel>
-                <GuardedSelect value={selectedMesa} label="Mesa" onChange={e => { setSelectedMesa(e.target.value as string); setPage(0); }}>
-                  <MenuItem value=""><em>Todas</em></MenuItem>
-                  <Divider />
+                <InputLabel shrink>Mesa</InputLabel>
+                <Select native value={selectedMesa} label="Mesa" onChange={e => { setSelectedMesa(e.target.value as string); setPage(0); }}>
+                  <option value="">Todas</option>
                   {[...mesas]
                     .sort((a: any, b: any) => a.numeroMesa - b.numeroMesa)
-                    .map((m: any) => (
-                      <MenuItem key={m.id} value={m.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <TableBarIcon sx={{ fontSize: 15, color: J.textMuted, flexShrink: 0 }} />
-                          Mesa {m.numeroMesa}
-                        </Box>
-                        <CapacityDot ocupados={m.ocupados} capacidad={m.capacidad} />
-                      </MenuItem>
-                    ))}
-                </GuardedSelect>
+                    .map((m: any) => {
+                      const pct = m.capacidad > 0 ? m.ocupados / m.capacidad : 0;
+                      const estado = pct >= 1 ? '🔴' : pct >= 0.75 ? '🟡' : '🟢';
+                      return (
+                        <option key={m.id} value={m.id}>
+                          {estado} Mesa {m.numeroMesa} ({m.ocupados}/{m.capacidad})
+                        </option>
+                      );
+                    })}
+                </Select>
               </FormControl>
             </Grid>
           </Grid>
@@ -477,120 +456,82 @@ export default function TestigosListPage() {
             {/* Departamento */}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>
-                  <SelectLabel icon={<LocationOnIcon sx={{ fontSize: 18 }} />} text="Departamento" />
-                </InputLabel>
-                <GuardedSelect value={moveDepto} label="Departamento" onChange={handleMoveDeptoChange}>
+                <InputLabel shrink>Departamento</InputLabel>
+                <Select native value={moveDepto} label="Departamento" onChange={handleMoveDeptoChange}>
+                  <option value="">Seleccione...</option>
                   {[...moveDeptosList]
                     .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
                     .map((d: any) => (
-                      <MenuItem key={d.id} value={d.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LocationOnIcon sx={{ fontSize: 16, color: J.textMuted, flexShrink: 0 }} />
-                        {d.nombre}
-                      </MenuItem>
+                      <option key={d.id} value={d.id}>{d.nombre}</option>
                     ))}
-                </GuardedSelect>
+                </Select>
               </FormControl>
             </Grid>
 
             {/* Municipio */}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!moveDepto}>
-                <InputLabel>
-                  <SelectLabel icon={<LocationOnIcon sx={{ fontSize: 18 }} />} text="Municipio" />
-                </InputLabel>
-                <GuardedSelect value={moveMpio} label="Municipio" onChange={handleMoveMpioChange}>
+                <InputLabel shrink>Municipio</InputLabel>
+                <Select native value={moveMpio} label="Municipio" onChange={handleMoveMpioChange}>
+                  <option value="">Seleccione...</option>
                   {[...moveMpiosList]
                     .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
                     .map((m: any) => (
-                      <MenuItem key={m.id} value={m.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LocationOnIcon sx={{ fontSize: 16, color: J.textMuted, flexShrink: 0 }} />
-                        {m.nombre}
-                      </MenuItem>
+                      <option key={m.id} value={m.id}>{m.nombre}</option>
                     ))}
-                </GuardedSelect>
+                </Select>
               </FormControl>
             </Grid>
 
             {/* Puesto */}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!moveMpio}>
-                <InputLabel>
-                  <SelectLabel icon={<ApartmentIcon sx={{ fontSize: 18 }} />} text="Puesto de votación" />
-                </InputLabel>
-                <GuardedSelect value={movePuesto} label="Puesto de votación" onChange={handleMovePuestoChange}>
+                <InputLabel shrink>Puesto de votación</InputLabel>
+                <Select native value={movePuesto} label="Puesto de votación" onChange={handleMovePuestoChange}>
+                  <option value="">Seleccione...</option>
                   {[...movePuestosList]
                     .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
                     .map((p: any) => (
-                      <MenuItem key={p.id} value={p.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ApartmentIcon sx={{ fontSize: 16, color: J.textMuted, flexShrink: 0 }} />
-                        {p.nombrePuesto}
-                      </MenuItem>
+                      <option key={p.id} value={p.id}>{p.nombrePuesto}</option>
                     ))}
-                </GuardedSelect>
+                </Select>
               </FormControl>
             </Grid>
 
             {/* Mesa — con indicadores de capacidad y grupo "Disponibles / Llenas" */}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!movePuesto}>
-                <InputLabel>
-                  <SelectLabel icon={<TableBarIcon sx={{ fontSize: 17 }} />} text="Mesa de votación" />
-                </InputLabel>
-                <GuardedSelect value={moveMesa} label="Mesa de votación" onChange={e => setMoveMesa(e.target.value as string)}>
-                  {/* Available mesas first */}
+                <InputLabel shrink>Mesa de votación</InputLabel>
+                <Select native value={moveMesa} label="Mesa de votación" onChange={e => setMoveMesa(e.target.value as string)}>
+                  <option value="">Seleccione...</option>
                   {(() => {
                     const sorted = [...moveMesasList].sort((a: any, b: any) => a.numeroMesa - b.numeroMesa);
                     const available = sorted.filter((m: any) => m.ocupados < m.capacidad);
                     const full = sorted.filter((m: any) => m.ocupados >= m.capacidad);
-
-                    const renderMesa = (m: any) => {
-                      const isCurrent = selectedTestigoForMove?.mesaId === m.id;
-                      const isAvailable = m.ocupados < m.capacidad;
-                      const pct = m.capacidad > 0 ? m.ocupados / m.capacidad : 0;
-                      const dotColor = pct >= 1 ? J.danger : pct >= 0.75 ? J.warning : J.success;
-                      return (
-                        <MenuItem
-                          key={m.id}
-                          value={m.id}
-                          disabled={!isAvailable && !isCurrent}
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            fontSize: '14px',
-                            color: isCurrent ? J.blue : (!isAvailable ? J.textMuted : 'inherit'),
-                            fontWeight: isCurrent ? 700 : 400,
-                            py: 1,
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: dotColor, flexShrink: 0 }} />
-                            Mesa {m.numeroMesa}{isCurrent ? ' · actual' : ''}
-                          </Box>
-                          <Box sx={{ fontSize: '12px', color: dotColor, fontWeight: 600, opacity: 0.85 }}>
-                            {m.ocupados}/{m.capacidad}
-                          </Box>
-                        </MenuItem>
-                      );
-                    };
-
                     return [
-                      available.length > 0 && (
-                        <ListSubheader key="avail-hdr" sx={{ lineHeight: '28px', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: J.success, bgcolor: 'rgba(45,125,78,0.04)' }}>
-                          Disponibles ({available.length})
-                        </ListSubheader>
-                      ),
-                      ...available.map(renderMesa),
-                      full.length > 0 && (
-                        <ListSubheader key="full-hdr" sx={{ lineHeight: '28px', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: J.danger, bgcolor: 'rgba(184,50,50,0.04)' }}>
-                          Llenas ({full.length})
-                        </ListSubheader>
-                      ),
-                      ...full.map(renderMesa),
+                      available.length > 0 && <option key="avail-hdr" disabled>── Disponibles ({available.length}) ──</option>,
+                      ...available.map((m: any) => {
+                        const isCurrent = selectedTestigoForMove?.mesaId === m.id;
+                        const pct = m.capacidad > 0 ? m.ocupados / m.capacidad : 0;
+                        const estado = pct >= 0.75 ? '🟡' : '🟢';
+                        return (
+                          <option key={m.id} value={m.id}>
+                            {estado} Mesa {m.numeroMesa} — {m.ocupados}/{m.capacidad}{isCurrent ? ' ← actual' : ''}
+                          </option>
+                        );
+                      }),
+                      full.length > 0 && <option key="full-hdr" disabled>── Llenas ({full.length}) ──</option>,
+                      ...full.map((m: any) => {
+                        const isCurrent = selectedTestigoForMove?.mesaId === m.id;
+                        return (
+                          <option key={m.id} value={m.id} disabled={!isCurrent}>
+                            🔴 Mesa {m.numeroMesa} — {m.ocupados}/{m.capacidad}{isCurrent ? ' ← actual' : ''}
+                          </option>
+                        );
+                      }),
                     ].filter(Boolean);
                   })()}
-                </GuardedSelect>
+                </Select>
               </FormControl>
             </Grid>
           </Grid>
