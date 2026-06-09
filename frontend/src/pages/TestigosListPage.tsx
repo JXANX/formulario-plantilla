@@ -37,17 +37,6 @@ interface Testigo {
   registradoPor: string;
 }
 
-/* ── Helper: mesa capacity dot ───────────────────── */
-function CapacityDot({ ocupados, capacidad }: { ocupados: number; capacidad: number }) {
-  const pct = capacidad > 0 ? ocupados / capacidad : 0;
-  const color = pct >= 1 ? J.danger : pct >= 0.75 ? J.warning : J.success;
-  return (
-    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, ml: 1, fontSize: '12px', color }}>
-      <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: color, flexShrink: 0 }} />
-      {ocupados}/{capacidad}
-    </Box>
-  );
-}
 
 export default function TestigosListPage() {
   const { dashboardUpdates } = useWebSocket();
