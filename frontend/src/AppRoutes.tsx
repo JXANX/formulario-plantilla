@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import TestigoFormPage from './pages/TestigoFormPage';
 import TestigosListPage from './pages/TestigosListPage';
 import MesasReportPage from './pages/MesasReportPage';
+import AuditLogPage from './pages/AuditLogPage';
 import LoginPage from './pages/LoginPage';
 
 export default function AppRoutes() {
@@ -16,6 +17,7 @@ export default function AppRoutes() {
         <Route path="registro" element={<TestigoFormPage />} />
         <Route path="testigos" element={<TestigosListPage />} />
         <Route path="reporte-mesas" element={<MesasReportPage />} />
+        <Route path="historial" element={<AuditLogPage />} />
       </Route>
     </Routes>
   );

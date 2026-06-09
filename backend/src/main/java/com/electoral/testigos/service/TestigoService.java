@@ -21,23 +21,12 @@ import java.util.stream.Collectors;
 @Service
 public class TestigoService {
 
-    @Autowired
-    private TestigoRepository testigoRepository;
-
-    @Autowired
-    private MesaRepository mesaRepository;
-
-    @Autowired
-    private DuplicadoService duplicadoService;
-
-    @Autowired
-    private AuditService auditService;
-
-    @Autowired
-    private WebSocketNotificationService wsNotificationService;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    @Autowired private TestigoRepository testigoRepository;
+    @Autowired private MesaRepository mesaRepository;
+    @Autowired private DuplicadoService duplicadoService;
+    @Autowired private AuditService auditService;
+    @Autowired private WebSocketNotificationService wsNotificationService;
+    @Autowired private UsuarioRepository usuarioRepository;
 
     public java.util.Optional<Testigo> buscarPorDocumento(String documento) {
         return testigoRepository.findByDocumento(documento);
@@ -45,11 +34,9 @@ public class TestigoService {
 
     @Transactional
     public Testigo registrarTestigo(TestigoRequest request) {
-        // Validar duplicados
         duplicadoService.verificarDuplicadoExacto(request.getDocumento());
         duplicadoService.verificarDuplicadoMesa(request.getMesaId(), request.getDocumento());
 
-        // Obtener mesa y validar capacidad
         Mesa mesa = mesaRepository.findById(request.getMesaId())
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
 
@@ -59,7 +46,6 @@ public class TestigoService {
 
         Usuario currentUser = getCurrentUser();
 
-        // Crear testigo
         Testigo testigo = Testigo.builder()
                 .documento(request.getDocumento())
                 .nombre(request.getNombre().trim().toUpperCase())
@@ -70,22 +56,21 @@ public class TestigoService {
                 .correo(request.getCorreo())
                 .tipoTestigo(request.getTipoTestigo())
                 .mesa(mesa)
-                .nombreOrganizacion("Grupo Significativo de Ciudadanos Defensores de la Patria") // Default for now
+                .nombreOrganizacion("Grupo Significativo de Ciudadanos Defensores de la Patria")
                 .fechaRegistro(LocalDateTime.now())
                 .usuarioRegistro(currentUser)
                 .build();
 
         testigo = testigoRepository.save(testigo);
 
-        // Actualizar ocupación de mesa
         mesa.setOcupados(mesa.getOcupados() + 1);
         mesaRepository.save(mesa);
 
-        // Auditoría
-        auditService.log(AccionAuditoria.REGISTRO_TESTIGO, 
-                "Testigo registrado: " + testigo.getDocumento(), "Testigo", testigo.getId());
+        auditService.log(AccionAuditoria.REGISTRO_TESTIGO,
+                "Testigo registrado: " + testigo.getDocumento() + " — " + testigo.getNombreCompleto()
+                + " en Mesa " + mesa.getNumeroMesa() + " (" + mesa.getPuesto().getNombrePuesto() + ")",
+                "Testigo", testigo.getId());
 
-        // Notificaciones WebSocket
         wsNotificationService.notificarCambioMesa(mesa.getId(), mesa.getEstadoSemaforo());
         wsNotificationService.notificarNuevoTestigo(mesa.getPuesto().getMunicipio().getNombre(), mesa.getPuesto().getNombrePuesto());
         wsNotificationService.notificarDashboardUpdate();
@@ -98,26 +83,23 @@ public class TestigoService {
         return testigoRepository.findAllWithEagerRelationships().stream()
                 .map(t -> {
                     Mesa mesa = t.getMesa();
-                    String deptoNombre = "";
-                    Long deptoId = null;
-                    String mpioNombre = "";
-                    Long mpioId = null;
-                    String puestoNombre = "";
-                    Long puestoId = null;
-                    
+                    String deptoNombre = ""; Long deptoId = null;
+                    String mpioNombre  = ""; Long mpioId  = null;
+                    String puestoNombre= ""; Long puestoId= null;
+
                     if (mesa != null && mesa.getPuesto() != null) {
                         puestoNombre = mesa.getPuesto().getNombrePuesto();
-                        puestoId = mesa.getPuesto().getId();
+                        puestoId     = mesa.getPuesto().getId();
                         if (mesa.getPuesto().getMunicipio() != null) {
                             mpioNombre = mesa.getPuesto().getMunicipio().getNombre();
-                            mpioId = mesa.getPuesto().getMunicipio().getId();
+                            mpioId     = mesa.getPuesto().getMunicipio().getId();
                             if (mesa.getPuesto().getMunicipio().getDepartamento() != null) {
                                 deptoNombre = mesa.getPuesto().getMunicipio().getDepartamento().getNombre();
-                                deptoId = mesa.getPuesto().getMunicipio().getDepartamento().getId();
+                                deptoId     = mesa.getPuesto().getMunicipio().getDepartamento().getId();
                             }
                         }
                     }
-                    
+
                     String registradoPor = t.getUsuarioRegistro() != null ? t.getUsuarioRegistro().getNombre() : "Sistema";
 
                     return TestigoResponse.builder()
@@ -153,18 +135,22 @@ public class TestigoService {
                 .orElseThrow(() -> new RuntimeException("Testigo no encontrado"));
 
         Mesa mesa = testigo.getMesa();
+        String mesaInfo = mesa != null
+                ? "Mesa " + mesa.getNumeroMesa() + " (" + mesa.getPuesto().getNombrePuesto() + ")"
+                : "sin mesa";
+
         if (mesa != null) {
             mesa.setOcupados(Math.max(0, mesa.getOcupados() - 1));
             mesaRepository.save(mesa);
         }
 
+        String docNombre = testigo.getDocumento() + " — " + testigo.getNombreCompleto();
         testigoRepository.delete(testigo);
 
-        // Auditoría
-        auditService.log(AccionAuditoria.ELIMINACION_TESTIGO, 
-                "Testigo eliminado: " + testigo.getDocumento(), "Testigo", id);
+        auditService.log(AccionAuditoria.ELIMINACION_TESTIGO,
+                "Testigo eliminado: " + docNombre + " | Ubicación: " + mesaInfo,
+                "Testigo", id);
 
-        // Notificaciones WebSocket
         if (mesa != null) {
             wsNotificationService.notificarCambioMesa(mesa.getId(), mesa.getEstadoSemaforo());
         }
@@ -181,31 +167,36 @@ public class TestigoService {
                 .orElseThrow(() -> new RuntimeException("Mesa destino no encontrada"));
 
         if (oldMesa != null && oldMesa.getId().equals(newMesa.getId())) {
-            return testigo; // Ya está en esa mesa
+            return testigo;
         }
 
         if (!newMesa.tieneDisponibilidad()) {
             throw new RuntimeException("La mesa destino ya alcanzó su capacidad máxima.");
         }
 
-        // Decrementar en la mesa vieja
+        String origenDesc = oldMesa != null
+                ? "Mesa " + oldMesa.getNumeroMesa() + " (" + oldMesa.getPuesto().getNombrePuesto() + ")"
+                : "sin mesa";
+        String destinoDesc = "Mesa " + newMesa.getNumeroMesa()
+                + " (" + newMesa.getPuesto().getNombrePuesto() + ", "
+                + newMesa.getPuesto().getMunicipio().getNombre() + ")";
+
         if (oldMesa != null) {
             oldMesa.setOcupados(Math.max(0, oldMesa.getOcupados() - 1));
             mesaRepository.save(oldMesa);
         }
 
-        // Incrementar en la mesa nueva
         newMesa.setOcupados(newMesa.getOcupados() + 1);
         mesaRepository.save(newMesa);
 
         testigo.setMesa(newMesa);
         testigo = testigoRepository.save(testigo);
 
-        // Auditoría
-        auditService.log(AccionAuditoria.EDICION_TESTIGO, 
-                "Testigo movido: " + testigo.getDocumento() + " a mesa " + newMesa.getNumeroMesa(), "Testigo", id);
+        auditService.log(AccionAuditoria.TRASLADO_TESTIGO,
+                "Testigo " + testigo.getDocumento() + " — " + testigo.getNombreCompleto()
+                + " | De: " + origenDesc + " → A: " + destinoDesc,
+                "Testigo", id);
 
-        // Notificaciones WebSocket
         if (oldMesa != null) {
             wsNotificationService.notificarCambioMesa(oldMesa.getId(), oldMesa.getEstadoSemaforo());
         }
