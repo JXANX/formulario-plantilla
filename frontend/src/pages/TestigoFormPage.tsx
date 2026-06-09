@@ -188,7 +188,7 @@ export default function TestigoFormPage() {
                 <SectionLabel num="01" text="Buscar / Verificar Cédula" />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Grid size={{ xs: 12, sm: 8, md: 6 }}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <TextField
                     fullWidth required
@@ -197,6 +197,7 @@ export default function TestigoFormPage() {
                     value={formData.documento}
                     onChange={handleChange}
                     size="small"
+                    sx={{ flex: 1, minWidth: 0 }}
                   />
                   <Button
                     variant="outlined"
