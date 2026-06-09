@@ -38,6 +38,37 @@ interface Testigo {
 }
 
 
+
+/* ─── sx reutilizable para todos los Select native ── */
+const sxSelect = {
+  '& select': {
+    fontFamily: '"IBM Plex Sans", sans-serif',
+    fontSize: '14px',
+    color: J.ink,
+    backgroundColor: J.surface,
+    paddingLeft: '12px',
+    cursor: 'pointer',
+  },
+  '& select:focus': { backgroundColor: '#fff' },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: J.border,
+    transition: 'border-color 0.15s ease',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
+  '&.Mui-disabled': { opacity: 0.5 },
+};
+
+const sxLabel = {
+  fontSize: '11px',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase' as const,
+  fontWeight: 600,
+  color: J.textMuted,
+  '&.Mui-focused': { color: J.blue },
+  '&.MuiFormLabel-filled': { color: J.ink },
+};
+
 export default function TestigosListPage() {
   const { dashboardUpdates } = useWebSocket();
 
@@ -275,8 +306,8 @@ export default function TestigosListPage() {
             {/* Municipio */}
             <Grid size={{ xs: 12, sm: 4, md: 2.6 }}>
               <FormControl fullWidth>
-                <InputLabel shrink>Municipio</InputLabel>
-                <Select native value={selectedMunicipio} label="Municipio" onChange={e => { handleMunicipioChange(e); setPage(0); }}>
+                <InputLabel shrink sx={sxLabel}>Municipio</InputLabel>
+                <Select native value={selectedMunicipio} label="Municipio" onChange={(e) => { handleMunicipioChange(e); setPage(0); }}>
                   <option value="">Todos</option>
                   {[...municipios]
                     .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
@@ -290,8 +321,8 @@ export default function TestigosListPage() {
             {/* Puesto */}
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth disabled={!selectedMunicipio}>
-                <InputLabel shrink>Puesto</InputLabel>
-                <Select native value={selectedPuesto} label="Puesto" onChange={e => { handlePuestoChange(e); setPage(0); }}>
+                <InputLabel shrink sx={sxLabel}>Puesto</InputLabel>
+                <Select native value={selectedPuesto} label="Puesto" onChange={(e) => { handlePuestoChange(e); setPage(0); }}>
                   <option value="">Todos</option>
                   {[...puestos]
                     .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
@@ -305,8 +336,8 @@ export default function TestigosListPage() {
             {/* Mesa */}
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth disabled={!selectedPuesto}>
-                <InputLabel shrink>Mesa</InputLabel>
-                <Select native value={selectedMesa} label="Mesa" onChange={e => { setSelectedMesa(e.target.value as string); setPage(0); }}>
+                <InputLabel shrink sx={sxLabel}>Mesa</InputLabel>
+                <Select native value={selectedMesa} label="Mesa" onChange={(e) => { setSelectedMesa(e.target.value as string); setPage(0); }}>
                   <option value="">Todas</option>
                   {[...mesas]
                     .sort((a: any, b: any) => a.numeroMesa - b.numeroMesa)
@@ -327,82 +358,84 @@ export default function TestigosListPage() {
       </Card>
 
       {/* ── Table ──────────────────────────────────── */}
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}>
-          <CircularProgress size={32} sx={{ color: J.blue }} />
-        </Box>
-      ) : (
-        <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
-          <Table>
-            <TableHead sx={{ bgcolor: J.ink }}>
-              <TableRow>
-                {['Documento', 'Nombre Completo', 'Celular', 'Tipo', 'Municipio', 'Puesto', 'Mesa', 'Registrado por', 'Acciones'].map(h => (
-                  <TableCell key={h} sx={{ color: '#fff', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, borderBottom: 'none', py: 2, whiteSpace: 'nowrap' }}>
-                    {h}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredTestigos.length === 0 ? (
+      {
+        loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}>
+            <CircularProgress size={32} sx={{ color: J.blue }} />
+          </Box>
+        ) : (
+          <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+            <Table>
+              <TableHead sx={{ bgcolor: J.ink }}>
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 5, color: J.textMuted, fontSize: '13px', letterSpacing: '0.1em' }}>
-                    No se encontraron testigos con los filtros seleccionados.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredTestigos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(t => (
-                  <TableRow key={t.id} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
-                    <TableCell sx={{ fontSize: '15px', fontWeight: 600, color: J.ink }}>{t.documento}</TableCell>
-                    <TableCell sx={{ fontSize: '16px' }}>{t.nombreCompleto}</TableCell>
-                    <TableCell sx={{ fontSize: '15px' }}>{t.celular}</TableCell>
-                    <TableCell>
-                      <Box sx={{
-                        display: 'inline-block', px: 1.5, py: 0.5,
-                        fontSize: '12px', letterSpacing: '0.08em', fontWeight: 700, textTransform: 'uppercase',
-                        bgcolor: t.tipoTestigo === 'PRINCIPAL' ? 'rgba(41,82,204,0.09)' : 'rgba(185,125,26,0.1)',
-                        color: t.tipoTestigo === 'PRINCIPAL' ? J.blue : J.warning,
-                        border: t.tipoTestigo === 'PRINCIPAL' ? '1px solid rgba(41,82,204,0.22)' : '1px solid rgba(185,125,26,0.22)',
-                      }}>
-                        {t.tipoTestigo}
-                      </Box>
+                  {['Documento', 'Nombre Completo', 'Celular', 'Tipo', 'Municipio', 'Puesto', 'Mesa', 'Registrado por', 'Acciones'].map(h => (
+                    <TableCell key={h} sx={{ color: '#fff', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, borderBottom: 'none', py: 2, whiteSpace: 'nowrap' }}>
+                      {h}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '15.5px' }}>{t.nombreMunicipio}</TableCell>
-                    <TableCell sx={{ fontSize: '15.5px' }}>{t.nombrePuesto}</TableCell>
-                    <TableCell sx={{ fontSize: '15px', fontWeight: 600 }}>Mesa {t.numeroMesa}</TableCell>
-                    <TableCell sx={{ fontSize: '14px', color: J.textMuted }}>{t.registradoPor}</TableCell>
-                    <TableCell align="center">
-                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-                        <Tooltip title="Mover de Mesa">
-                          <IconButton onClick={() => handleOpenMove(t)} sx={{ color: J.blue, '&:hover': { bgcolor: 'rgba(41,82,204,0.08)' } }}>
-                            <SwapHorizIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Eliminar Testigo">
-                          <IconButton onClick={() => handleOpenDelete(t)} sx={{ color: J.danger, '&:hover': { bgcolor: 'rgba(184,50,50,0.08)' } }}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredTestigos.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} align="center" sx={{ py: 5, color: J.textMuted, fontSize: '13px', letterSpacing: '0.1em' }}>
+                      No se encontraron testigos con los filtros seleccionados.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            component="div"
-            count={filteredTestigos.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(_, p) => setPage(p)}
-            onRowsPerPageChange={e => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-            labelRowsPerPage="Filas por página:"
-            sx={{ fontSize: '13px', borderTop: `1px solid ${J.border}` }}
-          />
-        </TableContainer>
-      )}
+                ) : (
+                  filteredTestigos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(t => (
+                    <TableRow key={t.id} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 600, color: J.ink }}>{t.documento}</TableCell>
+                      <TableCell sx={{ fontSize: '16px' }}>{t.nombreCompleto}</TableCell>
+                      <TableCell sx={{ fontSize: '15px' }}>{t.celular}</TableCell>
+                      <TableCell>
+                        <Box sx={{
+                          display: 'inline-block', px: 1.5, py: 0.5,
+                          fontSize: '12px', letterSpacing: '0.08em', fontWeight: 700, textTransform: 'uppercase',
+                          bgcolor: t.tipoTestigo === 'PRINCIPAL' ? 'rgba(41,82,204,0.09)' : 'rgba(185,125,26,0.1)',
+                          color: t.tipoTestigo === 'PRINCIPAL' ? J.blue : J.warning,
+                          border: t.tipoTestigo === 'PRINCIPAL' ? '1px solid rgba(41,82,204,0.22)' : '1px solid rgba(185,125,26,0.22)',
+                        }}>
+                          {t.tipoTestigo}
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '15.5px' }}>{t.nombreMunicipio}</TableCell>
+                      <TableCell sx={{ fontSize: '15.5px' }}>{t.nombrePuesto}</TableCell>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 600 }}>Mesa {t.numeroMesa}</TableCell>
+                      <TableCell sx={{ fontSize: '14px', color: J.textMuted }}>{t.registradoPor}</TableCell>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                          <Tooltip title="Mover de Mesa">
+                            <IconButton onClick={() => handleOpenMove(t)} sx={{ color: J.blue, '&:hover': { bgcolor: 'rgba(41,82,204,0.08)' } }}>
+                              <SwapHorizIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Eliminar Testigo">
+                            <IconButton onClick={() => handleOpenDelete(t)} sx={{ color: J.danger, '&:hover': { bgcolor: 'rgba(184,50,50,0.08)' } }}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25, 50]}
+              component="div"
+              count={filteredTestigos.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={(_, p) => setPage(p)}
+              onRowsPerPageChange={e => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+              labelRowsPerPage="Filas por página:"
+              sx={{ fontSize: '13px', borderTop: `1px solid ${J.border}` }}
+            />
+          </TableContainer>
+        )
+      }
 
       {/* ── Delete Dialog ─────────────────────────── */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} slotProps={{ paper: { sx: { borderRadius: 0, border: `1px solid ${J.border}` } } }}>
@@ -445,8 +478,8 @@ export default function TestigosListPage() {
             {/* Departamento */}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small">
-                <InputLabel shrink>Departamento</InputLabel>
-                <Select native value={moveDepto} label="Departamento" onChange={handleMoveDeptoChange}>
+                <InputLabel shrink sx={sxLabel}>Departamento</InputLabel>
+                <Select native value={moveDepto} label="Departamento" onChange={handleMoveDeptoChange} sx={sxSelect}>
                   <option value="">Seleccione...</option>
                   {[...moveDeptosList]
                     .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
@@ -460,8 +493,8 @@ export default function TestigosListPage() {
             {/* Municipio */}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!moveDepto}>
-                <InputLabel shrink>Municipio</InputLabel>
-                <Select native value={moveMpio} label="Municipio" onChange={handleMoveMpioChange}>
+                <InputLabel shrink sx={sxLabel}>Municipio</InputLabel>
+                <Select native value={moveMpio} label="Municipio" onChange={handleMoveMpioChange} sx={sxSelect}>
                   <option value="">Seleccione...</option>
                   {[...moveMpiosList]
                     .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es'))
@@ -475,8 +508,8 @@ export default function TestigosListPage() {
             {/* Puesto */}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!moveMpio}>
-                <InputLabel shrink>Puesto de votación</InputLabel>
-                <Select native value={movePuesto} label="Puesto de votación" onChange={handleMovePuestoChange}>
+                <InputLabel shrink sx={sxLabel}>Puesto de votación</InputLabel>
+                <Select native value={movePuesto} label="Puesto de votación" onChange={handleMovePuestoChange} sx={sxSelect}>
                   <option value="">Seleccione...</option>
                   {[...movePuestosList]
                     .sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es'))
@@ -490,8 +523,8 @@ export default function TestigosListPage() {
             {/* Mesa — con indicadores de capacidad y grupo "Disponibles / Llenas" */}
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!movePuesto}>
-                <InputLabel shrink>Mesa de votación</InputLabel>
-                <Select native value={moveMesa} label="Mesa de votación" onChange={e => setMoveMesa(e.target.value as string)}>
+                <InputLabel shrink sx={sxLabel}>Mesa de votación</InputLabel>
+                <Select native value={moveMesa} label="Mesa de votación" onChange={(e) => setMoveMesa(e.target.value as string)}>
                   <option value="">Seleccione...</option>
                   {(() => {
                     const sorted = [...moveMesasList].sort((a: any, b: any) => a.numeroMesa - b.numeroMesa);
@@ -538,6 +571,6 @@ export default function TestigosListPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Box >
   );
 }

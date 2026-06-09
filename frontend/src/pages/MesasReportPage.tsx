@@ -111,6 +111,37 @@ function computeExtendedCoverage(
   return { totalCubiertas, parcialCubiertas };
 }
 
+
+/* ─── sx reutilizable para todos los Select native ── */
+const sxSelect = {
+  '& select': {
+    fontFamily: '"IBM Plex Sans", sans-serif',
+    fontSize: '14px',
+    color: J.ink,
+    backgroundColor: J.surface,
+    paddingLeft: '12px',
+    cursor: 'pointer',
+  },
+  '& select:focus': { backgroundColor: '#fff' },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: J.border,
+    transition: 'border-color 0.15s ease',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
+  '&.Mui-disabled': { opacity: 0.5 },
+};
+
+const sxLabel = {
+  fontSize: '11px',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase' as const,
+  fontWeight: 600,
+  color: J.textMuted,
+  '&.Mui-focused': { color: J.blue },
+  '&.MuiFormLabel-filled': { color: J.ink },
+};
+
 // ─── MINI STAT CARD ────────────────────────────────────────────────────────────
 function StatMini({ title, value, color }: { title: string; value: number | string; color: string }) {
   return (
@@ -480,8 +511,8 @@ export default function MesasReportPage() {
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small">
-                    <InputLabel shrink>Departamento</InputLabel>
-                    <Select native value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                    <InputLabel shrink sx={sxLabel}>Departamento</InputLabel>
+                    <Select native value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange} sx={sxSelect}>
                       <option value="">Selecciona Departamento…</option>
                       {departamentos.map((d: any) => <option key={d.id} value={d.id.toString()}>{d.nombre}</option>)}
                     </Select>
@@ -489,8 +520,8 @@ export default function MesasReportPage() {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedDepartamento}>
-                    <InputLabel shrink>Municipio</InputLabel>
-                    <Select native value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange}>
+                    <InputLabel shrink sx={sxLabel}>Municipio</InputLabel>
+                    <Select native value={selectedMunicipio} label="Municipio" onChange={handleMunicipioChange} sx={sxSelect}>
                       <option value="">Selecciona Municipio…</option>
                       {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <option key={m.id} value={m.id.toString()}>{m.nombre}</option>)}
                     </Select>
@@ -498,8 +529,8 @@ export default function MesasReportPage() {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
-                    <InputLabel shrink>Puesto de Votación</InputLabel>
-                    <Select native value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)}>
+                    <InputLabel shrink sx={sxLabel}>Puesto de Votación</InputLabel>
+                    <Select native value={selectedPuesto} label="Puesto de Votación" onChange={(e) => setSelectedPuesto(e.target.value as string)} sx={sxSelect}>
                       <option value="">Selecciona Puesto…</option>
                       {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <option key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</option>)}
                     </Select>
@@ -515,11 +546,11 @@ export default function MesasReportPage() {
             ) : (
               <Box>
                 <Grid container spacing={3} sx={{ mb: 5 }}>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Total Mesas"        value={stats.total}            color={J.ink}     /></Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Cubiertas (Verde)"  value={stats.verdes}           color={J.success} /></Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Parciales (Amarillo)" value={stats.amarillas}      color={J.warning} /></Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Faltantes (Rojo)"   value={stats.rojas}            color={J.danger}  /></Grid>
-                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="% Cobertura"        value={`${stats.porcentaje}%`} color={J.blue}    /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Total Mesas" value={stats.total} color={J.ink} /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Cubiertas (Verde)" value={stats.verdes} color={J.success} /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Parciales (Amarillo)" value={stats.amarillas} color={J.warning} /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Faltantes (Rojo)" value={stats.rojas} color={J.danger} /></Grid>
+                  <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="% Cobertura" value={`${stats.porcentaje}%`} color={J.blue} /></Grid>
                 </Grid>
 
                 <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
@@ -592,8 +623,8 @@ export default function MesasReportPage() {
               <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth size="small">
-                    <InputLabel shrink>Departamento</InputLabel>
-                    <Select native value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange}>
+                    <InputLabel shrink sx={sxLabel}>Departamento</InputLabel>
+                    <Select native value={selectedDepartamento} label="Departamento" onChange={handleDepartamentoChange} sx={sxSelect}>
                       <option value="">Selecciona Departamento…</option>
                       {departamentos.map((d: any) => <option key={d.id} value={d.id.toString()}>{d.nombre}</option>)}
                     </Select>

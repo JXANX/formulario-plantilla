@@ -3,21 +3,72 @@ import {
   Box, Typography, Card, CardContent, Grid, TextField, Button,
   FormControl, InputLabel, Select, Alert
 } from '@mui/material';
-import SaveIcon      from '@mui/icons-material/Save';
-import SearchIcon    from '@mui/icons-material/Search';
-import { useToast }  from '../context/ToastContext';
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+import { useToast } from '../context/ToastContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const J = {
-  ink:    '#1A1F2E',
-  blue:   '#2952CC',
-  gold:   '#C9973A',
+  ink: '#1A1F2E',
+  blue: '#2952CC',
+  gold: '#C9973A',
   border: '#E2DDD6',
-  muted:  '#F0EEE9',
+  muted: '#F0EEE9',
+  surface: '#F8F7F4',
   textMuted: '#7A7A7A',
-  success:   '#2D7D4E',
-  danger:    '#B83232',
+  success: '#2D7D4E',
+  warning: '#B97D1A',
+  danger: '#B83232',
+};
+
+
+/* ─── sx reutilizable para todos los Select native ── */
+const sxSelect = {
+  '& .MuiSelect-nativeInput': { opacity: 1 },
+  '& select': {
+    fontFamily: '"IBM Plex Sans", sans-serif',
+    fontSize: '14px',
+    color: J.ink,
+    backgroundColor: J.surface,
+    paddingLeft: '12px',
+    paddingRight: '32px',
+    cursor: 'pointer',
+  },
+  '& select:focus': {
+    backgroundColor: '#fff',
+    outline: 'none',
+  },
+  '& select option[value=""]': {
+    color: J.textMuted,
+    fontStyle: 'italic',
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: J.border,
+    transition: 'border-color 0.15s ease',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: J.blue,
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: J.blue,
+    borderWidth: '1.5px',
+  },
+  '&.Mui-disabled': {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+};
+
+/* ─── sx para InputLabel de selects ─────────────── */
+const sxLabel = {
+  fontSize: '11px',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase' as const,
+  fontWeight: 600,
+  color: J.textMuted,
+  '&.Mui-focused': { color: J.blue },
+  '&.MuiFormLabel-filled': { color: J.ink },
 };
 
 /* ─── small helper: section title ─────────────────── */
@@ -42,15 +93,15 @@ function SectionLabel({ num, text }: { num: string; text: string }) {
 }
 
 export default function TestigoFormPage() {
-  const [departamentos,   setDepartamentos]   = useState([]);
-  const [municipios,      setMunicipios]      = useState([]);
-  const [puestos,         setPuestos]         = useState([]);
-  const [mesas,           setMesas]           = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+  const [puestos, setPuestos] = useState([]);
+  const [mesas, setMesas] = useState([]);
 
-  const [selectedDepto,   setSelectedDepto]   = useState('');
-  const [selectedMpio,    setSelectedMpio]    = useState('');
-  const [selectedPuesto,  setSelectedPuesto]  = useState('');
-  const [selectedMesa,    setSelectedMesa]    = useState('');
+  const [selectedDepto, setSelectedDepto] = useState('');
+  const [selectedMpio, setSelectedMpio] = useState('');
+  const [selectedPuesto, setSelectedPuesto] = useState('');
+  const [selectedMesa, setSelectedMesa] = useState('');
 
   const [formData, setFormData] = useState({
     documento: '', nombre: '', segundoNombre: '',
@@ -58,8 +109,8 @@ export default function TestigoFormPage() {
     celular: '', correo: '', tipoTestigo: 'PRINCIPAL',
   });
 
-  const [error,       setError]       = useState('');
-  const [success,     setSuccess]     = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const toast = useToast();
 
@@ -69,19 +120,19 @@ export default function TestigoFormPage() {
     setIsVerifying(true); setError(''); setSuccess('');
     try {
       const token = localStorage.getItem('token');
-      const res  = await fetch(`${API_URL}/api/testigos/documento/${formData.documento}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/testigos/documento/${formData.documento}`, { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       if (data.success && data.data) {
         setSuccess('El testigo ya existe. Verifique sus datos o asigne ubicación si es necesario.');
         toast.warning('El testigo ya existe. Verifique sus datos o asigne ubicación si es necesario.');
         const t = data.data;
-        setFormData(prev => ({ ...prev, nombre: t.nombre||'', segundoNombre: t.segundoNombre||'', primerApellido: t.primerApellido||'', segundoApellido: t.segundoApellido||'', celular: t.celular||'', correo: t.correo||'', tipoTestigo: t.tipoTestigo||'PRINCIPAL' }));
+        setFormData(prev => ({ ...prev, nombre: t.nombre || '', segundoNombre: t.segundoNombre || '', primerApellido: t.primerApellido || '', segundoApellido: t.segundoApellido || '', celular: t.celular || '', correo: t.correo || '', tipoTestigo: t.tipoTestigo || 'PRINCIPAL' }));
       } else {
         setSuccess('Documento disponible para registro nuevo.');
         toast.info('Documento disponible para registro nuevo.');
       }
     } catch { setError('Cédula ya registrada.'); toast.error('Cédula ya registrada.'); }
-    finally  { setIsVerifying(false); }
+    finally { setIsVerifying(false); }
   };
 
   useEffect(() => {
@@ -117,7 +168,7 @@ export default function TestigoFormPage() {
     e.preventDefault(); setError(''); setSuccess('');
     try {
       const token = localStorage.getItem('token');
-      const res  = await fetch(`${API_URL}/api/testigos`, {
+      const res = await fetch(`${API_URL}/api/testigos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ ...formData, mesaId: selectedMesa }),
@@ -126,7 +177,7 @@ export default function TestigoFormPage() {
       if (data.success) {
         setSuccess('Testigo registrado correctamente');
         toast.success('¡Testigo registrado correctamente!');
-        setFormData({ documento:'', nombre:'', segundoNombre:'', primerApellido:'', segundoApellido:'', celular:'', correo:'', tipoTestigo:'PRINCIPAL' });
+        setFormData({ documento: '', nombre: '', segundoNombre: '', primerApellido: '', segundoApellido: '', celular: '', correo: '', tipoTestigo: 'PRINCIPAL' });
         setSelectedMesa('');
         if (selectedPuesto) {
           const token2 = localStorage.getItem('token');
@@ -150,7 +201,7 @@ export default function TestigoFormPage() {
         </Typography>
       </Box>
 
-      {error   && <Alert severity="error"   sx={{ mb: 2.5, borderRadius: 0 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2.5, borderRadius: 0 }}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2.5, borderRadius: 0 }}>{success}</Alert>}
 
       <Card sx={{ bgcolor: '#fff', border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
@@ -206,29 +257,29 @@ export default function TestigoFormPage() {
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField fullWidth required size="small" label="Primer Nombre"     name="nombre"          value={formData.nombre}          onChange={handleChange} />
+                <TextField fullWidth required size="small" label="Primer Nombre" name="nombre" value={formData.nombre} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField fullWidth          size="small" label="Segundo Nombre"    name="segundoNombre"   value={formData.segundoNombre}   onChange={handleChange} />
+                <TextField fullWidth size="small" label="Segundo Nombre" name="segundoNombre" value={formData.segundoNombre} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField fullWidth required size="small" label="Primer Apellido"   name="primerApellido"  value={formData.primerApellido}  onChange={handleChange} />
+                <TextField fullWidth required size="small" label="Primer Apellido" name="primerApellido" value={formData.primerApellido} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField fullWidth          size="small" label="Segundo Apellido"  name="segundoApellido" value={formData.segundoApellido} onChange={handleChange} />
+                <TextField fullWidth size="small" label="Segundo Apellido" name="segundoApellido" value={formData.segundoApellido} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField fullWidth required size="small" label="Celular"           name="celular"         value={formData.celular}         onChange={handleChange} />
+                <TextField fullWidth required size="small" label="Celular" name="celular" value={formData.celular} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField fullWidth          size="small" label="Correo Electrónico" name="correo"         value={formData.correo}          onChange={handleChange} type="email" />
+                <TextField fullWidth size="small" label="Correo Electrónico" name="correo" value={formData.correo} onChange={handleChange} type="email" />
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
-                  <InputLabel shrink>Tipo Testigo</InputLabel>
-                  <Select native name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange}>
-                    <option value="PRINCIPAL">PRINCIPAL</option>
-                    <option value="SUPLENTE">SUPLENTE</option>
+                  <InputLabel shrink sx={sxLabel}>Tipo Testigo</InputLabel>
+                  <Select native name="tipoTestigo" value={formData.tipoTestigo} label="Tipo Testigo" onChange={handleChange} sx={sxSelect}>
+                    <option value="PRINCIPAL">⬛ PRINCIPAL</option>
+                    <option value="SUPLENTE">🔷 SUPLENTE</option>
                   </Select>
                 </FormControl>
               </Grid>
@@ -245,8 +296,8 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
-                  <InputLabel shrink>Departamento</InputLabel>
-                  <Select native value={selectedDepto} label="Departamento" onChange={handleDeptoChange} required>
+                  <InputLabel shrink sx={sxLabel}>Departamento</InputLabel>
+                  <Select native value={selectedDepto} label="Departamento" onChange={handleDeptoChange} required sx={sxSelect}>
                     <option value="">Seleccione...</option>
                     {[...departamentos].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((d: any) => (
                       <option key={d.id} value={d.id}>{d.nombre}</option>
@@ -257,8 +308,8 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedDepto}>
-                  <InputLabel shrink>Municipio</InputLabel>
-                  <Select native value={selectedMpio} label="Municipio" onChange={handleMpioChange} required>
+                  <InputLabel shrink sx={sxLabel}>Municipio</InputLabel>
+                  <Select native value={selectedMpio} label="Municipio" onChange={handleMpioChange} required sx={sxSelect}>
                     <option value="">Seleccione...</option>
                     {[...municipios].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => (
                       <option key={m.id} value={m.id}>{m.nombre}</option>
@@ -269,8 +320,8 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedMpio}>
-                  <InputLabel shrink>Puesto</InputLabel>
-                  <Select native value={selectedPuesto} label="Puesto" onChange={handlePuestoChange} required>
+                  <InputLabel shrink sx={sxLabel}>Puesto</InputLabel>
+                  <Select native value={selectedPuesto} label="Puesto" onChange={handlePuestoChange} required sx={sxSelect}>
                     <option value="">Seleccione...</option>
                     {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => (
                       <option key={p.id} value={p.id}>{p.nombrePuesto}</option>
@@ -281,14 +332,16 @@ export default function TestigoFormPage() {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedPuesto}>
-                  <InputLabel shrink>Mesa</InputLabel>
-                  <Select native value={selectedMesa} label="Mesa" onChange={(e) => setSelectedMesa(e.target.value as string)} required>
+                  <InputLabel shrink sx={sxLabel}>Mesa</InputLabel>
+                  <Select native value={selectedMesa} label="Mesa" onChange={(e) => setSelectedMesa(e.target.value as string)} required sx={sxSelect}>
                     <option value="">Seleccione...</option>
                     {[...mesas].filter((m: any) => m.ocupados < m.capacidad).sort((a: any, b: any) => a.numeroMesa - b.numeroMesa).map((m: any) => {
-                      const isPartial = m.ocupados > 0 && m.ocupados < m.capacidad;
+                      const pct = m.capacidad > 0 ? m.ocupados / m.capacidad : 0;
+                      const emoji = pct >= 0.75 ? '🟡' : m.ocupados === 0 ? '🟢' : '🟢';
+                      const estado = m.ocupados === 0 ? 'Vacía' : 'Parcial';
                       return (
                         <option key={m.id} value={m.id}>
-                          Mesa {m.numeroMesa} ({isPartial ? 'Parcial' : 'Vacía'})
+                          {emoji} Mesa {m.numeroMesa} — {estado} ({m.ocupados}/{m.capacidad})
                         </option>
                       );
                     })}
