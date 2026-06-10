@@ -205,6 +205,49 @@ public class TestigoService {
         return testigo;
     }
 
+    @Transactional
+    public Testigo actualizarTestigo(Long id, TestigoRequest request) {
+        Testigo testigo = testigoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Testigo no encontrado"));
+
+        // Solo valida duplicado de documento si cambió
+        if (!testigo.getDocumento().equals(request.getDocumento())) {
+            duplicadoService.verificarDuplicadoExacto(request.getDocumento());
+        }
+
+        String cambios = buildCambiosDesc(testigo, request);
+
+        testigo.setDocumento(request.getDocumento());
+        testigo.setNombre(request.getNombre().trim().toUpperCase());
+        testigo.setSegundoNombre(request.getSegundoNombre() != null ? request.getSegundoNombre().trim().toUpperCase() : null);
+        testigo.setPrimerApellido(request.getPrimerApellido().trim().toUpperCase());
+        testigo.setSegundoApellido(request.getSegundoApellido() != null ? request.getSegundoApellido().trim().toUpperCase() : null);
+        testigo.setCelular(request.getCelular());
+        testigo.setCorreo(request.getCorreo());
+        testigo.setTipoTestigo(request.getTipoTestigo());
+
+        testigo = testigoRepository.save(testigo);
+
+        auditService.log(AccionAuditoria.EDICION_TESTIGO,
+                "Testigo editado: " + testigo.getDocumento() + " — " + testigo.getNombreCompleto()
+                + (cambios.isEmpty() ? "" : " | Cambios: " + cambios),
+                "Testigo", id);
+
+        wsNotificationService.notificarDashboardUpdate();
+        return testigo;
+    }
+
+    private String buildCambiosDesc(Testigo t, TestigoRequest r) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        if (!t.getDocumento().equals(r.getDocumento()))
+            parts.add("doc: " + t.getDocumento() + "→" + r.getDocumento());
+        if (!t.getCelular().equals(r.getCelular()))
+            parts.add("cel: " + t.getCelular() + "→" + r.getCelular());
+        if (t.getTipoTestigo() != r.getTipoTestigo())
+            parts.add("tipo: " + t.getTipoTestigo() + "→" + r.getTipoTestigo());
+        return String.join(", ", parts);
+    }
+
     private Usuario getCurrentUser() {
         try {
             String correo = SecurityContextHolder.getContext().getAuthentication().getName();
