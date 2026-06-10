@@ -74,6 +74,18 @@ public class TestigoController {
         }
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> actualizarTestigo(@PathVariable Long id, @Valid @RequestBody TestigoRequest request) {
+        try {
+            Testigo testigo = testigoService.actualizarTestigo(id, request);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Testigo actualizado correctamente", testigo));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
     @PutMapping("/{id}/mover")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> moverTestigo(@PathVariable Long id, @RequestParam Long nuevaMesaId) {

@@ -12,6 +12,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import SearchIcon from '@mui/icons-material/Search';
 import CircleIcon from '@mui/icons-material/Circle';
 import TableBarIcon from '@mui/icons-material/TableBar';
+import EditIcon from '@mui/icons-material/Edit';
 import { useWebSocket } from '../hooks/useWebSocket';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -216,6 +217,16 @@ export default function TestigosListPage() {
   const [moveMesasList, setMoveMesasList] = useState<any[]>([]);
   const [moveError, setMoveError] = useState('');
 
+  // ── Edit dialog state ────────────────────────────
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTestigo, setEditTestigo] = useState<Testigo | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editForm, setEditForm] = useState({
+    documento: '', nombre: '', segundoNombre: '', primerApellido: '',
+    segundoApellido: '', celular: '', correo: '', tipoTestigo: 'PRINCIPAL',
+  });
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -377,6 +388,64 @@ export default function TestigosListPage() {
         setMoveDialogOpen(false); fetchTestigos();
       } else setMoveError(data.message || 'Error al trasladar');
     } catch { setMoveError('Error de conexión'); }
+  };
+
+  /* ── Edit ────────────────────────────────────────── */
+  const handleOpenEdit = (t: Testigo) => {
+    setEditTestigo(t);
+    setEditError('');
+    setEditForm({
+      documento: t.documento,
+      nombre: t.nombre,
+      segundoNombre: t.segundoNombre ?? '',
+      primerApellido: t.primerApellido,
+      segundoApellido: t.segundoApellido ?? '',
+      celular: t.celular,
+      correo: t.correo ?? '',
+      tipoTestigo: t.tipoTestigo,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleConfirmEdit = async () => {
+    if (!editTestigo) return;
+    const { documento, nombre, primerApellido, celular, tipoTestigo } = editForm;
+    if (!documento.trim() || !nombre.trim() || !primerApellido.trim() || !celular.trim() || !tipoTestigo) {
+      setEditError('Documento, Nombre, Primer Apellido y Celular son obligatorios');
+      return;
+    }
+    setEditSaving(true); setEditError('');
+    try {
+      const token = localStorage.getItem('token');
+      const body = {
+        documento: editForm.documento.trim(),
+        nombre: editForm.nombre.trim(),
+        segundoNombre: editForm.segundoNombre.trim() || null,
+        primerApellido: editForm.primerApellido.trim(),
+        segundoApellido: editForm.segundoApellido.trim() || null,
+        celular: editForm.celular.trim(),
+        correo: editForm.correo.trim() || null,
+        tipoTestigo: editForm.tipoTestigo,
+        mesaId: editTestigo.mesaId, // se conserva la mesa actual
+      };
+      const res = await fetch(`${API_URL}/api/testigos/${editTestigo.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccess('Testigo actualizado correctamente');
+        setEditDialogOpen(false);
+        fetchTestigos();
+      } else {
+        setEditError(data.message || 'Error al actualizar el testigo');
+      }
+    } catch {
+      setEditError('Error de conexión con el servidor');
+    } finally {
+      setEditSaving(false);
+    }
   };
 
   const filteredTestigos = testigos.filter(t => {
@@ -602,6 +671,11 @@ export default function TestigosListPage() {
                     <TableCell sx={{ fontSize: '14px', color: J.textMuted }}>{t.registradoPor}</TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                        <Tooltip title="Editar Testigo">
+                          <IconButton onClick={() => handleOpenEdit(t)} sx={{ color: J.gold, '&:hover': { bgcolor: 'rgba(201,151,58,0.1)' } }}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Mover de Mesa">
                           <IconButton onClick={() => handleOpenMove(t)} sx={{ color: J.blue, '&:hover': { bgcolor: 'rgba(41,82,204,0.08)' } }}>
                             <SwapHorizIcon />
@@ -632,6 +706,157 @@ export default function TestigosListPage() {
           />
         </TableContainer>
       )}
+
+      {/* ── Edit Dialog ──────────────────────────────── */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => !editSaving && setEditDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{ paper: { sx: { borderRadius: 0, border: `1px solid ${J.border}` } } }}
+      >
+        <DialogTitle sx={{
+          fontWeight: 700, color: J.ink, fontSize: '20px',
+          borderBottom: `1px solid ${J.border}`,
+          display: 'flex', alignItems: 'center', gap: 1.5,
+        }}>
+          <EditIcon sx={{ color: J.gold, fontSize: 22 }} />
+          Editar Testigo
+        </DialogTitle>
+        <DialogContent dividers sx={{ borderColor: J.border, p: '20px 28px 24px' }}>
+
+          {/* Identificación del registro */}
+          <Box sx={{
+            mb: 2.5, p: 1.5, bgcolor: J.surface,
+            border: `1px solid ${J.border}`,
+            display: 'flex', gap: 2, flexWrap: 'wrap',
+          }}>
+            <Box>
+              <Typography sx={{ fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: J.textMuted, mb: 0.25 }}>Ubicación</Typography>
+              <Typography sx={{ fontSize: '13px', fontWeight: 600, color: J.ink }}>
+                {editTestigo?.nombreMunicipio} · {editTestigo?.nombrePuesto} · Mesa {editTestigo?.numeroMesa}
+              </Typography>
+            </Box>
+          </Box>
+
+          {editError && <Alert severity="error" sx={{ mb: 2.5, borderRadius: 0 }} onClose={() => setEditError('')}>{editError}</Alert>}
+
+          <Grid container spacing={2}>
+
+            {/* Documento */}
+            <Grid size={{ xs: 12, sm: 5 }}>
+              <TextField
+                fullWidth size="small" label="Documento *" value={editForm.documento}
+                onChange={e => setEditForm(f => ({ ...f, documento: e.target.value }))}
+                disabled={editSaving}
+                slotProps={{ inputLabel: { shrink: true, sx: sxLabel } }}
+              />
+            </Grid>
+
+            {/* Tipo testigo */}
+            <Grid size={{ xs: 12, sm: 7 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel shrink sx={sxLabel}>Tipo de Testigo *</InputLabel>
+                <Select
+                  value={editForm.tipoTestigo}
+                  label="Tipo de Testigo *"
+                  disabled={editSaving}
+                  onChange={e => setEditForm(f => ({ ...f, tipoTestigo: e.target.value }))}
+                  sx={sxSelect}
+                  MenuProps={MENU_PROPS}
+                >
+                  <MenuItem value="PRINCIPAL">Principal</MenuItem>
+                  <MenuItem value="SUPLENTE">Suplente</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Nombre */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth size="small" label="Primer Nombre *" value={editForm.nombre}
+                onChange={e => setEditForm(f => ({ ...f, nombre: e.target.value }))}
+                disabled={editSaving}
+                slotProps={{ inputLabel: { shrink: true, sx: sxLabel } }}
+              />
+            </Grid>
+
+            {/* Segundo nombre */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth size="small" label="Segundo Nombre" value={editForm.segundoNombre}
+                onChange={e => setEditForm(f => ({ ...f, segundoNombre: e.target.value }))}
+                disabled={editSaving}
+                slotProps={{ inputLabel: { shrink: true, sx: sxLabel } }}
+              />
+            </Grid>
+
+            {/* Primer apellido */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth size="small" label="Primer Apellido *" value={editForm.primerApellido}
+                onChange={e => setEditForm(f => ({ ...f, primerApellido: e.target.value }))}
+                disabled={editSaving}
+                slotProps={{ inputLabel: { shrink: true, sx: sxLabel } }}
+              />
+            </Grid>
+
+            {/* Segundo apellido */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth size="small" label="Segundo Apellido" value={editForm.segundoApellido}
+                onChange={e => setEditForm(f => ({ ...f, segundoApellido: e.target.value }))}
+                disabled={editSaving}
+                slotProps={{ inputLabel: { shrink: true, sx: sxLabel } }}
+              />
+            </Grid>
+
+            {/* Celular */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth size="small" label="Celular *" value={editForm.celular}
+                onChange={e => setEditForm(f => ({ ...f, celular: e.target.value }))}
+                disabled={editSaving}
+                slotProps={{ inputLabel: { shrink: true, sx: sxLabel } }}
+              />
+            </Grid>
+
+            {/* Correo */}
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth size="small" label="Correo electrónico" value={editForm.correo}
+                onChange={e => setEditForm(f => ({ ...f, correo: e.target.value }))}
+                disabled={editSaving}
+                slotProps={{ inputLabel: { shrink: true, sx: sxLabel } }}
+              />
+            </Grid>
+
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button
+            onClick={() => setEditDialogOpen(false)}
+            disabled={editSaving}
+            sx={{ borderRadius: 0, color: J.textMuted, fontSize: '13px', letterSpacing: '0.1em' }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleConfirmEdit}
+            disabled={editSaving}
+            sx={{
+              bgcolor: J.ink, color: '#fff', borderRadius: 0, px: 3,
+              fontSize: '13px', letterSpacing: '0.1em',
+              '&:hover': { bgcolor: J.blue },
+              '&:disabled': { bgcolor: 'rgba(26,31,46,0.3)', color: 'rgba(255,255,255,0.5)' },
+              display: 'flex', alignItems: 'center', gap: 1,
+            }}
+          >
+            {editSaving ? <CircularProgress size={16} sx={{ color: 'rgba(255,255,255,0.7)' }} /> : null}
+            {editSaving ? 'Guardando...' : 'Guardar Cambios'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* ── Delete Dialog ────────────────────────────── */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} slotProps={{ paper: { sx: { borderRadius: 0, border: `1px solid ${J.border}` } } }}>
