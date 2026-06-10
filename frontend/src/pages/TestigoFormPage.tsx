@@ -6,6 +6,7 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { useToast } from '../context/ToastContext';
+import SearchableSelect from '../components/SearchableSelect';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -327,18 +328,21 @@ export default function TestigoFormPage() {
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small" disabled={!selectedMpio}>
                   <InputLabel sx={sxLabel}>Puesto</InputLabel>
-                  <Select
+                  <SearchableSelect
                     value={selectedPuesto}
                     label="Puesto"
                     onChange={handlePuestoChange}
                     required
                     sx={sxSelect}
+                    MenuProps={{
+                      slotProps: { paper: { sx: { maxHeight: 350, borderRadius: 0 } } }
+                    }}
                   >
                     <MenuItem value="">Seleccione...</MenuItem>
                     {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => (
                       <MenuItem key={p.id} value={p.id}>{p.nombrePuesto}</MenuItem>
                     ))}
-                  </Select>
+                  </SearchableSelect>
                 </FormControl>
               </Grid>
 

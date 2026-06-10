@@ -14,6 +14,7 @@ import CircleIcon from '@mui/icons-material/Circle';
 import TableBarIcon from '@mui/icons-material/TableBar';
 import EditIcon from '@mui/icons-material/Edit';
 import { useWebSocket } from '../hooks/useWebSocket';
+import SearchableSelect from '../components/SearchableSelect';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -541,13 +542,16 @@ export default function TestigosListPage() {
             <Grid size={{ xs: 12, sm: 4, md: 2.7 }}>
               <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
                 <InputLabel shrink sx={sxLabel}>Puesto</InputLabel>
-                <Select
+                <SearchableSelect
                   value={selectedPuesto}
                   label="Puesto"
                   displayEmpty
                   onChange={e => handlePuestoChange(e.target.value as string)}
                   sx={sxSelect}
-                  MenuProps={MENU_PROPS}
+                  MenuProps={{
+                    ...MENU_PROPS,
+                    slotProps: { paper: { sx: { ...MENU_PROPS.slotProps.paper.sx, maxHeight: 350, borderRadius: 0 } } }
+                  }}
                   renderValue={val =>
                     val
                       ? puestos.find(p => String(p.id) === String(val))?.nombrePuesto ?? 'Todos'
@@ -558,7 +562,7 @@ export default function TestigosListPage() {
                   {[...puestos].sort((a, b) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map(p => (
                     <MenuItem key={p.id} value={String(p.id)}>{p.nombrePuesto}</MenuItem>
                   ))}
-                </Select>
+                </SearchableSelect>
               </FormControl>
             </Grid>
 
@@ -957,13 +961,16 @@ export default function TestigosListPage() {
             <Grid size={{ xs: 12 }}>
               <FormControl fullWidth size="small" disabled={!moveMpio}>
                 <InputLabel shrink sx={sxLabel}>Puesto de votación</InputLabel>
-                <Select
+                <SearchableSelect
                   value={movePuesto}
                   label="Puesto de votación"
                   displayEmpty
                   onChange={e => handleMovePuestoChange(e.target.value as string)}
                   sx={sxSelect}
-                  MenuProps={MENU_PROPS}
+                  MenuProps={{
+                    ...MENU_PROPS,
+                    slotProps: { paper: { sx: { ...MENU_PROPS.slotProps.paper.sx, maxHeight: 350, borderRadius: 0 } } }
+                  }}
                   renderValue={val =>
                     val
                       ? movePuestosList.find(p => String(p.id) === String(val))?.nombrePuesto ?? 'Seleccione...'
@@ -974,7 +981,7 @@ export default function TestigosListPage() {
                   {[...movePuestosList].sort((a, b) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map(p => (
                     <MenuItem key={p.id} value={String(p.id)}>{p.nombrePuesto}</MenuItem>
                   ))}
-                </Select>
+                </SearchableSelect>
               </FormControl>
             </Grid>
 

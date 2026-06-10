@@ -12,10 +12,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import PieChartIcon from '@mui/icons-material/PieChart';
 import { useWebSocket } from '../hooks/useWebSocket';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  PieChart, Pie, Cell, ResponsiveContainer, LabelList
-} from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LabelList, PieChart, Pie, Cell } from 'recharts';
+import SearchableSelect from '../components/SearchableSelect';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -531,15 +529,18 @@ export default function MesasReportPage() {
                 <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small" disabled={!selectedMunicipio}>
                     <InputLabel sx={sxLabel}>Puesto de Votación</InputLabel>
-                    <Select
+                    <SearchableSelect
                       value={selectedPuesto}
                       label="Puesto de Votación"
                       onChange={(e) => setSelectedPuesto(e.target.value as string)}
                       sx={sxSelect}
+                      MenuProps={{
+                        slotProps: { paper: { sx: { maxHeight: 350, borderRadius: 0 } } }
+                      }}
                     >
                       <MenuItem value="">Selecciona Puesto…</MenuItem>
                       {[...puestos].sort((a: any, b: any) => a.nombrePuesto.localeCompare(b.nombrePuesto, 'es')).map((p: any) => <MenuItem key={p.id} value={p.id.toString()}>{p.nombrePuesto} (Zona: {p.zona})</MenuItem>)}
-                    </Select>
+                    </SearchableSelect>
                   </FormControl>
                 </Grid>
               </Grid>
