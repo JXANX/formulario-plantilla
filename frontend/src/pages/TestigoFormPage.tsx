@@ -86,26 +86,26 @@ export default function TestigoFormPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [testigoExistente, setTestigoExistente] = useState<any>(null);
   const toast = useToast();
 
   /* ── Logic (unchanged) ─────────────────────────── */
   const handleVerificarDocumento = async () => {
     if (!formData.documento) return;
-    setIsVerifying(true); setError(''); setSuccess('');
+    setIsVerifying(true); setError(''); setSuccess(''); setTestigoExistente(null);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/testigos/documento/${formData.documento}`, { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       if (data.success && data.data) {
-        setSuccess('El testigo ya existe. Verifique sus datos o asigne ubicación si es necesario.');
-        toast.warning('El testigo ya existe. Verifique sus datos o asigne ubicación si es necesario.');
-        const t = data.data;
-        setFormData(prev => ({ ...prev, nombre: t.nombre || '', segundoNombre: t.segundoNombre || '', primerApellido: t.primerApellido || '', segundoApellido: t.segundoApellido || '', celular: t.celular || '', correo: t.correo || '', tipoTestigo: t.tipoTestigo || 'PRINCIPAL' }));
+        // Mostrar info del testigo existente pero NO autocompletar el formulario
+        setTestigoExistente(data.data);
+        toast.warning('Esta cédula ya está registrada. No se puede registrar de nuevo.');
       } else {
         setSuccess('Documento disponible para registro nuevo.');
         toast.info('Documento disponible para registro nuevo.');
       }
-    } catch { setError('Cédula ya registrada.'); toast.error('Cédula ya registrada.'); }
+    } catch { setError('Error al verificar la cédula.'); toast.error('Error al verificar la cédula.'); }
     finally { setIsVerifying(false); }
   };
 
@@ -136,7 +136,11 @@ export default function TestigoFormPage() {
       .then(r => r.json()).then(d => { if (d.success) setMesas(d.data); });
   };
 
-  const handleChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: any) => {
+    // Al cambiar el documento manualmente, limpiar el testigo existente detectado
+    if (e.target.name === 'documento') setTestigoExistente(null);
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault(); setError(''); setSuccess('');
@@ -177,6 +181,15 @@ export default function TestigoFormPage() {
 
       {error && <Alert severity="error" sx={{ mb: 2.5, borderRadius: 0 }}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2.5, borderRadius: 0 }}>{success}</Alert>}
+      {testigoExistente && (
+        <Alert severity="warning" sx={{ mb: 2.5, borderRadius: 0 }}>
+          <strong>⚠ Cédula ya registrada.</strong> Este testigo ya existe en el sistema y no puede registrarse de nuevo.<br />
+          <span style={{ fontSize: '13px' }}>
+            <strong>{testigoExistente.nombre} {testigoExistente.segundoNombre} {testigoExistente.primerApellido} {testigoExistente.segundoApellido}</strong>
+            {testigoExistente.nombreMunicipio && <> · {testigoExistente.nombrePuesto}, Mesa {testigoExistente.numeroMesa}</>}
+          </span>
+        </Alert>
+      )}
 
       <Card sx={{ bgcolor: '#fff', border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
         <CardContent sx={{ p: { xs: 3, md: 4 } }}>
@@ -364,6 +377,7 @@ export default function TestigoFormPage() {
                 <Button
                   type="submit"
                   variant="contained"
+                  disabled={!!testigoExistente}
                   size="large"
                   startIcon={<SaveIcon sx={{ fontSize: '18px !important' }} />}
                   sx={{
