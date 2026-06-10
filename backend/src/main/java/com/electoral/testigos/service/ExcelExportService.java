@@ -207,10 +207,24 @@ public class ExcelExportService {
         return val != null ? val : "";
     }
 
+    // ─── Column layout for coordinadores export ───────────────────────────────
+    // Col 0 : MUNICIPIO
+    // Col 1 : ZONA
+    // Col 2 : COD_PUESTO
+    // Col 3 : NOMBRE PUESTO
+    // Col 4 : TIPO FILA  ("★ COORDINADOR" / "  Testigo")
+    // Col 5 : DOCUMENTO
+    // Col 6 : NOMBRE COMPLETO
+    // Col 7 : CELULAR
+    // Col 8 : CORREO
+    // Col 9 : MESA         (sólo testigos)
+    // Col 10: ORGANIZACIÓN (sólo testigos)
+    // Col 11: TIPO TESTIGO (sólo testigos)
+
     private static final String[] HEADERS_COORDINADORES = {
-        "MUNICIPIO", "ZONA", "COD_PUESTO", "PUESTO",
-        "DOCUMENTO_COORDINADOR", "NOMBRE_COORDINADOR", "CELULAR_COORDINADOR", "CORREO_COORDINADOR",
-        "MESA", "DOCUMENTO_TESTIGO", "NOMBRE_TESTIGO", "CELULAR_TESTIGO", "CORREO_TESTIGO", "ORGANIZACION_TESTIGO", "TIPO_TESTIGO"
+        "MUNICIPIO", "ZONA", "COD_PUESTO", "NOMBRE PUESTO",
+        "ROL", "DOCUMENTO", "NOMBRE COMPLETO", "CELULAR", "CORREO",
+        "MESA", "ORGANIZACIÓN", "TIPO TESTIGO"
     };
 
     @Transactional
@@ -224,49 +238,162 @@ public class ExcelExportService {
 
         List<Puesto> puestos = puestoRepository.findByMunicipioId(municipioId);
 
-        try (Workbook workbook = new XSSFWorkbook()) {
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Coordinadores y Testigos");
 
-            CellStyle headerStyle = workbook.createCellStyle();
-            Font headerFont = workbook.createFont();
-            headerFont.setBold(true);
-            headerStyle.setFont(headerFont);
-            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
-            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            // ── Configuración de página para impresión ──────────────────────
+            sheet.getPrintSetup().setLandscape(false);
+            sheet.getPrintSetup().setPaperSize(PrintSetup.LETTER_PAPERSIZE);
+            sheet.setFitToPage(true);
+            sheet.getPrintSetup().setFitWidth((short) 1);
+            sheet.getPrintSetup().setFitHeight((short) 0);
+            sheet.setMargin(Sheet.LeftMargin,   0.5);
+            sheet.setMargin(Sheet.RightMargin,  0.5);
+            sheet.setMargin(Sheet.TopMargin,    0.75);
+            sheet.setMargin(Sheet.BottomMargin, 0.75);
+            sheet.setRepeatingRows(new org.apache.poi.ss.util.CellRangeAddress(0, 0, -1, -1));
 
+            // ── Estilos de celda ────────────────────────────────────────────
+            // Helper: borde fino en todos los lados
+            final short THIN = BorderStyle.THIN.getCode();
+
+            // Encabezado
+            org.apache.poi.xssf.usermodel.XSSFCellStyle headerStyle = workbook.createCellStyle();
+            org.apache.poi.xssf.usermodel.XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 11);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0x1F,(byte)0x3D,(byte)0x7A}, null));
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            setBorderThin(headerStyle, THIN);
+            headerStyle.setWrapText(false);
+
+            // Coordinador – fondo amarillo oscuro
+            org.apache.poi.xssf.usermodel.XSSFCellStyle coordStyle = workbook.createCellStyle();
+            org.apache.poi.xssf.usermodel.XSSFFont coordFont = workbook.createFont();
+            coordFont.setBold(true);
+            coordFont.setFontHeightInPoints((short) 10);
+            coordFont.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0x5C,(byte)0x3A,(byte)0x00}, null));
+            coordStyle.setFont(coordFont);
+            coordStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0xFF,(byte)0xE0,(byte)0x82}, null));
+            coordStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            coordStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            setBorderThin(coordStyle, THIN);
+
+            // Coordinador sin asignar
+            org.apache.poi.xssf.usermodel.XSSFCellStyle noCoordStyle = workbook.createCellStyle();
+            org.apache.poi.xssf.usermodel.XSSFFont noCoordFont = workbook.createFont();
+            noCoordFont.setItalic(true);
+            noCoordFont.setFontHeightInPoints((short) 10);
+            noCoordFont.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0x99,(byte)0x00,(byte)0x00}, null));
+            noCoordStyle.setFont(noCoordFont);
+            noCoordStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0xFF,(byte)0xE4,(byte)0xE4}, null));
+            noCoordStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            noCoordStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            setBorderThin(noCoordStyle, THIN);
+
+            // Testigo – filas alternas blanco / gris muy claro
+            org.apache.poi.xssf.usermodel.XSSFCellStyle testigoStyle = workbook.createCellStyle();
+            org.apache.poi.xssf.usermodel.XSSFFont testigoFont = workbook.createFont();
+            testigoFont.setFontHeightInPoints((short) 10);
+            testigoStyle.setFont(testigoFont);
+            testigoStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF}, null));
+            testigoStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            testigoStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            setBorderThin(testigoStyle, THIN);
+
+            org.apache.poi.xssf.usermodel.XSSFCellStyle testigoAltStyle = workbook.createCellStyle();
+            testigoAltStyle.cloneStyleFrom(testigoStyle);
+            testigoAltStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0xF2,(byte)0xF5,(byte)0xFA}, null));
+            testigoAltStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // ── Encabezado ──────────────────────────────────────────────────
             Row headerRow = sheet.createRow(0);
+            headerRow.setHeightInPoints(22);
             for (int i = 0; i < HEADERS_COORDINADORES.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(HEADERS_COORDINADORES[i]);
                 cell.setCellStyle(headerStyle);
             }
 
+            // ── Datos agrupados por puesto ──────────────────────────────────
             int rowIdx = 1;
             for (Puesto puesto : puestos) {
-                Testigo coord = puesto.getCoordinador();
+                Testigo coord  = puesto.getCoordinador();
                 List<Testigo> testigos = testigoRepository.findByPuestoId(puesto.getId());
 
-                if (testigos != null && !testigos.isEmpty()) {
-                    for (Testigo testigo : testigos) {
-                        Row row = sheet.createRow(rowIdx++);
-                        writePuestoAndCoordinator(row, municipio.getNombre(), puesto, coord);
-                        
-                        row.createCell(8).setCellValue(testigo.getMesa() != null && testigo.getMesa().getNumeroMesa() != null ? testigo.getMesa().getNumeroMesa().toString() : "");
-                        row.createCell(9).setCellValue(safe(testigo.getDocumento()));
-                        row.createCell(10).setCellValue(safe(testigo.getNombreCompleto()));
-                        row.createCell(11).setCellValue(safe(testigo.getCelular()));
-                        row.createCell(12).setCellValue(safe(testigo.getCorreo()));
-                        row.createCell(13).setCellValue(safe(testigo.getNombreOrganizacion()));
-                        row.createCell(14).setCellValue(testigo.getTipoTestigo() != null ? testigo.getTipoTestigo().name() : "");
-                    }
+                // — Fila del coordinador ——————————————————————————————————
+                Row coordRow = sheet.createRow(rowIdx++);
+                coordRow.setHeightInPoints(18);
+                org.apache.poi.xssf.usermodel.XSSFCellStyle usedCoordStyle = (coord != null) ? coordStyle : noCoordStyle;
+
+                String munNombre = municipio.getNombre();
+                String zona      = puesto != null ? safe(puesto.getZona())        : "";
+                String codPuesto = puesto != null ? safe(puesto.getCodigoPuesto()): "";
+                String nomPuesto = puesto != null ? safe(puesto.getNombrePuesto()): "";
+
+                createStyledCell(coordRow, 0, munNombre,  usedCoordStyle);
+                createStyledCell(coordRow, 1, zona,       usedCoordStyle);
+                createStyledCell(coordRow, 2, codPuesto,  usedCoordStyle);
+                createStyledCell(coordRow, 3, nomPuesto,  usedCoordStyle);
+                createStyledCell(coordRow, 4, "★ COORDINADOR", usedCoordStyle);
+
+                if (coord != null) {
+                    createStyledCell(coordRow, 5, safe(coord.getDocumento()),     usedCoordStyle);
+                    createStyledCell(coordRow, 6, safe(coord.getNombreCompleto()),usedCoordStyle);
+                    createStyledCell(coordRow, 7, safe(coord.getCelular()),       usedCoordStyle);
+                    createStyledCell(coordRow, 8, safe(coord.getCorreo()),        usedCoordStyle);
                 } else {
-                    Row row = sheet.createRow(rowIdx++);
-                    writePuestoAndCoordinator(row, municipio.getNombre(), puesto, coord);
+                    createStyledCell(coordRow, 5, "",                             usedCoordStyle);
+                    createStyledCell(coordRow, 6, "SIN COORDINADOR ASIGNADO",    usedCoordStyle);
+                    createStyledCell(coordRow, 7, "",                             usedCoordStyle);
+                    createStyledCell(coordRow, 8, "",                             usedCoordStyle);
                 }
+                // Celdas vacías para columnas de testigo
+                for (int c = 9; c <= 11; c++) createStyledCell(coordRow, c, "", usedCoordStyle);
+
+                // — Filas de testigos ——————————————————————————————————————
+                if (testigos != null) {
+                    int testigoNum = 0;
+                    for (Testigo t : testigos) {
+                        // excluir al propio coordinador si está en la lista
+                        if (coord != null && coord.getId() != null && coord.getId().equals(t.getId())) continue;
+
+                        org.apache.poi.xssf.usermodel.XSSFCellStyle ts = (testigoNum % 2 == 0) ? testigoStyle : testigoAltStyle;
+                        Row tRow = sheet.createRow(rowIdx++);
+                        tRow.setHeightInPoints(16);
+
+                        createStyledCell(tRow, 0, munNombre,  ts);
+                        createStyledCell(tRow, 1, zona,       ts);
+                        createStyledCell(tRow, 2, codPuesto,  ts);
+                        createStyledCell(tRow, 3, nomPuesto,  ts);
+                        createStyledCell(tRow, 4, "  Testigo",ts);
+                        createStyledCell(tRow, 5, safe(t.getDocumento()),      ts);
+                        createStyledCell(tRow, 6, safe(t.getNombreCompleto()), ts);
+                        createStyledCell(tRow, 7, safe(t.getCelular()),        ts);
+                        createStyledCell(tRow, 8, safe(t.getCorreo()),         ts);
+                        createStyledCell(tRow, 9,
+                            t.getMesa() != null && t.getMesa().getNumeroMesa() != null
+                                ? t.getMesa().getNumeroMesa().toString() : "", ts);
+                        createStyledCell(tRow, 10, safe(t.getNombreOrganizacion()), ts);
+                        createStyledCell(tRow, 11,
+                            t.getTipoTestigo() != null ? t.getTipoTestigo().name() : "", ts);
+                        testigoNum++;
+                    }
+                }
+
+                // Fila separadora vacía entre puestos (visual)
+                Row sep = sheet.createRow(rowIdx++);
+                sep.setHeightInPoints(6);
             }
 
-            for (int i = 0; i < HEADERS_COORDINADORES.length; i++) {
-                sheet.autoSizeColumn(i);
+            // ── Anchos de columna ───────────────────────────────────────────
+            int[] colWidths = {18, 8, 12, 34, 16, 16, 32, 15, 30, 7, 24, 14};
+            for (int i = 0; i < colWidths.length; i++) {
+                sheet.setColumnWidth(i, colWidths[i] * 256);
             }
 
             try (FileOutputStream fos = new FileOutputStream(outputFile)) {
@@ -283,22 +410,19 @@ public class ExcelExportService {
         return outputFile;
     }
 
-    private void writePuestoAndCoordinator(Row row, String municipioNombre, Puesto puesto, Testigo coord) {
-        row.createCell(0).setCellValue(safe(municipioNombre));
-        row.createCell(1).setCellValue(puesto != null ? safe(puesto.getZona()) : "");
-        row.createCell(2).setCellValue(puesto != null ? safe(puesto.getCodigoPuesto()) : "");
-        row.createCell(3).setCellValue(puesto != null ? safe(puesto.getNombrePuesto()) : "");
-        
-        if (coord != null) {
-            row.createCell(4).setCellValue(safe(coord.getDocumento()));
-            row.createCell(5).setCellValue(safe(coord.getNombreCompleto()));
-            row.createCell(6).setCellValue(safe(coord.getCelular()));
-            row.createCell(7).setCellValue(safe(coord.getCorreo()));
-        } else {
-            row.createCell(4).setCellValue("");
-            row.createCell(5).setCellValue("SIN COORDINADOR ASIGNADO");
-            row.createCell(6).setCellValue("");
-            row.createCell(7).setCellValue("");
-        }
+    /** Crea una celda con valor y estilo en una fila dada. */
+    private void createStyledCell(Row row, int col, String value,
+                                  org.apache.poi.xssf.usermodel.XSSFCellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value != null ? value : "");
+        cell.setCellStyle(style);
+    }
+
+    /** Aplica borde fino a los 4 lados de un XSSFCellStyle. */
+    private void setBorderThin(org.apache.poi.xssf.usermodel.XSSFCellStyle style, short thin) {
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
     }
 }
