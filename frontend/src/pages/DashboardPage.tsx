@@ -460,9 +460,6 @@ export default function DashboardPage() {
           <StatCard title="Cobertura Parcial"      value={stats.mesasAmarillas}             icon={<WarningIcon     sx={{ fontSize: 34 }} />} accentColor={J.warning} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Faltan por Completar"   value={stats.mesasFaltantesCompletas}    icon={<CancelIcon      sx={{ fontSize: 34 }} />} accentColor={J.danger}  />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard title="Sin Ningún Testigo"     value={stats.mesasSinNingunTestigo}      icon={<CancelIcon      sx={{ fontSize: 34 }} />} accentColor="#7B1C1C"   />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
