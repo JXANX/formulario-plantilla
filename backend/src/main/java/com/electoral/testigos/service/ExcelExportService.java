@@ -207,6 +207,82 @@ public class ExcelExportService {
         return val != null ? val : "";
     }
 
+    private static final String[] HEADERS_TESTIGOS_MUNICIPIO = {
+        "MUNICIPIO", "PUESTO", "ZONA", "MESA", "TIPO_TESTIGO",
+        "DOCUMENTO", "NOMBRE COMPLETO", "CELULAR", "CORREO", "ORGANIZACIÓN"
+    };
+
+    @Transactional
+    public File exportarTestigosPorMunicipio(Long municipioId) throws IOException {
+        Municipio municipio = municipioRepository.findById(municipioId)
+                .orElseThrow(() -> new IllegalArgumentException("Municipio no encontrado: " + municipioId));
+
+        List<Testigo> testigos = testigoRepository.findByMunicipioId(municipioId);
+
+        File outputFile = File.createTempFile("Testigos_" + municipio.getNombre().replace(" ", "_") + "_", ".xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Testigos " + municipio.getNombre());
+
+            org.apache.poi.xssf.usermodel.XSSFCellStyle headerStyle = workbook.createCellStyle();
+            org.apache.poi.xssf.usermodel.XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0x1F,(byte)0x3D,(byte)0x7A}, null));
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            setBorderThin(headerStyle, BorderStyle.THIN.getCode());
+
+            org.apache.poi.xssf.usermodel.XSSFCellStyle rowStyle = workbook.createCellStyle();
+            org.apache.poi.xssf.usermodel.XSSFFont rowFont = workbook.createFont();
+            rowFont.setFontHeightInPoints((short) 10);
+            rowStyle.setFont(rowFont);
+            setBorderThin(rowStyle, BorderStyle.THIN.getCode());
+
+            org.apache.poi.xssf.usermodel.XSSFCellStyle rowAltStyle = workbook.createCellStyle();
+            rowAltStyle.cloneStyleFrom(rowStyle);
+            rowAltStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0xF2,(byte)0xF5,(byte)0xFA}, null));
+            rowAltStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            Row headerRow = sheet.createRow(0);
+            headerRow.setHeightInPoints(22);
+            for (int i = 0; i < HEADERS_TESTIGOS_MUNICIPIO.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(HEADERS_TESTIGOS_MUNICIPIO[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (Testigo t : testigos) {
+                org.apache.poi.xssf.usermodel.XSSFCellStyle style = (rowIdx % 2 == 1) ? rowStyle : rowAltStyle;
+                Row row = sheet.createRow(rowIdx++);
+                Mesa mesa   = t.getMesa();
+                Puesto puesto = mesa != null ? mesa.getPuesto() : null;
+                createStyledCell(row, 0, municipio.getNombre(), style);
+                createStyledCell(row, 1, puesto != null ? safe(puesto.getNombrePuesto()) : "", style);
+                createStyledCell(row, 2, puesto != null ? safe(puesto.getZona()) : "", style);
+                createStyledCell(row, 3, mesa != null && mesa.getNumeroMesa() != null ? mesa.getNumeroMesa().toString() : "", style);
+                createStyledCell(row, 4, t.getTipoTestigo() != null ? t.getTipoTestigo().name() : "", style);
+                createStyledCell(row, 5, safe(t.getDocumento()), style);
+                createStyledCell(row, 6, safe(t.getNombreCompleto()), style);
+                createStyledCell(row, 7, safe(t.getCelular()), style);
+                createStyledCell(row, 8, safe(t.getCorreo()), style);
+                createStyledCell(row, 9, safe(t.getNombreOrganizacion()), style);
+            }
+
+            int[] colWidths = {20, 34, 10, 8, 14, 16, 34, 15, 30, 24};
+            for (int i = 0; i < colWidths.length; i++) sheet.setColumnWidth(i, colWidths[i] * 256);
+
+            try (FileOutputStream fos = new FileOutputStream(outputFile)) { workbook.write(fos); }
+        }
+
+        try {
+            auditService.log(AccionAuditoria.EXPORTACION_EXCEL, "Exportación testigos municipio " + municipio.getNombre(), "Excel", null);
+        } catch (Exception e) { logger.warn("No se pudo registrar auditoría: {}", e.getMessage()); }
+
+        return outputFile;
+    }
+
     // ─── Column layout for coordinadores export ───────────────────────────────
     // Col 0 : MUNICIPIO
     // Col 1 : ZONA

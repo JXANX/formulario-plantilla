@@ -31,4 +31,12 @@ public interface TestigoRepository extends JpaRepository<Testigo, Long>, JpaSpec
            "LEFT JOIN FETCH m.puesto p " +
            "WHERE p.id = :puestoId")
     List<Testigo> findByPuestoId(@org.springframework.data.repository.query.Param("puestoId") Long puestoId);
+    @Query("SELECT t FROM Testigo t " +
+           "LEFT JOIN FETCH t.mesa m " +
+           "LEFT JOIN FETCH m.puesto p " +
+           "LEFT JOIN FETCH p.municipio mu " +
+           "LEFT JOIN FETCH mu.departamento d " +
+           "WHERE mu.id = :municipioId " +
+           "ORDER BY p.nombrePuesto, m.numeroMesa")
+    List<Testigo> findByMunicipioId(@org.springframework.data.repository.query.Param("municipioId") Long municipioId);
 }
