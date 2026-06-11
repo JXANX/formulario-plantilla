@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useToast } from '../context/ToastContext';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -141,6 +142,24 @@ export default function TestigoFormPage() {
     // Al cambiar el documento manualmente, limpiar el testigo existente detectado
     if (e.target.name === 'documento') setTestigoExistente(null);
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleClearAll = () => {
+    setFormData({
+      documento: '', nombre: '', segundoNombre: '',
+      primerApellido: '', segundoApellido: '',
+      celular: '', correo: '', tipoTestigo: 'PRINCIPAL',
+    });
+    setSelectedDepto('');
+    setSelectedMpio('');
+    setSelectedPuesto('');
+    setSelectedMesa('');
+    setMunicipios([]);
+    setPuestos([]);
+    setMesas([]);
+    setError('');
+    setSuccess('');
+    setTestigoExistente(null);
   };
 
   const handleSubmit = async (e: any) => {
@@ -376,8 +395,29 @@ export default function TestigoFormPage() {
                 </FormControl>
               </Grid>
 
-              {/* Submit */}
-              <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1 }}>
+              {/* Submit & Clear */}
+              <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pt: 1 }}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  onClick={handleClearAll}
+                  size="large"
+                  startIcon={<ClearIcon sx={{ fontSize: '18px !important' }} />}
+                  sx={{
+                    borderColor: J.border,
+                    color: J.ink,
+                    borderRadius: 0,
+                    px: 3,
+                    py: 1.4,
+                    fontSize: '13px',
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    fontWeight: 600,
+                    '&:hover': { bgcolor: J.muted, borderColor: J.border },
+                  }}
+                >
+                  Limpiar Todo
+                </Button>
                 <Button
                   type="submit"
                   variant="contained"
