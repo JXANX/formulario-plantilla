@@ -47,6 +47,7 @@ interface DashboardStats {
   mesasCubiertas:        number;
   mesasPendientes:       number;
   porcentajeCobertura:   number;
+  testigosFaltantes:     number;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -128,7 +129,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     totalTestigos: 0, totalMunicipios: 0, totalPuestos: 0, totalMesas: 0,
     mesasVerdes: 0, mesasAmarillas: 0, mesasRojas: 0,
-    mesasCubiertas: 0, mesasPendientes: 0, porcentajeCobertura: 0,
+    mesasCubiertas: 0, mesasPendientes: 0, porcentajeCobertura: 0, testigosFaltantes: 0,
   });
 
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -456,7 +457,10 @@ export default function DashboardPage() {
           <StatCard title="Cobertura Parcial"    value={stats.mesasAmarillas}          icon={<WarningIcon     sx={{ fontSize: 34 }} />} accentColor={J.warning} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Sin Cobertura"        value={stats.mesasRojas}             icon={<CancelIcon      sx={{ fontSize: 34 }} />} accentColor={J.danger}  />
+          <StatCard title="Mesas sin Testigo"        value={stats.mesasRojas}             icon={<CancelIcon      sx={{ fontSize: 34 }} />} accentColor={J.danger}  />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard title="Testigos Faltantes"   value={stats.testigosFaltantes}      icon={<PeopleIcon      sx={{ fontSize: 34 }} />} accentColor={J.warning} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard title="Porcentaje Cobertura" value={`${stats.porcentajeCobertura}%`} icon={<CheckCircleIcon sx={{ fontSize: 34 }} />} accentColor={J.blue} />

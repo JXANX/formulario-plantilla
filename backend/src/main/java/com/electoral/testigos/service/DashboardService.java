@@ -46,6 +46,8 @@ public class DashboardService {
         
         double porcentajeCobertura = totalMesas > 0 ? ((double) mesasCubiertas / totalMesas) * 100 : 0.0;
 
+        long testigosFaltantes = Math.max(0, totalMesas - totalTestigos);
+
         return DashboardStats.builder()
                 .totalTestigos(totalTestigos)
                 .totalMunicipios(totalMunicipios)
@@ -56,6 +58,7 @@ public class DashboardService {
                 .mesasRojas(mesasRojas)
                 .mesasCubiertas(mesasCubiertas)
                 .mesasPendientes(mesasPendientes)
+                .testigosFaltantes(testigosFaltantes)
                 .porcentajeCobertura(Math.round(porcentajeCobertura * 100.0) / 100.0)
                 .build();
     }
