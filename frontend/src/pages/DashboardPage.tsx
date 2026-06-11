@@ -465,9 +465,6 @@ export default function DashboardPage() {
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard title="Porcentaje Cobertura"   value={`${stats.porcentajeCobertura}%`}  icon={<CheckCircleIcon sx={{ fontSize: 34 }} />} accentColor={J.blue} />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Testigos Faltantes"     value={stats.testigosFaltantes}          icon={<PeopleIcon      sx={{ fontSize: 34 }} />} accentColor={J.warning} />
-        </Grid>
       </Grid>
 
       {/* Import dialog */}
