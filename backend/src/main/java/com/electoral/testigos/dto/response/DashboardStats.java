@@ -15,5 +15,6 @@ public class DashboardStats {
     private long mesasRojas;
     private long mesasCubiertas; // Para compatibilidad (Verde + Amarillo)
     private long mesasPendientes; // Para compatibilidad (Rojas)
+    private long testigosFaltantes;
     private double porcentajeCobertura;
 }
