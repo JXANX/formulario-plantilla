@@ -47,6 +47,8 @@ public class DashboardService {
         double porcentajeCobertura = totalMesas > 0 ? ((double) mesasCubiertas / totalMesas) * 100 : 0.0;
 
         long testigosFaltantes = Math.max(0, totalMesas - totalTestigos);
+        long mesasFaltantesCompletas = mesasAmarillas + mesasRojas; // faltan por tener los 2 testigos
+        long mesasSinNingunTestigo = mesasRojas;                    // completamente vacías
 
         return DashboardStats.builder()
                 .totalTestigos(totalTestigos)
@@ -59,6 +61,8 @@ public class DashboardService {
                 .mesasCubiertas(mesasCubiertas)
                 .mesasPendientes(mesasPendientes)
                 .testigosFaltantes(testigosFaltantes)
+                .mesasFaltantesCompletas(mesasFaltantesCompletas)
+                .mesasSinNingunTestigo(mesasSinNingunTestigo)
                 .porcentajeCobertura(Math.round(porcentajeCobertura * 100.0) / 100.0)
                 .build();
     }
