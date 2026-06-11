@@ -11,6 +11,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import DownloadIcon from '@mui/icons-material/Download';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import PieChartIcon from '@mui/icons-material/PieChart';
+import PeopleIcon from '@mui/icons-material/People';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LabelList, PieChart, Pie, Cell } from 'recharts';
 import SearchableSelect from '../components/SearchableSelect';
@@ -346,6 +347,12 @@ export default function MesasReportPage() {
   const [loadingWitnesses, setLoadingWitnesses] = useState(true);
   const [loadingCoberturas, setLoadingCoberturas] = useState(false);
   const [exportingCoberturas, setExportingCoberturas] = useState(false);
+  const [loadingTestigosMunicipio, setLoadingTestigosMunicipio] = useState(false);
+  const [testigosMunicipio, setTestigosMunicipio] = useState<any[]>([]);
+  const [selectedMunicipioTestigos, setSelectedMunicipioTestigos] = useState('');
+  const [municipiosTestigos, setMunicipiosTestigos] = useState<any[]>([]);
+  const [selectedDeptoTestigos, setSelectedDeptoTestigos] = useState('');
+  const [exportingTestigosMunicipio, setExportingTestigosMunicipio] = useState(false);
   const [error, setError] = useState('');
 
   const [stats, setStats] = useState({ total: 0, verdes: 0, amarillas: 0, rojas: 0, porcentaje: 0 });
@@ -353,6 +360,17 @@ export default function MesasReportPage() {
   useEffect(() => { fetchInitialData(); }, [dashboardUpdates]);
   useEffect(() => { if (selectedPuesto) fetchMesas(selectedPuesto); else setMesas([]); }, [selectedPuesto, allWitnesses]);
   useEffect(() => { if (activeTab === 1 && selectedDepartamento) fetchMunicipioCoberturas(selectedDepartamento); }, [activeTab, selectedDepartamento]);
+  useEffect(() => {
+    if (activeTab === 2 && selectedDeptoTestigos) {
+      const token = localStorage.getItem('token');
+      fetch(`${API_URL}/api/catalogo/departamentos/${selectedDeptoTestigos}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json()).then(d => { if (d.success) setMunicipiosTestigos(d.data); });
+    }
+  }, [activeTab, selectedDeptoTestigos]);
+  useEffect(() => {
+    if (selectedMunicipioTestigos) fetchTestigosMunicipio(selectedMunicipioTestigos);
+    else setTestigosMunicipio([]);
+  }, [selectedMunicipioTestigos]);
 
   const fetchInitialData = async () => {
     try {
@@ -450,6 +468,38 @@ export default function MesasReportPage() {
     finally { setExportingCoberturas(false); }
   };
 
+  const fetchTestigosMunicipio = async (mpioId: string) => {
+    setLoadingTestigosMunicipio(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/testigos`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        const filtered = (data.data as any[]).filter((t: any) => String(t.municipioId) === String(mpioId));
+        setTestigosMunicipio(filtered);
+      }
+    } catch { setError('Error al cargar testigos del municipio'); }
+    finally { setLoadingTestigosMunicipio(false); }
+  };
+
+  const handleExportTestigosMunicipio = async () => {
+    if (!selectedMunicipioTestigos) return;
+    setExportingTestigosMunicipio(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/excel/export-testigos-municipio?municipioId=${selectedMunicipioTestigos}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob);
+        const mpioNombre = municipiosTestigos.find((m: any) => String(m.id) === String(selectedMunicipioTestigos))?.nombre || 'municipio';
+        a.download = `Testigos_${mpioNombre}.xlsx`;
+        document.body.appendChild(a); a.click(); a.remove();
+      } else setError('Error al generar el Excel de testigos');
+    } catch { setError('Error de conexión al exportar'); }
+    finally { setExportingTestigosMunicipio(false); }
+  };
+
   // ── Estilos de cabecera de tabla ────────────────────────────────────────────
   const thSx = {
     color: '#fff',
@@ -487,6 +537,7 @@ export default function MesasReportPage() {
       >
         <Tab label="Cobertura por Puesto" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
         <Tab label="Cobertura por Municipio" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
+        <Tab label="Testigos por Municipio" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
       </Tabs>
 
       {/* ══ TAB 0: por Puesto ══════════════════════════════════════════════════ */}
@@ -839,6 +890,111 @@ export default function MesasReportPage() {
           )}
         </Box>
       )}
+
+      {/* ══ TAB 2: Testigos por Municipio ══════════════════════════════════════ */}
+      {activeTab === 2 && (
+        <Box>
+          <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2.5 }}>
+              <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel sx={sxLabel}>Departamento</InputLabel>
+                    <Select value={selectedDeptoTestigos} label="Departamento"
+                      onChange={(e) => { setSelectedDeptoTestigos(e.target.value as string); setSelectedMunicipioTestigos(''); setMunicipiosTestigos([]); setTestigosMunicipio([]); }}
+                      sx={sxSelect}>
+                      <MenuItem value="">Selecciona Departamento…</MenuItem>
+                      {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <FormControl fullWidth size="small" disabled={!selectedDeptoTestigos}>
+                    <InputLabel sx={sxLabel}>Municipio</InputLabel>
+                    <Select value={selectedMunicipioTestigos} label="Municipio"
+                      onChange={(e) => setSelectedMunicipioTestigos(e.target.value as string)}
+                      sx={sxSelect}>
+                      <MenuItem value="">Selecciona Municipio…</MenuItem>
+                      {[...municipiosTestigos].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 'auto' }}>
+                  <Button variant="contained"
+                    startIcon={<DownloadIcon sx={{ fontSize: '16px !important' }} />}
+                    onClick={handleExportTestigosMunicipio}
+                    disabled={exportingTestigosMunicipio || !selectedMunicipioTestigos}
+                    sx={{ bgcolor: J.ink, color: '#fff', borderRadius: 0, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: 'none', '&:hover': { bgcolor: J.blue, boxShadow: 'none' } }}>
+                    {exportingTestigosMunicipio ? 'Exportando…' : 'Exportar a Excel'}
+                  </Button>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          {selectedMunicipioTestigos ? (
+            loadingTestigosMunicipio ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}><CircularProgress size={32} sx={{ color: J.blue }} /></Box>
+            ) : (
+              <Box>
+                <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <PeopleIcon sx={{ color: J.blue, fontSize: 22 }} />
+                  <Typography sx={{ fontWeight: 700, fontSize: '18px', color: J.ink }}>
+                    {testigosMunicipio.length} testigo{testigosMunicipio.length !== 1 ? 's' : ''} registrado{testigosMunicipio.length !== 1 ? 's' : ''}
+                  </Typography>
+                  <Typography sx={{ fontSize: '13px', color: J.textMuted }}>
+                    — {municipiosTestigos.find((m: any) => String(m.id) === String(selectedMunicipioTestigos))?.nombre}
+                  </Typography>
+                </Box>
+                <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+                  <Table size="small">
+                    <TableHead sx={{ bgcolor: J.ink }}>
+                      <TableRow>
+                        <TableCell sx={thSx}>Puesto</TableCell>
+                        <TableCell sx={thSx}>Mesa</TableCell>
+                        <TableCell sx={thSx}>Tipo</TableCell>
+                        <TableCell sx={thSx}>Nombre Completo</TableCell>
+                        <TableCell sx={thSx}>Documento</TableCell>
+                        <TableCell sx={thSx}>Celular</TableCell>
+                        <TableCell sx={thSx}>Correo</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {testigosMunicipio.length === 0 ? (
+                        <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>No hay testigos registrados para este municipio.</TableCell></TableRow>
+                      ) : (
+                        testigosMunicipio.map((t: any, idx: number) => (
+                          <TableRow key={t.id} hover sx={{ bgcolor: idx % 2 === 0 ? '#fff' : J.surface, '&:hover': { bgcolor: J.muted } }}>
+                            <TableCell sx={{ fontSize: '13px', color: J.ink }}>{t.nombrePuesto || '—'}</TableCell>
+                            <TableCell sx={{ fontSize: '13px', fontWeight: 700 }}>{t.numeroMesa ?? '—'}</TableCell>
+                            <TableCell>
+                              <Chip label={t.tipoTestigo} size="small"
+                                sx={{ fontSize: '11px', height: 22,
+                                  bgcolor: t.tipoTestigo === 'PRINCIPAL' ? 'rgba(41,82,204,0.1)' : 'rgba(185,125,26,0.1)',
+                                  color: t.tipoTestigo === 'PRINCIPAL' ? J.blue : J.warning,
+                                  border: `1px solid ${t.tipoTestigo === 'PRINCIPAL' ? 'rgba(41,82,204,0.25)' : 'rgba(185,125,26,0.25)'}` }} />
+                            </TableCell>
+                            <TableCell sx={{ fontSize: '14px', fontWeight: 600, color: J.ink }}>{t.nombreCompleto}</TableCell>
+                            <TableCell sx={{ fontSize: '13px', fontFamily: '"IBM Plex Mono", monospace' }}>{t.documento}</TableCell>
+                            <TableCell sx={{ fontSize: '13px' }}>{t.celular}</TableCell>
+                            <TableCell sx={{ fontSize: '13px', color: J.textMuted }}>{t.correo || '—'}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            )
+          ) : (
+            <Paper sx={{ p: 6, textAlign: 'center', border: `1px dashed ${J.border}`, borderRadius: 0, boxShadow: 'none', bgcolor: 'transparent' }}>
+              <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', color: J.textMuted, textTransform: 'uppercase' }}>
+                Selecciona Departamento → Municipio para ver el listado de testigos.
+              </Typography>
+            </Paper>
+          )}
+        </Box>
+      )}
     </Box>
   );
-}
+}
