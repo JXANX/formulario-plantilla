@@ -3,8 +3,9 @@ import {
   Box, Typography, Card, CardContent, Grid, FormControl,
   InputLabel, Table, TableBody, TableCell, TableContainer, Select, MenuItem,
   TableHead, TableRow, Paper, Chip, CircularProgress, Alert,
-  Tabs, Tab, Button, useMediaQuery, useTheme
+  Tabs, Tab, Button, useMediaQuery, useTheme, TextField, InputAdornment
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -366,6 +367,7 @@ export default function MesasReportPage() {
   const [selectedDeptoPuestos, setSelectedDeptoPuestos] = useState('');
   const [selectedMunicipioPuestos, setSelectedMunicipioPuestos] = useState('');
   const [municipiosPuestos, setMunicipiosPuestos] = useState<any[]>([]);
+  const [searchTermPuestos, setSearchTermPuestos] = useState('');
 
   const [loadingTestigosMunicipio, setLoadingTestigosMunicipio] = useState(false);
   const [testigosMunicipio, setTestigosMunicipio] = useState<any[]>([]);
@@ -955,7 +957,7 @@ export default function MesasReportPage() {
                   <FormControl fullWidth size="small">
                     <InputLabel sx={sxLabel}>Departamento</InputLabel>
                     <Select value={selectedDeptoPuestos} label="Departamento"
-                      onChange={(e) => { setSelectedDeptoPuestos(e.target.value as string); setSelectedMunicipioPuestos(''); setMunicipiosPuestos([]); setPuestoCoberturas([]); }}
+                      onChange={(e) => { setSelectedDeptoPuestos(e.target.value as string); setSelectedMunicipioPuestos(''); setMunicipiosPuestos([]); setPuestoCoberturas([]); setSearchTermPuestos(''); }}
                       sx={sxSelect}>
                       <MenuItem value="">Selecciona Departamento…</MenuItem>
                       {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
@@ -966,12 +968,35 @@ export default function MesasReportPage() {
                   <FormControl fullWidth size="small" disabled={!selectedDeptoPuestos}>
                     <InputLabel sx={sxLabel}>Municipio</InputLabel>
                     <Select value={selectedMunicipioPuestos} label="Municipio"
-                      onChange={(e) => setSelectedMunicipioPuestos(e.target.value as string)}
+                      onChange={(e) => { setSelectedMunicipioPuestos(e.target.value as string); setSearchTermPuestos(''); }}
                       sx={sxSelect}>
                       <MenuItem value="">Selecciona Municipio…</MenuItem>
                       {[...municipiosPuestos].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>)}
                     </Select>
                   </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Buscar puesto..."
+                    value={searchTermPuestos}
+                    onChange={(e) => setSearchTermPuestos(e.target.value)}
+                    disabled={!selectedMunicipioPuestos}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: J.textMuted, fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                      sx: {
+                        fontSize: '14px',
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: J.border, transition: 'border-color 0.15s ease' }
+                      }
+                    }}
+                  />
                 </Grid>
               </Grid>
             </CardContent>
@@ -998,8 +1023,12 @@ export default function MesasReportPage() {
                     <TableBody>
                       {puestoCoberturas.length === 0 ? (
                         <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>No hay puestos registrados para este municipio.</TableCell></TableRow>
+                      ) : puestoCoberturas.filter(item => item.puestoNombre.toLowerCase().includes(searchTermPuestos.toLowerCase())).length === 0 ? (
+                        <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>No se encontraron puestos que coincidan con la búsqueda.</TableCell></TableRow>
                       ) : (
-                        puestoCoberturas.map((item) => {
+                        puestoCoberturas
+                          .filter(item => item.puestoNombre.toLowerCase().includes(searchTermPuestos.toLowerCase()))
+                          .map((item) => {
                           const pct = item.porcentajeCobertura;
                           const pctColor = pct >= 80 ? J.success : pct >= 40 ? J.warning : J.danger;
                           return (
