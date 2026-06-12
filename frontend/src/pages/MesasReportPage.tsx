@@ -1023,11 +1023,11 @@ export default function MesasReportPage() {
                     <TableBody>
                       {puestoCoberturas.length === 0 ? (
                         <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>No hay puestos registrados para este municipio.</TableCell></TableRow>
-                      ) : puestoCoberturas.filter(item => item.puestoNombre.toLowerCase().includes(searchTermPuestos.toLowerCase())).length === 0 ? (
+                      ) : puestoCoberturas.filter(item => (item.puestoNombre || '').toLowerCase().includes(searchTermPuestos.toLowerCase())).length === 0 ? (
                         <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>No se encontraron puestos que coincidan con la búsqueda.</TableCell></TableRow>
                       ) : (
                         puestoCoberturas
-                          .filter(item => item.puestoNombre.toLowerCase().includes(searchTermPuestos.toLowerCase()))
+                          .filter(item => (item.puestoNombre || '').toLowerCase().includes(searchTermPuestos.toLowerCase()))
                           .map((item) => {
                           const pct = item.porcentajeCobertura;
                           const pctColor = pct >= 80 ? J.success : pct >= 40 ? J.warning : J.danger;
