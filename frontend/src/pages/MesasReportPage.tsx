@@ -983,17 +983,19 @@ export default function MesasReportPage() {
                     value={searchTermPuestos}
                     onChange={(e) => setSearchTermPuestos(e.target.value)}
                     disabled={!selectedMunicipioPuestos}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: J.textMuted, fontSize: 20 }} />
-                        </InputAdornment>
-                      ),
-                      sx: {
-                        fontSize: '14px',
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
-                        '& .MuiOutlinedInput-notchedOutline': { borderColor: J.border, transition: 'border-color 0.15s ease' }
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: J.textMuted, fontSize: 20 }} />
+                          </InputAdornment>
+                        ),
+                        sx: {
+                          fontSize: '14px',
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
+                          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
+                          '& .MuiOutlinedInput-notchedOutline': { borderColor: J.border, transition: 'border-color 0.15s ease' }
+                        }
                       }
                     }}
                   />
