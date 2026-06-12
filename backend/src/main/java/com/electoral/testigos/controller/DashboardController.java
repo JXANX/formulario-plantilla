@@ -31,4 +31,10 @@ public class DashboardController {
         List<CoberturaMunicipioResponse> data = dashboardService.getCoberturaMunicipios(departamentoId);
         return ResponseEntity.ok(new ApiResponse<>(true, "Cobertura por municipio obtenida", data));
     }
+
+    @GetMapping("/cobertura-puestos")
+    public ResponseEntity<?> getCoberturaPuestos(@RequestParam(required = false) Long municipioId) {
+        List<com.electoral.testigos.dto.response.CoberturaPuestoResponse> data = dashboardService.getCoberturaPuestos(municipioId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cobertura por puesto obtenida", data));
+    }
 }

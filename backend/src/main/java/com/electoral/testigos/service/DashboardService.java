@@ -2,8 +2,10 @@ package com.electoral.testigos.service;
 
 import com.electoral.testigos.dto.response.DashboardStats;
 import com.electoral.testigos.dto.response.CoberturaMunicipioResponse;
+import com.electoral.testigos.dto.response.CoberturaPuestoResponse;
 import com.electoral.testigos.model.Mesa;
 import com.electoral.testigos.model.Municipio;
+import com.electoral.testigos.model.Puesto;
 import com.electoral.testigos.repository.DepartamentoRepository;
 import com.electoral.testigos.repository.MesaRepository;
 import com.electoral.testigos.repository.MunicipioRepository;
@@ -112,6 +114,59 @@ public class DashboardService {
             int comp = Double.compare(r1.getPorcentajeCobertura(), r2.getPorcentajeCobertura());
             if (comp != 0) return comp;
             return r1.getMunicipioNombre().compareTo(r2.getMunicipioNombre());
+        });
+        
+        return responses;
+    }
+
+    public List<CoberturaPuestoResponse> getCoberturaPuestos(Long municipioId) {
+        List<Mesa> mesas = mesaRepository.findAllWithEagerRelationships();
+        
+        if (municipioId != null) {
+            mesas = mesas.stream()
+                .filter(m -> m.getPuesto() != null && 
+                             m.getPuesto().getMunicipio() != null && 
+                             m.getPuesto().getMunicipio().getId().equals(municipioId))
+                .collect(Collectors.toList());
+        }
+        
+        java.util.Map<Puesto, List<Mesa>> mesasByPuesto = mesas.stream()
+            .filter(m -> m.getPuesto() != null)
+            .collect(Collectors.groupingBy(Mesa::getPuesto));
+            
+        List<CoberturaPuestoResponse> responses = new ArrayList<>();
+        for (java.util.Map.Entry<Puesto, List<Mesa>> entry : mesasByPuesto.entrySet()) {
+            Puesto puesto = entry.getKey();
+            List<Mesa> puestoMesas = entry.getValue();
+            
+            long totalMesas = puestoMesas.size();
+            long mesasTotalmenteCubiertas = puestoMesas.stream().filter(m -> m.getOcupados() >= 2).count();
+            long mesasParcialmenteCubiertas = puestoMesas.stream().filter(m -> m.getOcupados() == 1).count();
+            long mesasSinTestigo = puestoMesas.stream().filter(m -> m.getOcupados() == 0).count();
+            
+            long mesasConTestigo = mesasTotalmenteCubiertas + mesasParcialmenteCubiertas;
+            double porcentaje = totalMesas > 0 ? ((double) mesasConTestigo / totalMesas) * 100.0 : 0.0;
+            porcentaje = Math.round(porcentaje * 100.0) / 100.0;
+            
+            responses.add(CoberturaPuestoResponse.builder()
+                .puestoId(puesto.getId())
+                .puestoNombre(puesto.getNombrePuesto())
+                .zona(puesto.getZona())
+                .municipioId(puesto.getMunicipio() != null ? puesto.getMunicipio().getId() : null)
+                .municipioNombre(puesto.getMunicipio() != null ? puesto.getMunicipio().getNombre() : "")
+                .totalMesas(totalMesas)
+                .mesasTotalmenteCubiertas(mesasTotalmenteCubiertas)
+                .mesasParcialmenteCubiertas(mesasParcialmenteCubiertas)
+                .mesasSinTestigo(mesasSinTestigo)
+                .porcentajeCobertura(porcentaje)
+                .build());
+        }
+        
+        // Ordenar de menor a mayor cobertura
+        responses.sort((r1, r2) -> {
+            int comp = Double.compare(r1.getPorcentajeCobertura(), r2.getPorcentajeCobertura());
+            if (comp != 0) return comp;
+            return r1.getPuestoNombre().compareTo(r2.getPuestoNombre());
         });
         
         return responses;

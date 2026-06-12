@@ -73,6 +73,19 @@ interface CoberturaMunicipio {
   porcentajeCobertura: number;
 }
 
+interface CoberturaPuesto {
+  puestoId: number;
+  puestoNombre: string;
+  zona: string;
+  municipioId: number;
+  municipioNombre: string;
+  totalMesas: number;
+  mesasTotalmenteCubiertas: number;
+  mesasParcialmenteCubiertas: number;
+  mesasSinTestigo: number;
+  porcentajeCobertura: number;
+}
+
 // ─── HELPERS ───────────────────────────────────────────────────────────────────
 
 /**
@@ -342,11 +355,18 @@ export default function MesasReportPage() {
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [allWitnesses, setAllWitnesses] = useState<Witness[]>([]);
   const [municipioCoberturas, setMunicipioCoberturas] = useState<CoberturaMunicipio[]>([]);
+  const [puestoCoberturas, setPuestoCoberturas] = useState<CoberturaPuesto[]>([]);
 
   const [loadingMesas, setLoadingMesas] = useState(false);
   const [loadingWitnesses, setLoadingWitnesses] = useState(true);
   const [loadingCoberturas, setLoadingCoberturas] = useState(false);
   const [exportingCoberturas, setExportingCoberturas] = useState(false);
+  
+  const [loadingPuestoCoberturas, setLoadingPuestoCoberturas] = useState(false);
+  const [selectedDeptoPuestos, setSelectedDeptoPuestos] = useState('');
+  const [selectedMunicipioPuestos, setSelectedMunicipioPuestos] = useState('');
+  const [municipiosPuestos, setMunicipiosPuestos] = useState<any[]>([]);
+
   const [loadingTestigosMunicipio, setLoadingTestigosMunicipio] = useState(false);
   const [testigosMunicipio, setTestigosMunicipio] = useState<any[]>([]);
   const [selectedMunicipioTestigos, setSelectedMunicipioTestigos] = useState('');
@@ -361,7 +381,17 @@ export default function MesasReportPage() {
   useEffect(() => { if (selectedPuesto) fetchMesas(selectedPuesto); else setMesas([]); }, [selectedPuesto, allWitnesses]);
   useEffect(() => { if (activeTab === 1 && selectedDepartamento) fetchMunicipioCoberturas(selectedDepartamento); }, [activeTab, selectedDepartamento]);
   useEffect(() => {
-    if (activeTab === 2 && selectedDeptoTestigos) {
+    if (activeTab === 2 && selectedDeptoPuestos) {
+      const token = localStorage.getItem('token');
+      fetch(`${API_URL}/api/catalogo/departamentos/${selectedDeptoPuestos}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json()).then(d => { if (d.success) setMunicipiosPuestos(d.data); });
+    }
+  }, [activeTab, selectedDeptoPuestos]);
+  useEffect(() => {
+    if (activeTab === 2 && selectedMunicipioPuestos) fetchPuestoCoberturas(selectedMunicipioPuestos);
+  }, [activeTab, selectedMunicipioPuestos]);
+  useEffect(() => {
+    if (activeTab === 3 && selectedDeptoTestigos) {
       const token = localStorage.getItem('token');
       fetch(`${API_URL}/api/catalogo/departamentos/${selectedDeptoTestigos}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
         .then(r => r.json()).then(d => { if (d.success) setMunicipiosTestigos(d.data); });
@@ -448,6 +478,18 @@ export default function MesasReportPage() {
       if (data.success) setMunicipioCoberturas(data.data);
     } catch { setError('Error al obtener coberturas de municipios'); }
     finally { setLoadingCoberturas(false); }
+  };
+
+  const fetchPuestoCoberturas = async (mpioId: string) => {
+    if (!mpioId) return;
+    setLoadingPuestoCoberturas(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/dashboard/cobertura-puestos?municipioId=${mpioId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) setPuestoCoberturas(data.data);
+    } catch { setError('Error al obtener coberturas de puestos'); }
+    finally { setLoadingPuestoCoberturas(false); }
   };
 
   const handleExportMunicipioExcel = async () => {
@@ -537,6 +579,7 @@ export default function MesasReportPage() {
       >
         <Tab label="Cobertura por Puesto" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
         <Tab label="Cobertura por Municipio" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
+        <Tab label="Estadísticas por Puestos" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
         <Tab label="Testigos por Municipio" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
       </Tabs>
 
@@ -901,8 +944,111 @@ export default function MesasReportPage() {
         </Box>
       )}
 
-      {/* ══ TAB 2: Testigos por Municipio ══════════════════════════════════════ */}
+      {/* ══ TAB 2: Estadísticas por Puestos ═════════════════════════════════════ */}
       {activeTab === 2 && (
+        <Box>
+          {/* Filtro */}
+          <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2.5 }}>
+              <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel sx={sxLabel}>Departamento</InputLabel>
+                    <Select value={selectedDeptoPuestos} label="Departamento"
+                      onChange={(e) => { setSelectedDeptoPuestos(e.target.value as string); setSelectedMunicipioPuestos(''); setMunicipiosPuestos([]); setPuestoCoberturas([]); }}
+                      sx={sxSelect}>
+                      <MenuItem value="">Selecciona Departamento…</MenuItem>
+                      {departamentos.map((d: any) => <MenuItem key={d.id} value={d.id.toString()}>{d.nombre}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <FormControl fullWidth size="small" disabled={!selectedDeptoPuestos}>
+                    <InputLabel sx={sxLabel}>Municipio</InputLabel>
+                    <Select value={selectedMunicipioPuestos} label="Municipio"
+                      onChange={(e) => setSelectedMunicipioPuestos(e.target.value as string)}
+                      sx={sxSelect}>
+                      <MenuItem value="">Selecciona Municipio…</MenuItem>
+                      {[...municipiosPuestos].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre, 'es')).map((m: any) => <MenuItem key={m.id} value={m.id.toString()}>{m.nombre}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          {selectedMunicipioPuestos ? (
+            loadingPuestoCoberturas ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}><CircularProgress size={32} sx={{ color: J.blue }} /></Box>
+            ) : (
+              <Box>
+                <TableContainer component={Paper} sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+                  <Table>
+                    <TableHead sx={{ bgcolor: J.ink }}>
+                      <TableRow>
+                        <TableCell sx={thSx}>Puesto</TableCell>
+                        <TableCell sx={thSx}>Zona</TableCell>
+                        <TableCell sx={thSx}>Total Mesas</TableCell>
+                        <TableCell sx={{ ...thSx, color: '#A8F0C6' }}>Tot. Cubiertas (2+)</TableCell>
+                        <TableCell sx={{ ...thSx, color: '#FFE08A' }}>Parc. Cubiertas (1)</TableCell>
+                        <TableCell sx={thSx}>Vacías</TableCell>
+                        <TableCell sx={thSx}>% Cobertura</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {puestoCoberturas.length === 0 ? (
+                        <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4, color: J.textMuted, fontSize: '13px' }}>No hay puestos registrados para este municipio.</TableCell></TableRow>
+                      ) : (
+                        puestoCoberturas.map((item) => {
+                          const pct = item.porcentajeCobertura;
+                          const pctColor = pct >= 80 ? J.success : pct >= 40 ? J.warning : J.danger;
+                          return (
+                            <TableRow key={item.puestoId} hover sx={{ '&:hover': { bgcolor: J.surface } }}>
+                              <TableCell sx={{ fontWeight: 600, fontSize: '15.5px', color: J.ink }}>{item.puestoNombre}</TableCell>
+                              <TableCell sx={{ fontSize: '14px' }}>{item.zona}</TableCell>
+                              <TableCell sx={{ fontSize: '14px' }}>{item.totalMesas}</TableCell>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <CheckCircleIcon sx={{ fontSize: 16, color: J.success, flexShrink: 0 }} />
+                                  <Typography sx={{ fontSize: '14px', color: J.success, fontWeight: 700 }}>{item.mesasTotalmenteCubiertas}</Typography>
+                                </Box>
+                              </TableCell>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <WarningIcon sx={{ fontSize: 16, color: J.warning, flexShrink: 0 }} />
+                                  <Typography sx={{ fontSize: '14px', color: J.warning, fontWeight: 700 }}>{item.mesasParcialmenteCubiertas}</Typography>
+                                </Box>
+                              </TableCell>
+                              <TableCell sx={{ fontSize: '14px', color: J.danger, fontWeight: 700 }}>{item.mesasSinTestigo}</TableCell>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box sx={{ flex: 1, height: 4, bgcolor: J.border, position: 'relative' }}>
+                                    <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, bgcolor: pctColor, transition: 'width 0.4s ease' }} />
+                                  </Box>
+                                  <Typography sx={{ fontWeight: 700, fontSize: '14px', color: pctColor, minWidth: 36 }}>{pct}%</Typography>
+                                </Box>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            )
+          ) : (
+            <Paper sx={{ p: 6, textAlign: 'center', border: `1px dashed ${J.border}`, borderRadius: 0, boxShadow: 'none', bgcolor: 'transparent' }}>
+              <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', color: J.textMuted, textTransform: 'uppercase' }}>
+                Selecciona Departamento → Municipio para ver las estadísticas de los puestos.
+              </Typography>
+            </Paper>
+          )}
+        </Box>
+      )}
+
+      {/* ══ TAB 3: Testigos por Municipio ══════════════════════════════════════ */}
+      {activeTab === 3 && (
         <Box>
           <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
             <CardContent sx={{ p: 2.5 }}>
