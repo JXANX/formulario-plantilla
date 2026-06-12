@@ -446,3 +446,38 @@ p {
     padding: 14px !important;
   }
 }
+
+/* ─── Print Styles ─────────────────────────── */
+@media print {
+  .no-print,
+  .jaguar-sidebar,
+  .jaguar-header,
+  header,
+  nav,
+  .MuiTabs-root {
+    display: none !important;
+  }
+  
+  body, html, #root, .jaguar-page {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+  
+  .MuiCard-root, .MuiPaper-root {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .jaguar-card {
+    border: none !important;
+  }
+  
+  /* Make sure background colors print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

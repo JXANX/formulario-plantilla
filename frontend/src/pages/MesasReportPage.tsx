@@ -603,6 +603,16 @@ export default function MesasReportPage() {
               <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}><CircularProgress size={32} sx={{ color: J.blue }} /></Box>
             ) : (
               <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }} className="no-print">
+                  <Button
+                    variant="contained"
+                    startIcon={<DownloadIcon sx={{ fontSize: '16px !important' }} />}
+                    onClick={() => window.print()}
+                    sx={{ bgcolor: J.ink, color: '#fff', borderRadius: 0, fontFamily: '"IBM Plex Mono", monospace', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', boxShadow: 'none', '&:hover': { bgcolor: J.blue, boxShadow: 'none' } }}
+                  >
+                    Descargar PDF / Imprimir
+                  </Button>
+                </Box>
                 <Grid container spacing={3} sx={{ mb: 5 }}>
                   <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Total Mesas" value={stats.total} color={J.ink} /></Grid>
                   <Grid size={{ xs: 6, sm: 2.4 }}><StatMini title="Cubiertas (Verde)" value={stats.verdes} color={J.success} /></Grid>
