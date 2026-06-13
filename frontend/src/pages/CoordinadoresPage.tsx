@@ -470,15 +470,18 @@ export default function CoordinadoresPage() {
             </Typography>
             <TextField
               size="small"
+              variant="outlined"
               placeholder="Buscar puesto o coordinador..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: J.textMuted, fontSize: '20px' }} />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: J.textMuted, fontSize: '20px' }} />
+                    </InputAdornment>
+                  ),
+                }
               }}
               sx={{
                 flex: { xs: '1 1 100%', sm: '0 0 280px' },
