@@ -69,13 +69,30 @@ public class CatalogoController {
     public ResponseEntity<?> getTestigosPorPuesto(@PathVariable Long puestoId) {
         try {
             List<Testigo> testigos = catalogoService.getTestigosPorPuesto(puestoId);
-            // Eagerly initialize lazy relationships for serialization
-            for (Testigo t : testigos) {
-                if (t.getMesa() != null) {
-                    t.getMesa().getNumeroMesa();
-                }
-            }
-            return ResponseEntity.ok(new ApiResponse<>(true, "Testigos del puesto obtenidos", testigos));
+            List<com.electoral.testigos.dto.response.TestigoResponse> responses = testigos.stream()
+                .map(t -> {
+                    Mesa mesa = t.getMesa();
+                    return com.electoral.testigos.dto.response.TestigoResponse.builder()
+                            .id(t.getId())
+                            .documento(t.getDocumento())
+                            .nombre(t.getNombre())
+                            .segundoNombre(t.getSegundoNombre())
+                            .primerApellido(t.getPrimerApellido())
+                            .segundoApellido(t.getSegundoApellido())
+                            .nombreCompleto(t.getNombreCompleto())
+                            .celular(t.getCelular())
+                            .correo(t.getCorreo())
+                            .nombreOrganizacion(t.getNombreOrganizacion())
+                            .tipoTestigo(t.getTipoTestigo())
+                            .fechaRegistro(t.getFechaRegistro())
+                            .mesaId(mesa != null ? mesa.getId() : null)
+                            .numeroMesa(mesa != null ? mesa.getNumeroMesa() : null)
+                            .puestoId(mesa != null && mesa.getPuesto() != null ? mesa.getPuesto().getId() : null)
+                            .nombrePuesto(mesa != null && mesa.getPuesto() != null ? mesa.getPuesto().getNombrePuesto() : "")
+                            .build();
+                })
+                .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(new ApiResponse<>(true, "Testigos del puesto obtenidos", responses));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
         }
