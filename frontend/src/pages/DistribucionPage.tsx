@@ -141,11 +141,23 @@ export default function DistribucionPage() {
       .filter(p => p.mesas.length > 0);
   }, [puestosNecesitadosOriginal, soloVacias]);
 
-  // 2. Extraer todos los puestos que tienen testigos movibles o mesas necesitadas
+  // 2. Extraer todos los puestos y calcular su estado
   const allPuestos = useMemo(() => {
-    const map = new Map<string, { id: string, nombre: string }>();
-    testigosMovibles.forEach(t => map.set(String(t.puestoOrigenId), { id: String(t.puestoOrigenId), nombre: t.nombrePuestoOrigen }));
-    puestosNecesitados.forEach(p => map.set(String(p.puestoId), { id: String(p.puestoId), nombre: p.nombrePuesto }));
+    const map = new Map<string, { id: string, nombre: string, excedentes: number, faltantes: number }>();
+    
+    testigosMovibles.forEach(t => {
+      const pid = String(t.puestoOrigenId);
+      if (!map.has(pid)) map.set(pid, { id: pid, nombre: t.nombrePuestoOrigen, excedentes: 0, faltantes: 0 });
+      map.get(pid)!.excedentes += 1;
+    });
+
+    puestosNecesitados.forEach(p => {
+      const pid = String(p.puestoId);
+      if (!map.has(pid)) map.set(pid, { id: pid, nombre: p.nombrePuesto, excedentes: 0, faltantes: 0 });
+      const faltantes = p.mesas.reduce((acc: number, m: any) => acc + m.faltantes, 0);
+      map.get(pid)!.faltantes += faltantes;
+    });
+
     return Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
   }, [testigosMovibles, puestosNecesitados]);
 
@@ -370,6 +382,57 @@ export default function DistribucionPage() {
               </Card>
             </Grid>
           </Grid>
+
+          {/* LISTA HORIZONTAL DE ESTADO DE PUESTOS */}
+          <Box sx={{ mb: 4 }}>
+            <Typography sx={{ fontSize: '13px', fontWeight: 700, color: J.textMuted, textTransform: 'uppercase', mb: 2 }}>
+              Estado de los Puestos (Haz clic para optimizar)
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 2, '&::-webkit-scrollbar': { height: '8px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: J.border, borderRadius: '4px' } }}>
+              {allPuestos.map(p => {
+                const isSelected = p.id === selectedPuestoId;
+                const requiresAttention = p.faltantes > 0;
+                const canDonate = p.excedentes > 0;
+                
+                let statusColor = J.border;
+                let statusBg = J.surface;
+                if (requiresAttention && canDonate) { statusColor = J.warning; statusBg = 'rgba(185,125,26,0.05)'; }
+                else if (requiresAttention) { statusColor = '#D32F2F'; statusBg = 'rgba(211,47,47,0.05)'; } // Rojo
+                else if (canDonate) { statusColor = J.success; statusBg = 'rgba(45,125,78,0.05)'; }
+
+                return (
+                  <Card 
+                    key={p.id} 
+                    onClick={() => setSelectedPuestoId(p.id)}
+                    sx={{ 
+                      minWidth: '220px', 
+                      cursor: 'pointer', 
+                      borderRadius: 0, 
+                      border: `1px solid ${isSelected ? J.blue : statusColor}`, 
+                      bgcolor: isSelected ? 'rgba(41,82,204,0.03)' : statusBg,
+                      boxShadow: isSelected ? `0 0 0 1px ${J.blue}` : 'none',
+                      transition: 'all 0.2s',
+                      flexShrink: 0
+                    }}
+                  >
+                    <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
+                      <Typography sx={{ fontSize: '12px', fontWeight: 700, color: J.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', mb: 1 }}>
+                        {p.nombre}
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography sx={{ fontSize: '11px', fontWeight: 600, color: canDonate ? J.success : J.textMuted }}>
+                          {p.excedentes} Excedentes
+                        </Typography>
+                        <Typography sx={{ fontSize: '11px', fontWeight: 600, color: requiresAttention ? '#D32F2F' : J.textMuted }}>
+                          {p.faltantes} Faltantes
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </Box>
+          </Box>
 
           {/* BARRA DE FILTROS DEL TABLERO */}
           <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, bgcolor: J.canvas, p: 2, border: `1px solid ${J.border}` }}>
