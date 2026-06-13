@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid,
   FormControl, InputLabel, MenuItem, CircularProgress,
-  Chip, Paper, Switch, FormControlLabel, Select, OutlinedInput, Divider
+  Chip, Paper, Switch, FormControlLabel, Select, OutlinedInput, Divider, Button
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
@@ -54,8 +54,18 @@ export default function DistribucionPage() {
   const [selectedMpio, setSelectedMpio] = useState<string>('');
 
   const [loadingData, setLoadingData] = useState(false);
+  
+  // Datos reales desde la BD
+  const [dbTestigos, setDbTestigos] = useState<any[]>([]);
+  const [dbPuestos, setDbPuestos] = useState<any[]>([]);
+
+  // Datos locales de UI (Fuente de verdad temporal)
   const [testigosMovibles, setTestigosMovibles] = useState<any[]>([]);
-  const [puestosNecesitadosOriginal, setPuestosNecesitadosOriginal] = useState<any[]>([]);
+  const [puestosNecesitadosBase, setPuestosNecesitadosBase] = useState<any[]>([]);
+
+  // Tracking de guardado por lotes
+  const [pendingMoves, setPendingMoves] = useState<{testigoId: string, nuevaMesaId: string}[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Nuevos estados para filtros
   const [soloVacias, setSoloVacias] = useState<boolean>(true);
@@ -103,8 +113,11 @@ export default function DistribucionPage() {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          setDbTestigos(data.data.testigosMovibles);
+          setDbPuestos(data.data.puestosNecesitados);
           setTestigosMovibles(data.data.testigosMovibles);
-          setPuestosNecesitadosOriginal(data.data.puestosNecesitados);
+          setPuestosNecesitadosBase(data.data.puestosNecesitados);
+          setPendingMoves([]);
         }
         setLoadingData(false);
       })
@@ -114,12 +127,48 @@ export default function DistribucionPage() {
       });
   };
 
+  const handleDescartar = () => {
+    setTestigosMovibles(dbTestigos);
+    setPuestosNecesitadosBase(dbPuestos);
+    setPendingMoves([]);
+    toast.success('Cambios locales descartados');
+  };
+
+  const handleGuardarCambios = async () => {
+    if (pendingMoves.length === 0) return;
+    setIsSaving(true);
+    let successCount = 0;
+    
+    // Ejecutar en paralelo (usando Promise.all)
+    const promises = pendingMoves.map(move => 
+      fetch(`${API_URL}/api/testigos/${move.testigoId}/mover?nuevaMesaId=${move.nuevaMesaId}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => { if (data.success) successCount++; })
+      .catch(() => {}) 
+    );
+
+    await Promise.all(promises);
+
+    if (successCount === pendingMoves.length) {
+      toast.success('Todos los movimientos guardados exitosamente');
+    } else {
+      toast.warning(`Se guardaron ${successCount} de ${pendingMoves.length} movimientos`);
+    }
+    
+    setIsSaving(false);
+    loadDistribucion(selectedMpio); // Recarga los verdaderos desde DB
+  };
+
   const handleDeptoChange = (e: any) => {
     const val = e.target.value;
     setSelectedDepto(val);
     setSelectedMpio('');
     setTestigosMovibles([]);
-    setPuestosNecesitadosOriginal([]);
+    setPuestosNecesitadosBase([]);
+    setPendingMoves([]);
     setSelectedPuestoId('');
     loadMunicipios(Number(val));
   };
@@ -133,13 +182,13 @@ export default function DistribucionPage() {
 
   // 1. Filtrar las mesas necesitadas según el toggle `soloVacias`
   const puestosNecesitados = useMemo(() => {
-    return puestosNecesitadosOriginal
+    return puestosNecesitadosBase
       .map(p => ({
         ...p,
         mesas: soloVacias ? p.mesas.filter((m: any) => m.ocupados === 0) : p.mesas
       }))
       .filter(p => p.mesas.length > 0);
-  }, [puestosNecesitadosOriginal, soloVacias]);
+  }, [puestosNecesitadosBase, soloVacias]);
 
   // 2. Extraer todos los puestos y calcular su estado
   const allPuestos = useMemo(() => {
@@ -192,22 +241,24 @@ export default function DistribucionPage() {
       const nuevaMesaId = destination.droppableId.replace('mesa-', '');
       const testigoId = draggableId.replace('testigo-', '');
 
-      fetch(`${API_URL}/api/testigos/${testigoId}/mover?nuevaMesaId=${nuevaMesaId}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            toast.success('Testigo reubicado exitosamente');
-            loadDistribucion(selectedMpio);
-          } else {
-            toast.error(data.message || 'Error al reubicar el testigo');
-          }
-        })
-        .catch(() => {
-          toast.error('Error de red al reubicar el testigo');
-        });
+      // 1. Agregar a pendingMoves
+      setPendingMoves(prev => [...prev, { testigoId, nuevaMesaId }]);
+
+      // 2. Eliminar testigo visualmente de los excedentes
+      setTestigosMovibles(prev => prev.filter(t => String(t.id) !== testigoId));
+
+      // 3. Aumentar visualmente los ocupados de la mesa de destino
+      setPuestosNecesitadosBase(prev => 
+        prev.map(p => ({
+          ...p,
+          mesas: p.mesas.map((m: any) => {
+            if (String(m.mesaId) === nuevaMesaId) {
+              return { ...m, ocupados: m.ocupados + 1 };
+            }
+            return m;
+          })
+        }))
+      );
     }
   };
 
@@ -634,6 +685,23 @@ export default function DistribucionPage() {
             </Grid>
           </Grid>
         </DragDropContext>
+      )}
+
+      {/* BARRA FLOTANTE DE GUARDADO */}
+      {pendingMoves.length > 0 && (
+        <Paper elevation={6} sx={{ position: 'fixed', bottom: 30, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, p: 2, display: 'flex', alignItems: 'center', gap: 3, borderRadius: '50px', border: `2px solid ${J.ink}`, bgcolor: '#fff' }}>
+          <Typography sx={{ fontWeight: 700, color: J.ink }}>
+            Tienes {pendingMoves.length} movimiento{pendingMoves.length > 1 ? 's' : ''} pendiente{pendingMoves.length > 1 ? 's' : ''}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button variant="outlined" onClick={handleDescartar} disabled={isSaving} sx={{ borderRadius: '20px', borderColor: J.border, color: J.textMuted, '&:hover': { borderColor: J.ink, color: J.ink } }}>
+              Descartar
+            </Button>
+            <Button variant="contained" onClick={handleGuardarCambios} disabled={isSaving} sx={{ borderRadius: '20px', bgcolor: J.success, '&:hover': { bgcolor: '#225e3b' } }}>
+              {isSaving ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Guardar Cambios'}
+            </Button>
+          </Box>
+        </Paper>
       )}
     </Box>
   );
