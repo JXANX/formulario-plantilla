@@ -154,7 +154,8 @@ export default function DistribucionPage() {
     puestosNecesitados.forEach(p => {
       const pid = String(p.puestoId);
       if (!map.has(pid)) map.set(pid, { id: pid, nombre: p.nombrePuesto, excedentes: 0, faltantes: 0 });
-      const faltantes = p.mesas.reduce((acc: number, m: any) => acc + m.faltantes, 0);
+      // Para estar parcial (mínimo 1 testigo), solo sumamos 1 por cada mesa vacía (0 testigos)
+      const faltantes = p.mesas.reduce((acc: number, m: any) => acc + (m.ocupados === 0 ? 1 : 0), 0);
       map.get(pid)!.faltantes += faltantes;
     });
 
@@ -167,7 +168,8 @@ export default function DistribucionPage() {
     let testigosFaltantes = 0;
     puestosNecesitados.forEach(p => {
       mesasIncompletas += p.mesas.length;
-      p.mesas.forEach((m: any) => { testigosFaltantes += m.faltantes; });
+      // Solo contamos 1 testigo faltante por mesa vacía (para que quede parcial)
+      p.mesas.forEach((m: any) => { testigosFaltantes += (m.ocupados === 0 ? 1 : 0); });
     });
     const excedentes = testigosMovibles.length;
     const balance = excedentes - testigosFaltantes;
@@ -358,7 +360,7 @@ export default function DistribucionPage() {
                     </Typography>
                   </Box>
                   <Typography sx={{ fontSize: '11px', color: J.textMuted, mt: 1 }}>
-                    Espacios requeridos según filtro actual
+                    Testigos requeridos para cobertura mínima (1 por mesa)
                   </Typography>
                 </CardContent>
               </Card>
