@@ -3,6 +3,7 @@ package com.electoral.testigos.repository;
 import com.electoral.testigos.model.Mesa;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,4 +28,10 @@ public interface MesaRepository extends JpaRepository<Mesa, Long> {
            "LEFT JOIN FETCH p.municipio mu " +
            "LEFT JOIN FETCH mu.departamento d")
     List<Mesa> findAllWithEagerRelationships();
+
+    @Query("SELECT DISTINCT m FROM Mesa m " +
+           "JOIN FETCH m.puesto p " +
+           "LEFT JOIN FETCH m.testigos t " +
+           "WHERE p.municipio.id = :municipioId")
+    List<Mesa> findByMunicipioIdWithEagerRelationships(@Param("municipioId") Long municipioId);
 }

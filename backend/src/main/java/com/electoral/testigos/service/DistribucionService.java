@@ -20,13 +20,8 @@ public class DistribucionService {
 
     @Transactional(readOnly = true)
     public DistribucionMunicipioResponse getDistribucion(Long municipioId) {
-        // Obtenemos todas las mesas con sus relaciones eager
-        List<Mesa> todasLasMesas = mesaRepository.findAllWithEagerRelationships();
-        
-        List<Mesa> mesasDelMunicipio = todasLasMesas.stream()
-            .filter(m -> m.getPuesto() != null && m.getPuesto().getMunicipio() != null &&
-                         m.getPuesto().getMunicipio().getId().equals(municipioId))
-            .collect(Collectors.toList());
+        // Obtenemos de la BD SOLO las mesas del municipio (con puestos y testigos eager)
+        List<Mesa> mesasDelMunicipio = mesaRepository.findByMunicipioIdWithEagerRelationships(municipioId);
 
         List<TestigoMovibleDTO> testigosMovibles = new ArrayList<>();
         Map<Puesto, List<MesaNecesitadaDTO>> mapPuestosNecesitados = new HashMap<>();
