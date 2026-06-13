@@ -50,7 +50,7 @@ public class DashboardService {
 
         long testigosFaltantes = Math.max(0, totalMesas - totalTestigos);
         long mesasFaltantesCompletas = mesasAmarillas + mesasRojas; // faltan por tener los 2 testigos
-        long mesasSinNingunTestigo = Math.max(0, totalMesas - totalTestigos); // El usuario quiere esto como la diferencia directa
+        long mesasSinNingunTestigo = mesasRojas; // Conteo real de mesas vacías
 
         return DashboardStats.builder()
                 .totalTestigos(totalTestigos)

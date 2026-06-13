@@ -17,6 +17,8 @@
     "@mui/material": "^9.0.1",
     "@stomp/stompjs": "^7.3.0",
     "axios": "^1.17.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.77.0",

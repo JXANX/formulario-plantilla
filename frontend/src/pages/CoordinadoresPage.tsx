@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   Box, Typography, Card, CardContent, Grid, Button,
   FormControl, InputLabel, MenuItem, Dialog,
@@ -311,6 +313,64 @@ export default function CoordinadoresPage() {
       });
   };
 
+  // Export to PDF
+  const handleExportPuestoPDF = () => {
+    if (!selectedPuesto) return;
+    
+    const doc = new jsPDF();
+    
+    // Header text
+    doc.setFontSize(16);
+    doc.setTextColor(26, 31, 46); // J.ink
+    doc.setFont("helvetica", "bold");
+    doc.text(selectedPuesto.nombrePuesto, 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Zona ${selectedPuesto.zona} | Código ${selectedPuesto.codigoPuesto} — Coordinador y Testigos`, 14, 26);
+    
+    // Coordinador section
+    autoTable(doc, {
+      startY: 32,
+      head: [['COORDINADOR/A']],
+      body: [
+        [selectedPuesto.coordinador ? 
+          `${selectedPuesto.coordinador.nombreCompleto}\nDocumento: ${selectedPuesto.coordinador.documento}   |   Celular: ${selectedPuesto.coordinador.celular}\nCorreo: ${selectedPuesto.coordinador.correo || 'N/A'}`
+          : 'SIN ASIGNAR']
+      ],
+      headStyles: { fillColor: [26, 31, 46], textColor: 255, fontStyle: 'bold' },
+      bodyStyles: { fillColor: [248, 247, 244], textColor: 0, fontStyle: 'normal' },
+      theme: 'grid',
+    });
+    
+    // Testigos Table
+    const tableData = testigosPuesto.map(t => [
+      t.numeroMesa || t.mesaId || '',
+      t.nombreCompleto,
+      t.documento,
+      t.celular,
+      t.correo || ''
+    ]);
+    
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 10,
+      head: [['Mesa', 'Nombre Completo', 'Documento', 'Celular', 'Correo Electrónico']],
+      body: tableData,
+      headStyles: { fillColor: [41, 82, 204], textColor: 255, fontStyle: 'bold' }, // J.blue
+      alternateRowStyles: { fillColor: [240, 238, 233] }, // J.muted
+      theme: 'grid',
+    });
+    
+    // Footer text
+    doc.setFontSize(10);
+    doc.text(`Total testigos: ${testigosPuesto.length}`, 14, (doc as any).lastAutoTable.finalY + 10);
+    
+    const fileName = `${selectedPuesto.nombrePuesto.replace(/\s+/g, '_')}_Reporte.pdf`;
+    doc.save(fileName);
+    toast.success('Reporte PDF descargado correctamente');
+  };
+
   return (
     <Box>
       {/* HEADER SECTION */}
@@ -573,8 +633,31 @@ export default function CoordinadoresPage() {
                   <Typography sx={{ fontSize: '14px', fontWeight: 700, color: J.ink, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <PeopleIcon sx={{ color: J.blue }} /> Testigos en {selectedPuesto.nombrePuesto}
                   </Typography>
-                  <Box sx={{ px: 1, py: 0.25, bgcolor: J.surface, border: `1px solid ${J.border}`, fontSize: '12px', fontWeight: 700 }}>
-                    Total: {testigosPuesto.length}
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Button 
+                      size="small"
+                      variant="outlined"
+                      startIcon={<FileDownloadIcon />}
+                      onClick={handleExportPuestoPDF}
+                      sx={{
+                        borderRadius: 0,
+                        borderColor: J.border,
+                        color: J.ink,
+                        height: 28,
+                        fontWeight: 600,
+                        fontSize: '11px',
+                        textTransform: 'none',
+                        '&:hover': {
+                          borderColor: J.blue,
+                          backgroundColor: 'rgba(41, 82, 204, 0.04)'
+                        }
+                      }}
+                    >
+                      Reporte PDF
+                    </Button>
+                    <Box sx={{ px: 1, py: 0.25, bgcolor: J.surface, border: `1px solid ${J.border}`, fontSize: '12px', fontWeight: 700, height: 28, display: 'flex', alignItems: 'center' }}>
+                      Total: {testigosPuesto.length}
+                    </Box>
                   </Box>
                 </Box>
  
