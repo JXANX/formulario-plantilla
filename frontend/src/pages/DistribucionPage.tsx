@@ -149,6 +149,19 @@ export default function DistribucionPage() {
     return Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
   }, [testigosMovibles, puestosNecesitados]);
 
+  // 3. Calcular totales para el Balance
+  const totales = useMemo(() => {
+    let mesasIncompletas = 0;
+    let testigosFaltantes = 0;
+    puestosNecesitados.forEach(p => {
+      mesasIncompletas += p.mesas.length;
+      p.mesas.forEach((m: any) => { testigosFaltantes += m.faltantes; });
+    });
+    const excedentes = testigosMovibles.length;
+    const balance = excedentes - testigosFaltantes;
+    return { mesasIncompletas, testigosFaltantes, excedentes, balance };
+  }, [puestosNecesitados, testigosMovibles]);
+
   // Auto-seleccionar el primer puesto si no hay ninguno
   useEffect(() => {
     if (allPuestos.length > 0 && (!selectedPuestoId || !allPuestos.find(p => p.id === selectedPuestoId))) {
@@ -300,6 +313,64 @@ export default function DistribucionPage() {
       ) : (
         <DragDropContext onDragEnd={onDragEnd}>
           
+          {/* REPORTE Y BALANCE */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card sx={{ borderRadius: 0, border: `1px solid ${J.border}`, boxShadow: 'none', bgcolor: '#fff', borderTop: `4px solid ${J.gold}` }}>
+                <CardContent sx={{ p: 2, pb: '16px !important' }}>
+                  <Typography sx={{ fontSize: '12px', fontWeight: 700, color: J.textMuted, textTransform: 'uppercase', mb: 1 }}>
+                    Testigos Excedentes
+                  </Typography>
+                  <Typography sx={{ fontSize: '28px', fontWeight: 800, color: J.ink, lineHeight: 1 }}>
+                    {totales.excedentes}
+                  </Typography>
+                  <Typography sx={{ fontSize: '11px', color: J.textMuted, mt: 1 }}>
+                    Testigos disponibles para reubicar
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card sx={{ borderRadius: 0, border: `1px solid ${J.border}`, boxShadow: 'none', bgcolor: '#fff', borderTop: `4px solid ${J.blue}` }}>
+                <CardContent sx={{ p: 2, pb: '16px !important' }}>
+                  <Typography sx={{ fontSize: '12px', fontWeight: 700, color: J.textMuted, textTransform: 'uppercase', mb: 1 }}>
+                    Brecha de Cobertura
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                    <Typography sx={{ fontSize: '28px', fontWeight: 800, color: J.ink, lineHeight: 1 }}>
+                      {totales.testigosFaltantes}
+                    </Typography>
+                    <Typography sx={{ fontSize: '13px', fontWeight: 600, color: J.warning }}>
+                      en {totales.mesasIncompletas} mesas
+                    </Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: '11px', color: J.textMuted, mt: 1 }}>
+                    Espacios requeridos según filtro actual
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card sx={{ borderRadius: 0, border: `1px solid ${J.border}`, boxShadow: 'none', bgcolor: totales.balance >= 0 ? 'rgba(45,125,78,0.05)' : 'rgba(185,125,26,0.05)', borderTop: `4px solid ${totales.balance >= 0 ? J.success : J.warning}` }}>
+                <CardContent sx={{ p: 2, pb: '16px !important' }}>
+                  <Typography sx={{ fontSize: '12px', fontWeight: 700, color: totales.balance >= 0 ? J.success : J.warning, textTransform: 'uppercase', mb: 1 }}>
+                    Balance del Municipio
+                  </Typography>
+                  <Typography sx={{ fontSize: '28px', fontWeight: 800, color: totales.balance >= 0 ? J.success : J.warning, lineHeight: 1 }}>
+                    {totales.balance > 0 ? '+' : ''}{totales.balance}
+                  </Typography>
+                  <Typography sx={{ fontSize: '11px', color: J.ink, fontWeight: 500, mt: 1 }}>
+                    {totales.balance >= 0 
+                      ? 'Hay suficientes excedentes para cubrir la brecha.'
+                      : 'Faltan testigos para cubrir la brecha mostrada.'}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
           {/* BARRA DE FILTROS DEL TABLERO */}
           <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, bgcolor: J.canvas, p: 2, border: `1px solid ${J.border}` }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
