@@ -431,7 +431,7 @@ export default function DashboardPage() {
         Métricas Generales
       </Typography>
 
-      <Grid container spacing={3} sx={{ mb: 5 }}>
+      <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard title="Total Testigos"   value={stats.totalTestigos}   icon={<PeopleIcon       sx={{ fontSize: 34 }} />} accentColor={J.blue} />
         </Grid>
@@ -445,6 +445,69 @@ export default function DashboardPage() {
           <StatCard title="Total Mesas"      value={stats.totalMesas}      icon={<TableBarIcon     sx={{ fontSize: 34 }} />} accentColor={J.ink}  />
         </Grid>
       </Grid>
+
+      {/* ── Testigos Faltantes highlight ── */}
+      <Card
+        sx={{
+          mb: 5,
+          bgcolor: stats.testigosFaltantes > 0 ? '#FFF8F0' : '#F0FFF5',
+          border: `1px solid ${stats.testigosFaltantes > 0 ? '#E8D5BB' : '#C0E8CD'}`,
+          borderLeft: `5px solid ${stats.testigosFaltantes > 0 ? J.warning : J.success}`,
+          borderRadius: 0,
+          boxShadow: 'none',
+        }}
+      >
+        <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+              <Box
+                sx={{
+                  p: 1.5,
+                  bgcolor: stats.testigosFaltantes > 0 ? 'rgba(185,125,26,0.12)' : 'rgba(45,125,78,0.12)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: stats.testigosFaltantes > 0 ? J.warning : J.success,
+                }}
+              >
+                {stats.testigosFaltantes > 0
+                  ? <WarningIcon sx={{ fontSize: 32 }} />
+                  : <CheckCircleIcon sx={{ fontSize: 32 }} />}
+              </Box>
+              <Box>
+                <Typography
+                  sx={{
+                    fontSize: '12px',
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase',
+                    color: J.textMuted,
+                    mb: 0.5,
+                  }}
+                >
+                  Testigos Faltantes para cubrir las {stats.totalMesas.toLocaleString()} mesas
+                </Typography>
+                <Typography sx={{ fontSize: '14px', color: J.textBody }}>
+                  {stats.testigosFaltantes > 0
+                    ? `Se necesitan ${stats.testigosFaltantes.toLocaleString()} testigos más para tener al menos 1 por mesa`
+                    : 'Todas las mesas tienen al menos 1 testigo registrado'}
+                </Typography>
+              </Box>
+            </Box>
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: '3.2rem',
+                lineHeight: 1,
+                color: stats.testigosFaltantes > 0 ? J.warning : J.success,
+                minWidth: '80px',
+                textAlign: 'right',
+              }}
+            >
+              {stats.testigosFaltantes.toLocaleString()}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* ── Semáforo ── */}
       <Box sx={{ height: 1, bgcolor: J.border, mb: 4 }} />
