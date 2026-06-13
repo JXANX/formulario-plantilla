@@ -6,7 +6,7 @@ import {
   FormControl, InputLabel, MenuItem, Dialog,
   DialogTitle, DialogContent, DialogActions, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper,
-  IconButton, Tooltip, TextField, CircularProgress, Autocomplete
+  IconButton, Tooltip, TextField, CircularProgress, Autocomplete, InputAdornment
 } from '@mui/material';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -18,6 +18,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
 import GuardedSelect from '../components/GuardedSelect';
 import { useToast } from '../context/ToastContext';
 
@@ -109,6 +110,7 @@ export default function CoordinadoresPage() {
   const [puestos, setPuestos] = useState<Puesto[]>([]);
   const [loadingPuestos, setLoadingPuestos] = useState<boolean>(false);
   const [selectedPuesto, setSelectedPuesto] = useState<Puesto | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
   
   // Witnesses inside active puesto
   const [testigosPuesto, setTestigosPuesto] = useState<Testigo[]>([]);
@@ -371,6 +373,15 @@ export default function CoordinadoresPage() {
     toast.success('Reporte PDF descargado correctamente');
   };
 
+  // Filter puestos based on search term
+  const filteredPuestos = puestos.filter(p => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    const matchPuesto = p.nombrePuesto.toLowerCase().includes(term) || p.codigoPuesto.toLowerCase().includes(term);
+    const matchCoordinador = p.coordinador?.nombreCompleto.toLowerCase().includes(term) || p.coordinador?.documento.includes(term);
+    return matchPuesto || matchCoordinador;
+  });
+
   return (
     <Box>
       {/* HEADER SECTION */}
@@ -453,9 +464,34 @@ export default function CoordinadoresPage() {
       <Grid container spacing={4}>
         {/* TABLA DE PUESTOS (IZQUIERDA) */}
         <Grid size={{ xs: 12, md: 7 }}>
-          <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, color: J.ink, mb: 2 }}>
-            Puestos de Votación del Municipio
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+            <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, color: J.ink }}>
+              Puestos de Votación del Municipio
+            </Typography>
+            <TextField
+              size="small"
+              placeholder="Buscar puesto o coordinador..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: J.textMuted, fontSize: '20px' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                flex: { xs: '1 1 100%', sm: '0 0 280px' },
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 0,
+                  bgcolor: '#fff',
+                  '& fieldset': { borderColor: J.border },
+                  '&:hover fieldset': { borderColor: J.blue },
+                  '&.Mui-focused fieldset': { borderColor: J.blue, borderWidth: '1.5px' },
+                }
+              }}
+            />
+          </Box>
           
           <TableContainer component={Paper} sx={{ borderRadius: 0, border: `1px solid ${J.border}`, boxShadow: 'none' }}>
             <Table size="small">
@@ -474,14 +510,16 @@ export default function CoordinadoresPage() {
                       <CircularProgress size={24} sx={{ color: J.blue }} />
                     </TableCell>
                   </TableRow>
-                ) : puestos.length === 0 ? (
+                ) : filteredPuestos.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} align="center" sx={{ py: 4, color: J.textMuted }}>
-                      Seleccione un municipio para visualizar los puestos.
+                      {puestos.length === 0 
+                        ? 'Seleccione un municipio para visualizar los puestos.' 
+                        : 'No se encontraron resultados para la búsqueda.'}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  puestos.map(p => {
+                  filteredPuestos.map(p => {
                     const isSelected = selectedPuesto?.id === p.id;
                     return (
                       <TableRow
