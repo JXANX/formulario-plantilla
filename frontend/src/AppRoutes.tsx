@@ -7,6 +7,7 @@ import MesasReportPage from './pages/MesasReportPage';
 import AuditLogPage from './pages/AuditLogPage';
 import LoginPage from './pages/LoginPage';
 import CoordinadoresPage from './pages/CoordinadoresPage';
+import DistribucionPage from './pages/DistribucionPage';
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
         <Route path="testigos" element={<TestigosListPage />} />
         <Route path="coordinadores" element={<CoordinadoresPage />} />
         <Route path="reporte-mesas" element={<MesasReportPage />} />
+        <Route path="distribucion" element={<DistribucionPage />} />
         <Route path="historial" element={<AuditLogPage />} />
       </Route>
     </Routes>
