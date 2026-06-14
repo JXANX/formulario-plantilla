@@ -284,7 +284,7 @@ public class ExcelExportService {
     }
 
     private static final String[] HEADERS_COORDINADORES = {
-        "Puesto", "Documento", "Coordinador/a", "Celular", "Correo Electrónico", "Mesas"
+        "Puesto", "Documento", "Coordinador/a", "Celular", "Correo Electrónico", "Total Mesas", "Mesas Cubiertas", "Mesas Faltantes"
     };
 
     @Transactional
@@ -357,7 +357,21 @@ public class ExcelExportService {
             for (int i = 0; i < puestos.size(); i++) {
                 Puesto puesto = puestos.get(i);
                 Testigo coord = puesto.getCoordinador();
-                int mesasCount = puesto.getMesas() != null ? puesto.getMesas().size() : 0;
+                
+                int totalMesas = 0;
+                int mesasCubiertas = 0;
+                int mesasFaltantes = 0;
+
+                if (puesto.getMesas() != null) {
+                    totalMesas = puesto.getMesas().size();
+                    for (Mesa m : puesto.getMesas()) {
+                        if (m.getOcupados() != null && m.getOcupados() > 0) {
+                            mesasCubiertas++;
+                        } else {
+                            mesasFaltantes++;
+                        }
+                    }
+                }
 
                 org.apache.poi.xssf.usermodel.XSSFCellStyle currentStyle = (i % 2 == 0) ? rowStyle : rowAltStyle;
                 Row row = sheet.createRow(rowIdx++);
@@ -368,11 +382,13 @@ public class ExcelExportService {
                 createStyledCell(row, 2, coord != null ? safe(coord.getNombreCompleto()) : "", currentStyle);
                 createStyledCell(row, 3, coord != null ? safe(coord.getCelular()) : "", currentStyle);
                 createStyledCell(row, 4, coord != null ? safe(coord.getCorreo()) : "", currentStyle);
-                createStyledCell(row, 5, String.valueOf(mesasCount), currentStyle);
+                createStyledCell(row, 5, String.valueOf(totalMesas), currentStyle);
+                createStyledCell(row, 6, String.valueOf(mesasCubiertas), currentStyle);
+                createStyledCell(row, 7, String.valueOf(mesasFaltantes), currentStyle);
             }
 
             // ── Anchos de columna ───────────────────────────────────────────
-            int[] colWidths = {35, 15, 40, 15, 30, 10};
+            int[] colWidths = {35, 15, 40, 15, 30, 12, 16, 16};
             for (int i = 0; i < colWidths.length; i++) {
                 sheet.setColumnWidth(i, colWidths[i] * 256);
             }

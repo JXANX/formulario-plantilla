@@ -41,6 +41,20 @@ public class DuplicadoService {
         }
     }
 
+    public void verificarDuplicadoNombreCompleto(String nombre, String segundoNombre, String primerApellido, String segundoApellido) {
+        String n = nombre != null ? nombre.trim() : "";
+        String sn = segundoNombre != null ? segundoNombre.trim() : "";
+        String pa = primerApellido != null ? primerApellido.trim() : "";
+        String sa = segundoApellido != null ? segundoApellido.trim() : "";
+
+        List<Testigo> duplicados = testigoRepository.findByNombreCompletoExacto(n, sn, pa, sa);
+        if (!duplicados.isEmpty()) {
+            String fullName = (n + " " + sn).trim() + " " + (pa + " " + sa).trim();
+            registrarAlertaDuplicado("NOMBRE_COMPLETO", fullName.trim().replaceAll(" +", " "), "Intento de registro rechazado: Nombre completo ya existe");
+            throw new RuntimeException("Ya existe un testigo registrado con el nombre exacto: " + fullName.trim().replaceAll(" +", " "));
+        }
+    }
+
     public List<Testigo> buscarPosiblesDuplicadosNombre(String nombre, String primerApellido) {
         return testigoRepository.findByNombreContainingIgnoreCaseOrPrimerApellidoContainingIgnoreCase(nombre, primerApellido);
     }

@@ -18,6 +18,16 @@ public interface TestigoRepository extends JpaRepository<Testigo, Long>, JpaSpec
     // For fuzzy matching logic
     List<Testigo> findByNombreContainingIgnoreCaseOrPrimerApellidoContainingIgnoreCase(String nombre, String primerApellido);
 
+    @Query("SELECT t FROM Testigo t WHERE " +
+           "UPPER(TRIM(t.nombre)) = UPPER(:nombre) AND " +
+           "COALESCE(UPPER(TRIM(t.segundoNombre)), '') = UPPER(:segundoNombre) AND " +
+           "UPPER(TRIM(t.primerApellido)) = UPPER(:primerApellido) AND " +
+           "COALESCE(UPPER(TRIM(t.segundoApellido)), '') = UPPER(:segundoApellido)")
+    List<Testigo> findByNombreCompletoExacto(@org.springframework.data.repository.query.Param("nombre") String nombre,
+                                             @org.springframework.data.repository.query.Param("segundoNombre") String segundoNombre,
+                                             @org.springframework.data.repository.query.Param("primerApellido") String primerApellido,
+                                             @org.springframework.data.repository.query.Param("segundoApellido") String segundoApellido);
+
     @Query("SELECT t FROM Testigo t " +
            "LEFT JOIN FETCH t.usuarioRegistro " +
            "LEFT JOIN FETCH t.mesa m " +

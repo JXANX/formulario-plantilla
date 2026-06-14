@@ -36,6 +36,7 @@ public class TestigoService {
     public Testigo registrarTestigo(TestigoRequest request) {
         duplicadoService.verificarDuplicadoExacto(request.getDocumento());
         duplicadoService.verificarDuplicadoMesa(request.getMesaId(), request.getDocumento());
+        duplicadoService.verificarDuplicadoNombreCompleto(request.getNombre(), request.getSegundoNombre(), request.getPrimerApellido(), request.getSegundoApellido());
 
         Mesa mesa = mesaRepository.findById(request.getMesaId())
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
