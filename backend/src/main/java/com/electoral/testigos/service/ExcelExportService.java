@@ -143,7 +143,7 @@ public class ExcelExportService {
                 cell.setCellStyle(sHeader);
             }
 
-            // ── Datos ─────────────────────────────────────────────────────────
+            // ── Datos (altura 24pt como plantilla) ───────────────────────────
             int rowIdx = 1;
             for (Mesa mesa : mesas) {
                 Puesto puesto = mesa.getPuesto();
@@ -151,12 +151,22 @@ public class ExcelExportService {
                 Departamento departamento = municipio != null ? municipio.getDepartamento() : null;
 
                 java.util.List<Testigo> testigos = mesa.getId() != null ? testigosByMesa.get(mesa.getId()) : null;
+                if (testigos == null) {
+                    testigos = new java.util.ArrayList<>();
+                }
 
-                if (testigos != null && !testigos.isEmpty()) {
-                    for (Testigo testigo : testigos) {
-                        Row row = sheet.createRow(rowIdx++);
-                        row.setHeightInPoints(24);
-                        writeBaseColumns(row, departamento, municipio, puesto, mesa, sBlue, sWhite);
+                // La plantilla original siempre tiene EXACTAMENTE 2 filas por mesa (los "huecos")
+                int rowCountForMesa = Math.max(2, testigos.size());
+
+                for (int i = 0; i < rowCountForMesa; i++) {
+                    Testigo testigo = (i < testigos.size()) ? testigos.get(i) : null;
+
+                    Row row = sheet.createRow(rowIdx++);
+                    row.setHeightInPoints(24);
+                    writeBaseColumns(row, departamento, municipio, puesto, mesa, sBlue, sWhite);
+
+                    if (testigo != null) {
+                        // Fila con testigo
                         createStyledCell(row, 8,  safe(testigo.getNombreOrganizacion()), sBlue);
                         createStyledCell(row, 9,  testigo.getTipoTestigo() != null ? testigo.getTipoTestigo().name() : "", sBlue);
                         createStyledCell(row, 10, safe(testigo.getDocumento()), sWhite);
@@ -166,14 +176,12 @@ public class ExcelExportService {
                         createStyledCell(row, 14, safe(testigo.getSegundoApellido()), sWhite);
                         createStyledCell(row, 15, safe(testigo.getCelular()), sWhite);
                         createStyledCell(row, 16, safe(testigo.getCorreo()), sWhite);
+                    } else {
+                        // Hueco vacío, preservando la organización y TIPO_TESTIGO de la plantilla por defecto
+                        createStyledCell(row, 8,  "Grupo Significativo de Ciudadanos Defensores de la Patria", sBlue);
+                        createStyledCell(row, 9,  "PRINCIPAL", sBlue);
+                        for (int c = 10; c <= 16; c++) createStyledCell(row, c, "", sWhite);
                     }
-                } else {
-                    Row row = sheet.createRow(rowIdx++);
-                    row.setHeightInPoints(24);
-                    writeBaseColumns(row, departamento, municipio, puesto, mesa, sBlue, sWhite);
-                    createStyledCell(row, 8,  "", sBlue);
-                    createStyledCell(row, 9,  "", sBlue);
-                    for (int c = 10; c <= 16; c++) createStyledCell(row, c, "", sWhite);
                 }
             }
 
