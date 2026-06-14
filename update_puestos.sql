@@ -1,0 +1,14 @@
+UPDATE puestos SET nombre_puesto = 'IE LAURA VICUÑA' WHERE zona = '02' AND codigo_puesto = '02' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '001');
+UPDATE puestos SET nombre_puesto = 'IE MARCELINO CHAMPAGNAT' WHERE zona = '03' AND codigo_puesto = '02' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '001');
+UPDATE puestos SET nombre_puesto = 'IE RUFINO JOSE CUERVO CENTRO' WHERE zona = '07' AND codigo_puesto = '01' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '001');
+UPDATE puestos SET nombre_puesto = 'ESC. SUP. DE ADMINISTRACION PUBLICA ESAP' WHERE zona = '08' AND codigo_puesto = '04' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '001');
+UPDATE puestos SET nombre_puesto = 'CARCEL VILLA CRISTINA' WHERE zona = '98' AND codigo_puesto = '02' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '001');
+UPDATE puestos SET nombre_puesto = 'IE LAURA VICUÑA' WHERE zona = '01' AND codigo_puesto = '02' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '010');
+UPDATE puestos SET nombre_puesto = 'ESTADIO CENTENARIO' WHERE zona = '90' AND codigo_puesto = '01' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '010');
+UPDATE puestos SET nombre_puesto = 'QUEBRADANEGRA' WHERE zona = '99' AND codigo_puesto = '75' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '010');
+UPDATE puestos SET nombre_puesto = 'HOJAS ANCHAS' WHERE zona = '99' AND codigo_puesto = '30' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '020');
+UPDATE puestos SET nombre_puesto = 'UNIVERSIDAD DEL QUINDIO' WHERE zona = '02' AND codigo_puesto = '02' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '050');
+UPDATE puestos SET nombre_puesto = 'MAIZENA ALTA' WHERE zona = '99' AND codigo_puesto = '57' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '070');
+UPDATE puestos SET nombre_puesto = 'INSTITUCION EDUCATIVA INSTITUTO QUIMBAYA' WHERE zona = '90' AND codigo_puesto = '01' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '080');
+UPDATE puestos SET nombre_puesto = 'EL JAZMIN' WHERE zona = '99' AND codigo_puesto = '29' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '080');
+UPDATE puestos SET nombre_puesto = 'PUESTO CABECERA MUNICIPAL' WHERE zona = '00' AND codigo_puesto = '00' AND municipio_id = (SELECT id FROM municipios WHERE codigo_municipio = '090');
