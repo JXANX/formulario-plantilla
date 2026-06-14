@@ -40,12 +40,25 @@ public class ExcelExportService {
     @Autowired
     private MunicipioRepository municipioRepository;
 
+    // Headers que replican exactamente la PLANTILLA_DEFINITIVA (columnas A-Q)
     private static final String[] HEADERS = {
-        "COD_DEPTO", "COD_MPIO", "ZONA", "COD_PUESTO",
-        "NOM_DEPTO", "NOM_MPIO", "NOM_PUESTO",
-        "MESA", "NOM_ORGANIZACION", "TIPO_TESTIGO",
-        "DOCUMENTO", "NOMBRE", "SEGUNDO_NOMBRE",
-        "PRIMER_APELLIDO", "SEGUNDO_APELLIDO", "CELULAR", "CORREO"
+        "COD DEPARTAMENTO",       // A
+        "COD MUNICIPIO",          // B
+        "ZONA",                   // C
+        "COD PUESTO",             // D
+        "NOM DEPARTAMENTO (Opcional)",  // E
+        "NOM MUNICIPIO (Opcional)",     // F
+        "NOM PUESTO (Opcional)",        // G
+        "MESA (Opcional)",              // H
+        "NOMBRE ORGANIZACIÓN",          // I
+        "TIPO TESTIGO",                 // J
+        "Nº DOCUMENTO",                 // K
+        "NOMBRE",                       // L
+        "SEGUNDO NOMBRE",               // M
+        "APELLIDO",                     // N
+        "SEGUNDO APELLIDO",             // O
+        "CELULAR (Opcional) / De ser diligenciado se somete a tratamiento de datos personales",       // P
+        "CORREO ELECTRÓNICO (Opcional) / De ser diligenciado se somete a tratamiento de datos personales" // Q
     };
 
     private static final String[] HEADERS_COBERTURA = {
@@ -66,25 +79,72 @@ public class ExcelExportService {
                 .filter(t -> t.getMesa() != null && t.getMesa().getId() != null)
                 .collect(Collectors.groupingBy(t -> t.getMesa().getId()));
 
-        try (Workbook workbook = new XSSFWorkbook()) {
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Plantilla");
 
-            CellStyle headerStyle = workbook.createCellStyle();
-            Font headerFont = workbook.createFont();
-            headerFont.setBold(true);
-            headerStyle.setFont(headerFont);
-            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
-            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            // ── Colores exactos de la plantilla original ─────────────────────
+            byte[] colorHeader  = {(byte)0x1F,(byte)0x4E,(byte)0x79}; // #1F4E79
+            byte[] colorBlueRow = {(byte)0xD9,(byte)0xE1,(byte)0xF2}; // #D9E1F2
+            byte[] colorWhite   = {(byte)0xFF,(byte)0xFF,(byte)0xFF}; // #FFFFFF
+            byte[] colorFontBlue= {(byte)0x1F,(byte)0x4E,(byte)0x79}; // #1F4E79
+            byte[] colorBorder  = {(byte)0xBD,(byte)0xD7,(byte)0xEE}; // #BDD7EE
 
+            // ── Fuentes ──────────────────────────────────────────────────────
+            org.apache.poi.xssf.usermodel.XSSFFont fontHeader = workbook.createFont();
+            fontHeader.setFontName("Arial");
+            fontHeader.setBold(true);
+            fontHeader.setFontHeightInPoints((short) 10);
+            fontHeader.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF}, null));
+
+            org.apache.poi.xssf.usermodel.XSSFFont fontBlue = workbook.createFont();
+            fontBlue.setFontName("Arial");
+            fontBlue.setFontHeightInPoints((short) 9);
+            fontBlue.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(colorFontBlue, null));
+
+            org.apache.poi.xssf.usermodel.XSSFFont fontNormal = workbook.createFont();
+            fontNormal.setFontName("Arial");
+            fontNormal.setFontHeightInPoints((short) 9);
+
+            // ── Estilo ENCABEZADO ─────────────────────────────────────────────
+            org.apache.poi.xssf.usermodel.XSSFCellStyle sHeader = workbook.createCellStyle();
+            sHeader.setFont(fontHeader);
+            sHeader.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(colorHeader, null));
+            sHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            sHeader.setAlignment(HorizontalAlignment.CENTER);
+            sHeader.setVerticalAlignment(VerticalAlignment.CENTER);
+            sHeader.setWrapText(true);
+            applyBlueBorder(sHeader, colorBorder);
+
+            // ── Estilo DATO AZUL (cols A-D, I-J) ─────────────────────────────
+            org.apache.poi.xssf.usermodel.XSSFCellStyle sBlue = workbook.createCellStyle();
+            sBlue.setFont(fontBlue);
+            sBlue.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(colorBlueRow, null));
+            sBlue.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            sBlue.setAlignment(HorizontalAlignment.CENTER);
+            sBlue.setVerticalAlignment(VerticalAlignment.CENTER);
+            sBlue.setWrapText(true);
+            applyBlueBorder(sBlue, colorBorder);
+
+            // ── Estilo DATO BLANCO (cols E-H, K-Q) ───────────────────────────
+            org.apache.poi.xssf.usermodel.XSSFCellStyle sWhite = workbook.createCellStyle();
+            sWhite.setFont(fontNormal);
+            sWhite.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(colorWhite, null));
+            sWhite.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            sWhite.setAlignment(HorizontalAlignment.LEFT);
+            sWhite.setVerticalAlignment(VerticalAlignment.CENTER);
+            applyBlueBorder(sWhite, colorBorder);
+
+            // ── Fila encabezado ───────────────────────────────────────────────
             Row headerRow = sheet.createRow(0);
+            headerRow.setHeightInPoints(30);
             for (int i = 0; i < HEADERS.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(HEADERS[i]);
-                cell.setCellStyle(headerStyle);
+                cell.setCellStyle(sHeader);
             }
 
+            // ── Datos ─────────────────────────────────────────────────────────
             int rowIdx = 1;
-
             for (Mesa mesa : mesas) {
                 Puesto puesto = mesa.getPuesto();
                 Municipio municipio = puesto != null ? puesto.getMunicipio() : null;
@@ -95,26 +155,35 @@ public class ExcelExportService {
                 if (testigos != null && !testigos.isEmpty()) {
                     for (Testigo testigo : testigos) {
                         Row row = sheet.createRow(rowIdx++);
-                        writeBaseColumns(row, departamento, municipio, puesto, mesa);
-                        row.createCell(8).setCellValue(safe(testigo.getNombreOrganizacion()));
-                        row.createCell(9).setCellValue(testigo.getTipoTestigo() != null ? testigo.getTipoTestigo().name() : "");
-                        row.createCell(10).setCellValue(safe(testigo.getDocumento()));
-                        row.createCell(11).setCellValue(safe(testigo.getNombre()));
-                        row.createCell(12).setCellValue(safe(testigo.getSegundoNombre()));
-                        row.createCell(13).setCellValue(safe(testigo.getPrimerApellido()));
-                        row.createCell(14).setCellValue(safe(testigo.getSegundoApellido()));
-                        row.createCell(15).setCellValue(safe(testigo.getCelular()));
-                        row.createCell(16).setCellValue(safe(testigo.getCorreo()));
+                        row.setHeightInPoints(24);
+                        writeBaseColumns(row, departamento, municipio, puesto, mesa, sBlue, sWhite);
+                        createStyledCell(row, 8,  safe(testigo.getNombreOrganizacion()), sBlue);
+                        createStyledCell(row, 9,  testigo.getTipoTestigo() != null ? testigo.getTipoTestigo().name() : "", sBlue);
+                        createStyledCell(row, 10, safe(testigo.getDocumento()), sWhite);
+                        createStyledCell(row, 11, safe(testigo.getNombre()), sWhite);
+                        createStyledCell(row, 12, safe(testigo.getSegundoNombre()), sWhite);
+                        createStyledCell(row, 13, safe(testigo.getPrimerApellido()), sWhite);
+                        createStyledCell(row, 14, safe(testigo.getSegundoApellido()), sWhite);
+                        createStyledCell(row, 15, safe(testigo.getCelular()), sWhite);
+                        createStyledCell(row, 16, safe(testigo.getCorreo()), sWhite);
                     }
                 } else {
                     Row row = sheet.createRow(rowIdx++);
-                    writeBaseColumns(row, departamento, municipio, puesto, mesa);
+                    row.setHeightInPoints(24);
+                    writeBaseColumns(row, departamento, municipio, puesto, mesa, sBlue, sWhite);
+                    createStyledCell(row, 8,  "", sBlue);
+                    createStyledCell(row, 9,  "", sBlue);
+                    for (int c = 10; c <= 16; c++) createStyledCell(row, c, "", sWhite);
                 }
             }
 
-            for (int i = 0; i < HEADERS.length; i++) {
-                sheet.autoSizeColumn(i);
+            // ── Anchos exactos de la plantilla: A=20,B=17,C=12,D=14,E=31,F=28,G=40,H=19,I=40,J=16,K=16,L=12,M=18,N=12,O=20,P=40,Q=40
+            int[] colWidths = {20, 17, 12, 14, 31, 28, 40, 19, 40, 16, 16, 12, 18, 12, 20, 40, 40};
+            for (int i = 0; i < colWidths.length; i++) {
+                sheet.setColumnWidth(i, colWidths[i] * 256);
             }
+
+            sheet.createFreezePane(0, 1);
 
             try (FileOutputStream fos = new FileOutputStream(outputFile)) {
                 workbook.write(fos);
@@ -131,16 +200,30 @@ public class ExcelExportService {
         return outputFile;
     }
 
-    private void writeBaseColumns(Row row, Departamento depto, Municipio mpio, Puesto puesto, Mesa mesa) {
-        row.createCell(0).setCellValue(depto != null ? safe(depto.getCodigoDepartamento()) : "");
-        row.createCell(1).setCellValue(mpio != null ? safe(mpio.getCodigoMunicipio()) : "");
-        row.createCell(2).setCellValue(puesto != null ? safe(puesto.getZona()) : "");
-        row.createCell(3).setCellValue(puesto != null ? safe(puesto.getCodigoPuesto()) : "");
-        row.createCell(4).setCellValue(depto != null ? safe(depto.getNombre()) : "");
-        row.createCell(5).setCellValue(mpio != null ? safe(mpio.getNombre()) : "");
-        row.createCell(6).setCellValue(puesto != null ? safe(puesto.getNombrePuesto()) : "");
-        row.createCell(7).setCellValue(mesa != null && mesa.getNumeroMesa() != null ? mesa.getNumeroMesa().toString() : "");
+    /** Aplica bordes azul claro #BDD7EE a todos los lados del estilo. */
+    private void applyBlueBorder(org.apache.poi.xssf.usermodel.XSSFCellStyle style, byte[] colorBorder) {
+        org.apache.poi.xssf.usermodel.XSSFColor bc = new org.apache.poi.xssf.usermodel.XSSFColor(colorBorder, null);
+        style.setBorderTop(BorderStyle.THIN);    style.setTopBorderColor(bc);
+        style.setBorderBottom(BorderStyle.THIN); style.setBottomBorderColor(bc);
+        style.setBorderLeft(BorderStyle.THIN);   style.setLeftBorderColor(bc);
+        style.setBorderRight(BorderStyle.THIN);  style.setRightBorderColor(bc);
     }
+
+    private void writeBaseColumns(Row row, Departamento depto, Municipio mpio, Puesto puesto, Mesa mesa,
+                                   org.apache.poi.xssf.usermodel.XSSFCellStyle sBlue,
+                                   org.apache.poi.xssf.usermodel.XSSFCellStyle sWhite) {
+        // A-D: códigos → azul centrado
+        createStyledCell(row, 0, depto  != null ? safe(depto.getCodigoDepartamento()) : "", sBlue);
+        createStyledCell(row, 1, mpio   != null ? safe(mpio.getCodigoMunicipio())     : "", sBlue);
+        createStyledCell(row, 2, puesto != null ? safe(puesto.getZona())              : "", sBlue);
+        createStyledCell(row, 3, puesto != null ? safe(puesto.getCodigoPuesto())      : "", sBlue);
+        // E-H: nombres → blanco izquierda
+        createStyledCell(row, 4, depto  != null ? safe(depto.getNombre())             : "", sWhite);
+        createStyledCell(row, 5, mpio   != null ? safe(mpio.getNombre())              : "", sWhite);
+        createStyledCell(row, 6, puesto != null ? safe(puesto.getNombrePuesto())      : "", sWhite);
+        createStyledCell(row, 7, mesa   != null && mesa.getNumeroMesa() != null ? mesa.getNumeroMesa().toString() : "", sWhite);
+    }
+
 
     @Transactional
     public File exportarCobertura(Long departamentoId) throws IOException {

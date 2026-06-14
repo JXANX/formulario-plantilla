@@ -26,7 +26,8 @@ public interface MesaRepository extends JpaRepository<Mesa, Long> {
     @Query("SELECT m FROM Mesa m " +
            "LEFT JOIN FETCH m.puesto p " +
            "LEFT JOIN FETCH p.municipio mu " +
-           "LEFT JOIN FETCH mu.departamento d")
+           "LEFT JOIN FETCH mu.departamento d " +
+           "ORDER BY d.codigoDepartamento, mu.codigoMunicipio, p.codigoPuesto, p.zona, m.numeroMesa")
     List<Mesa> findAllWithEagerRelationships();
 
     @Query("SELECT DISTINCT m FROM Mesa m " +
