@@ -87,6 +87,17 @@ public class AcreditadoController {
         }
     }
 
+    @GetMapping("/comparativa")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> getComparativa() {
+        try {
+            return ResponseEntity.ok(new ApiResponse<>(true, "Comparativa obtenida", acreditadoService.getComparativaTestigos()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
     @DeleteMapping("/clear")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> limpiarAcreditados() {

@@ -61,6 +61,21 @@ interface Mesa {
   estadoSemaforo: string;
 }
 
+interface ComparativaTestigo {
+  idTestigo: number;
+  documento: string;
+  nombreCompleto: string;
+  celular: string;
+  correo: string;
+  mesaId: number;
+  numeroMesa: number;
+  puestoId: number;
+  nombrePuesto: string;
+  municipioId: number;
+  nombreMunicipio: string;
+  fueAcreditado: boolean;
+}
+
 interface CoberturaMunicipio {
   municipioId: number;
   municipioNombre: string;
@@ -186,6 +201,7 @@ export default function AcreditacionesPage() {
   // Report states
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [allAcreditados, setAllAcreditados] = useState<Acreditado[]>([]);
+  const [comparativa, setComparativa] = useState<ComparativaTestigo[]>([]);
   const [municipioCoberturas, setMunicipioCoberturas] = useState<CoberturaMunicipio[]>([]);
   const [puestoCoberturas, setPuestoCoberturas] = useState<CoberturaPuesto[]>([]);
   
@@ -213,6 +229,12 @@ export default function AcreditacionesPage() {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  
+  // Tab 4 Comparativa
+  const [searchComparativa, setSearchComparativa] = useState('');
+  const [filterAcreditado, setFilterAcreditado] = useState<'ALL'|'ACREDITADO'|'NO_ACREDITADO'>('ALL');
+  const [pageComparativa, setPageComparativa] = useState(0);
+  const [rowsPerPageComparativa, setRowsPerPageComparativa] = useState(10);
 
   // Global states
   const [error, setError] = useState('');
@@ -295,11 +317,17 @@ export default function AcreditacionesPage() {
       const acData = await acRes.json();
       if (acData.success) setAllAcreditados(acData.data);
       setLoadingAcreditados(false);
-
       const deptosRes = await fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` } });
       const deptosData = await deptosRes.json();
+      if (deptosData.success) setDepartamentos(deptosData.data);
+      
+      const compRes = await fetch(`${API_URL}/api/acreditados/comparativa`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (compRes.ok) {
+        const compData = await compRes.json();
+        if (compData.success) setComparativa(compData.data);
+      }
+
       if (deptosData.success && deptosData.data.length > 0) {
-        setDepartamentos(deptosData.data);
         let deptoId = selectedDepartamento;
         if (!deptoId) { deptoId = deptosData.data[0].id.toString(); setSelectedDepartamento(deptoId); }
         const mpiosRes = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -671,6 +699,7 @@ export default function AcreditacionesPage() {
         <Tab label="Cobertura por Municipio" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
         <Tab label="Estadísticas por Puestos" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
         <Tab label="Buscador y Listado" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
+        <Tab label="Comparativa Planificación" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
       </Tabs>
 
       {/* ══ TAB 0: por Puesto ══════════════════════════════════════════════════ */}
@@ -1316,6 +1345,135 @@ export default function AcreditacionesPage() {
       <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         <Alert severity={snackbar.severity} variant="filled" sx={{ borderRadius: 0 }}>{snackbar.message}</Alert>
       </Snackbar>
+
+      {/* ══ TAB 3: Comparativa Planificación ══════════════════════════════════════════════════ */}
+      {activeTab === 3 && (
+        <Box>
+          <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 3.5 }}>
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    placeholder="Buscar por cédula o nombre..."
+                    value={searchComparativa}
+                    onChange={e => { setSearchComparativa(e.target.value); setPageComparativa(0); }}
+                    slotProps={{
+                      input: {
+                        startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: J.textMuted }} /></InputAdornment>,
+                        sx: { borderRadius: 0, '& fieldset': { borderColor: J.border }, '&:hover fieldset': { borderColor: J.blue } }
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth>
+                    <InputLabel sx={sxLabel}>Estado</InputLabel>
+                    <Select
+                      value={filterAcreditado}
+                      label="Estado"
+                      onChange={e => { setFilterAcreditado(e.target.value as any); setPageComparativa(0); }}
+                      sx={sxSelect}
+                    >
+                      <MenuItem value="ALL">Todos</MenuItem>
+                      <MenuItem value="ACREDITADO">Acreditados (Ganados / Confirmados)</MenuItem>
+                      <MenuItem value="NO_ACREDITADO">No Acreditados (Perdidos)</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
+            <TableContainer sx={{ maxHeight: 600 }}>
+              <Table stickyHeader size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ bgcolor: J.surface, fontWeight: 600, color: J.ink, fontSize: '12px' }}>Documento</TableCell>
+                    <TableCell sx={{ bgcolor: J.surface, fontWeight: 600, color: J.ink, fontSize: '12px' }}>Testigo (Planificación)</TableCell>
+                    <TableCell sx={{ bgcolor: J.surface, fontWeight: 600, color: J.ink, fontSize: '12px' }}>Celular</TableCell>
+                    <TableCell sx={{ bgcolor: J.surface, fontWeight: 600, color: J.ink, fontSize: '12px' }}>Municipio</TableCell>
+                    <TableCell sx={{ bgcolor: J.surface, fontWeight: 600, color: J.ink, fontSize: '12px' }}>Puesto</TableCell>
+                    <TableCell sx={{ bgcolor: J.surface, fontWeight: 600, color: J.ink, fontSize: '12px' }}>Mesa</TableCell>
+                    <TableCell align="center" sx={{ bgcolor: J.surface, fontWeight: 600, color: J.ink, fontSize: '12px' }}>Estado</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(() => {
+                    let filtered = comparativa;
+                    if (searchComparativa) {
+                      const q = searchComparativa.toLowerCase();
+                      filtered = filtered.filter((c: ComparativaTestigo) =>
+                        (c.documento || '').toLowerCase().includes(q) ||
+                        (c.nombreCompleto || '').toLowerCase().includes(q)
+                      );
+                    }
+                    if (filterAcreditado === 'ACREDITADO') filtered = filtered.filter((c: ComparativaTestigo) => c.fueAcreditado);
+                    if (filterAcreditado === 'NO_ACREDITADO') filtered = filtered.filter((c: ComparativaTestigo) => !c.fueAcreditado);
+
+                    const paginated = filtered.slice(pageComparativa * rowsPerPageComparativa, pageComparativa * rowsPerPageComparativa + rowsPerPageComparativa);
+                    
+                    if (filtered.length === 0) {
+                      return (
+                        <TableRow>
+                          <TableCell colSpan={7} align="center" sx={{ py: 4, color: J.textMuted }}>
+                            No se encontraron resultados
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+
+                    return paginated.map((row: ComparativaTestigo) => (
+                      <TableRow key={row.idTestigo} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell sx={{ fontSize: '13px' }}>{row.documento}</TableCell>
+                        <TableCell sx={{ fontSize: '13px', fontWeight: 500 }}>{row.nombreCompleto}</TableCell>
+                        <TableCell sx={{ fontSize: '13px' }}>{row.celular}</TableCell>
+                        <TableCell sx={{ fontSize: '13px' }}>{row.nombreMunicipio}</TableCell>
+                        <TableCell sx={{ fontSize: '13px' }}>
+                          <Typography variant="body2" sx={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>
+                            {row.nombrePuesto}
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ fontSize: '13px' }}>{row.numeroMesa}</TableCell>
+                        <TableCell align="center">
+                          {row.fueAcreditado ? (
+                            <Chip label="Acreditado" size="small" icon={<CheckCircleIcon />} sx={{ bgcolor: 'rgba(45,125,78,0.1)', color: J.success, border: `1px solid rgba(45,125,78,0.25)` }} />
+                          ) : (
+                            <Chip label="No Acreditado" size="small" icon={<CancelIcon />} sx={{ bgcolor: 'rgba(184,50,50,0.1)', color: J.danger, border: `1px solid rgba(184,50,50,0.25)` }} />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ));
+                  })()}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[10, 25, 50, 100]}
+              component="div"
+              count={
+                (() => {
+                  let f = comparativa;
+                  if (searchComparativa) {
+                    const q = searchComparativa.toLowerCase();
+                    f = f.filter((c: ComparativaTestigo) => (c.documento || '').toLowerCase().includes(q) || (c.nombreCompleto || '').toLowerCase().includes(q));
+                  }
+                  if (filterAcreditado === 'ACREDITADO') f = f.filter((c: ComparativaTestigo) => c.fueAcreditado);
+                  if (filterAcreditado === 'NO_ACREDITADO') f = f.filter((c: ComparativaTestigo) => !c.fueAcreditado);
+                  return f.length;
+                })()
+              }
+              rowsPerPage={rowsPerPageComparativa}
+              page={pageComparativa}
+              onPageChange={(_, newPage) => setPageComparativa(newPage)}
+              onRowsPerPageChange={(e) => { setRowsPerPageComparativa(parseInt(e.target.value, 10)); setPageComparativa(0); }}
+              labelRowsPerPage="Filas:"
+            />
+          </Card>
+        </Box>
+      )}
+
     </Box>
   );
 }

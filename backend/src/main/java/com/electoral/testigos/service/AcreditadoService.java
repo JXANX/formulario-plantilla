@@ -4,6 +4,7 @@ import com.electoral.testigos.dto.response.AcreditadoDashboardStats;
 import com.electoral.testigos.dto.response.AcreditadoResponse;
 import com.electoral.testigos.dto.response.CoberturaMunicipioResponse;
 import com.electoral.testigos.dto.response.CoberturaPuestoResponse;
+import com.electoral.testigos.dto.response.ComparativaTestigoResponse;
 import com.electoral.testigos.model.*;
 import com.electoral.testigos.model.enums.AccionAuditoria;
 import com.electoral.testigos.repository.*;
@@ -410,6 +411,39 @@ public class AcreditadoService {
         return acreditadoRepository.findAllWithEagerRelationships().stream()
                 .map(this::mapToAcreditadoResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ComparativaTestigoResponse> getComparativaTestigos() {
+        List<Testigo> testigos = testigoRepository.findAllWithEagerRelationships();
+        List<Acreditado> acreditados = acreditadoRepository.findAll();
+        
+        Set<String> docsAcreditados = acreditados.stream()
+                .map(Acreditado::getDocumento)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+                
+        return testigos.stream().map(t -> {
+            Mesa mesa = t.getMesa();
+            Puesto puesto = mesa != null ? mesa.getPuesto() : null;
+            Municipio municipio = puesto != null ? puesto.getMunicipio() : null;
+            
+            return ComparativaTestigoResponse.builder()
+                    .idTestigo(t.getId())
+                    .documento(t.getDocumento())
+                    .nombreCompleto(t.getNombre() + " " + t.getPrimerApellido() + 
+                        (t.getSegundoApellido() != null ? " " + t.getSegundoApellido() : ""))
+                    .celular(t.getCelular())
+                    .correo(t.getCorreo())
+                    .mesaId(mesa != null ? mesa.getId() : null)
+                    .numeroMesa(mesa != null ? mesa.getNumeroMesa() : null)
+                    .puestoId(puesto != null ? puesto.getId() : null)
+                    .nombrePuesto(puesto != null ? puesto.getNombrePuesto() : "")
+                    .municipioId(municipio != null ? municipio.getId() : null)
+                    .nombreMunicipio(municipio != null ? municipio.getNombre() : "")
+                    .fueAcreditado(docsAcreditados.contains(t.getDocumento()))
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     @Transactional
