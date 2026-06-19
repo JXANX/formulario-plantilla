@@ -1346,8 +1346,8 @@ export default function AcreditacionesPage() {
         <Alert severity={snackbar.severity} variant="filled" sx={{ borderRadius: 0 }}>{snackbar.message}</Alert>
       </Snackbar>
 
-      {/* ══ TAB 3: Comparativa Planificación ══════════════════════════════════════════════════ */}
-      {activeTab === 3 && (
+      {/* ══ TAB 4: Comparativa Planificación ══════════════════════════════════════════════════ */}
+      {activeTab === 4 && (
         <Box>
           <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
             <CardContent sx={{ p: 3.5 }}>
