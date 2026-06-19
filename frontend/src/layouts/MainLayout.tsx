@@ -14,6 +14,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import CloseIcon from '@mui/icons-material/Close';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import { useState, useEffect } from 'react';
 import logo from '../assets/logo_tracto.png';
 import logoBox from '../assets/logobox_tracto.png';
@@ -38,6 +39,7 @@ const navItems: NavItem[] = [
   { label: 'Listado de Testigos', path: '/testigos', icon: <PeopleIcon sx={{ fontSize: 26 }} /> },
   { label: 'Coordinadores', path: '/coordinadores', icon: <AssignmentIndIcon sx={{ fontSize: 26 }} /> },
   { label: 'Reporte de Mesas', path: '/reporte-mesas', icon: <AssessmentIcon sx={{ fontSize: 26 }} /> },
+  { label: 'Acreditados', path: '/acreditados', icon: <VerifiedIcon sx={{ fontSize: 26 }} /> },
   { label: 'Optimizar Cobertura', path: '/distribucion', icon: <AccountTreeIcon sx={{ fontSize: 26 }} /> },
   { label: 'Historial', path: '/historial', icon: <HistoryIcon sx={{ fontSize: 26 }} /> },
 ];
@@ -48,6 +50,7 @@ const breadcrumbMap: Record<string, { parent: string; current: string }> = {
   '/testigos': { parent: 'REGISTRO /', current: 'Listado de Testigos' },
   '/coordinadores': { parent: 'GESTIÓN /', current: 'Coordinadores de Puesto' },
   '/reporte-mesas': { parent: 'MONITOREO /', current: 'Reporte de Mesas' },
+  '/acreditados': { parent: 'MONITOREO /', current: 'Reporte de Acreditados' },
   '/distribucion': { parent: 'INTELIGENCIA /', current: 'Optimización de Cobertura' },
   '/historial': { parent: 'AUDITORÍA /', current: 'Historial de Acciones' },
 };
