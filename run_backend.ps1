@@ -1,7 +1,7 @@
 $mavenVersion = "3.9.6"
 $mavenZip = "apache-maven-$mavenVersion-bin.zip"
 $mavenUrl = "https://archive.apache.org/dist/maven/maven-3/$mavenVersion/binaries/$mavenZip"
-$mavenDir = "C:\Users\JXANX\Desktop\Formulario Plantilla\maven"
+$mavenDir = "C:\Users\shinm\OneDrive\Escritorio\formulario-plantilla\maven"
 
 if (-Not (Test-Path $mavenDir)) {
     Write-Host "Descargando Maven..."
@@ -17,4 +17,4 @@ $env:DB_PASSWORD = "CAMILO.BASE123"
 
 $mvnCmd = "$mavenDir\apache-maven-$mavenVersion\bin\mvn.cmd"
 Write-Host "Iniciando backend local conectado a Supabase..."
-& $mvnCmd -f "C:\Users\JXANX\Desktop\Formulario Plantilla\backend\pom.xml" spring-boot:run
+& $mvnCmd -f "C:\Users\shinm\OneDrive\Escritorio\formulario-plantilla\backend\pom.xml" spring-boot:run

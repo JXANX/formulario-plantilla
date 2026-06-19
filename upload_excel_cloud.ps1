@@ -1,7 +1,7 @@
 $apiUrl = "https://testigos-backend-tw2v.onrender.com"
 $loginUrl = "$apiUrl/api/auth/login"
 $uploadUrl = "$apiUrl/api/excel/import"
-$excelPath = "C:\Users\JXANX\Desktop\Formulario Plantilla\PLANTILLA_DEFINITIVA_QUINDIO_CONSOLIDADA.xlsx"
+$excelPath = "C:\Users\shinm\OneDrive\Escritorio\formulario-plantilla\PLANTILLA_DEFINITIVA_QUINDIO_CONSOLIDADA.xlsx"
 
 Write-Host "1. Iniciando sesión como AdminSuperior..."
 $loginBody = @{
