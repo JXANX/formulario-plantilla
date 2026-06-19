@@ -1362,7 +1362,7 @@ export default function AcreditacionesPage() {
               <StatMini title="Acreditados Oficialmente" value={totalAcreditados} color={J.success} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <StatMini title="Faltan por Acreditar" value={totalNoAcreditados} color={J.danger} />
+              <StatMini title="No Acreditados" value={totalNoAcreditados} color={J.danger} />
             </Grid>
           </Grid>
 
