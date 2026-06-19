@@ -1347,8 +1347,25 @@ export default function AcreditacionesPage() {
       </Snackbar>
 
       {/* ══ TAB 4: Comparativa Planificación ══════════════════════════════════════════════════ */}
-      {activeTab === 4 && (
+      {activeTab === 4 && (() => {
+        const totalTestigos = comparativa.length;
+        const totalAcreditados = comparativa.filter(c => c.fueAcreditado).length;
+        const totalNoAcreditados = totalTestigos - totalAcreditados;
+        
+        return (
         <Box>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <StatMini title="Total Planificados" value={totalTestigos} color={J.ink} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <StatMini title="Acreditados Oficialmente" value={totalAcreditados} color={J.success} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <StatMini title="Faltan por Acreditar" value={totalNoAcreditados} color={J.danger} />
+            </Grid>
+          </Grid>
+
           <Card sx={{ mb: 4, border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
             <CardContent sx={{ p: 3.5 }}>
               <Grid container spacing={3}>
@@ -1386,7 +1403,7 @@ export default function AcreditacionesPage() {
           </Card>
 
           <Card sx={{ border: `1px solid ${J.border}`, borderRadius: 0, boxShadow: 'none' }}>
-            <TableContainer sx={{ maxHeight: 600 }}>
+            <TableContainer sx={{ maxHeight: 400 }}>
               <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>
@@ -1472,7 +1489,8 @@ export default function AcreditacionesPage() {
             />
           </Card>
         </Box>
-      )}
+        );
+      })()}
 
     </Box>
   );
