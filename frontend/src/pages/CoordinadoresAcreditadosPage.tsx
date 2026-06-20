@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
@@ -82,6 +82,7 @@ interface Puesto {
   nombrePuesto: string;
   zona: string;
   coordinador?: Testigo | null;
+  coordinadorAcreditado?: Testigo | null;
 }
 
 interface Departamento {
