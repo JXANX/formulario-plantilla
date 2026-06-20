@@ -2,6 +2,7 @@ package com.electoral.testigos.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Entity
@@ -35,6 +36,7 @@ public class Acreditado {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)
+    @JsonIgnore
     private Mesa mesa;
 
     @Column(name = "fecha_registro", nullable = false)
