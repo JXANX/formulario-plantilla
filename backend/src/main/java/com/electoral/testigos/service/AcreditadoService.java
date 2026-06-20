@@ -459,7 +459,7 @@ public class AcreditadoService {
 
     // ── METODOS DE EXPORTACIÓN EXCEL ──────────────────────────────────────────
 
-    @Transactional(readOnly = true)
+    @Transactional
     public File exportarDatos() throws IOException {
         logger.info("Iniciando exportación de Excel de acreditados...");
         File outputFile = File.createTempFile("Acreditados_Export_", ".xlsx");
@@ -527,7 +527,7 @@ public class AcreditadoService {
         return outputFile;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public File exportarCobertura(Long departamentoId) throws IOException {
         logger.info("Iniciando exportación de Excel de cobertura de acreditados...");
         File outputFile = File.createTempFile("Cobertura_Acreditados_Export_", ".xlsx");
@@ -587,7 +587,7 @@ public class AcreditadoService {
         return outputFile;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public File exportarTestigosPorMunicipio(Long municipioId) throws IOException {
         logger.info("Iniciando exportación de Excel de acreditados por municipio...");
         Municipio municipio = municipioRepository.findById(municipioId)

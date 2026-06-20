@@ -6,6 +6,8 @@ import com.electoral.testigos.dto.response.ApiResponse;
 import com.electoral.testigos.dto.response.CoberturaMunicipioResponse;
 import com.electoral.testigos.dto.response.CoberturaPuestoResponse;
 import com.electoral.testigos.service.AcreditadoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -23,6 +25,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/acreditados")
 public class AcreditadoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AcreditadoController.class);
 
     @Autowired
     private AcreditadoService acreditadoService;
@@ -121,6 +125,7 @@ public class AcreditadoController {
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(resource);
         } catch (Exception e) {
+            logger.error("Error al exportar listado completo de acreditados: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -136,6 +141,7 @@ public class AcreditadoController {
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(resource);
         } catch (Exception e) {
+            logger.error("Error al exportar cobertura de acreditados: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -151,6 +157,7 @@ public class AcreditadoController {
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(resource);
         } catch (Exception e) {
+            logger.error("Error al exportar acreditados por municipio {}: {}", municipioId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
