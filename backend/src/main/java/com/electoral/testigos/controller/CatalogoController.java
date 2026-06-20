@@ -97,4 +97,52 @@ public class CatalogoController {
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
+    @PutMapping("/puestos/{puestoId}/coordinador-acreditado")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> asignarCoordinadorAcreditado(
+            @PathVariable Long puestoId,
+            @RequestParam(required = false) Long acreditadoId) {
+        try {
+            Puesto puesto = catalogoService.asignarCoordinadorAcreditado(puestoId, acreditadoId);
+            if (puesto.getCoordinadorAcreditado() != null) {
+                puesto.getCoordinadorAcreditado().getNombreCompleto(); // triggers load
+                if (puesto.getCoordinadorAcreditado().getMesa() != null) {
+                    puesto.getCoordinadorAcreditado().getMesa().getNumeroMesa();
+                }
+            }
+            return ResponseEntity.ok(new ApiResponse<>(true, "Coordinador Acreditado asignado exitosamente", puesto));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/puestos/{puestoId}/acreditados")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public ResponseEntity<?> getAcreditadosPorPuesto(@PathVariable Long puestoId) {
+        try {
+            List<com.electoral.testigos.model.Acreditado> acreditados = catalogoService.getAcreditadosPorPuesto(puestoId);
+            List<com.electoral.testigos.dto.response.TestigoResponse> responses = acreditados.stream()
+                .map(a -> {
+                    Mesa mesa = a.getMesa();
+                    return com.electoral.testigos.dto.response.TestigoResponse.builder()
+                            .id(a.getId())
+                            .documento(a.getDocumento())
+                            .nombreCompleto(a.getNombreCompleto())
+                            .celular(a.getCelular())
+                            .correo(a.getCorreo())
+                            .nombreOrganizacion(a.getNombreOrganizacion())
+                            .tipoTestigo(a.getTipoTestigo())
+                            .fechaRegistro(a.getFechaRegistro())
+                            .mesaId(mesa != null ? mesa.getId() : null)
+                            .numeroMesa(mesa != null ? mesa.getNumeroMesa() : null)
+                            .puestoId(mesa != null && mesa.getPuesto() != null ? mesa.getPuesto().getId() : null)
+                            .nombrePuesto(mesa != null && mesa.getPuesto() != null ? mesa.getPuesto().getNombrePuesto() : "")
+                            .build();
+                })
+                .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(new ApiResponse<>(true, "Acreditados del puesto obtenidos", responses));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
 }

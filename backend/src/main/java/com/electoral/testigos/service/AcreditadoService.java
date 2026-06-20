@@ -222,7 +222,7 @@ public class AcreditadoService {
         long totalAcreditados = acreditadoRepository.count();
         long totalMunicipios = municipioRepository.count();
         long totalPuestos = puestoRepository.count();
-        long totalMesas = mesaRepository.count();
+        long totalMesas = mesaRepository.countByNumeroMesaGreaterThan(0);
         long totalTestigosManuales = testigoRepository.count();
 
         List<Mesa> mesas = mesaRepository.findAllWithEagerRelationships();

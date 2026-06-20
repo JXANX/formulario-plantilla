@@ -66,7 +66,30 @@ public class CatalogoService {
         return puestoRepository.save(puesto);
     }
 
+    @Autowired
+    private com.electoral.testigos.repository.AcreditadoRepository acreditadoRepository;
+
     public List<Testigo> getTestigosPorPuesto(Long puestoId) {
         return testigoRepository.findByPuestoId(puestoId);
+    }
+
+    public List<com.electoral.testigos.model.Acreditado> getAcreditadosPorPuesto(Long puestoId) {
+        return acreditadoRepository.findByPuestoId(puestoId);
+    }
+
+    @Transactional
+    public Puesto asignarCoordinadorAcreditado(Long puestoId, Long acreditadoId) {
+        Puesto puesto = puestoRepository.findById(puestoId)
+                .orElseThrow(() -> new IllegalArgumentException("Puesto no encontrado con ID: " + puestoId));
+        
+        if (acreditadoId == null) {
+            puesto.setCoordinadorAcreditado(null);
+        } else {
+            com.electoral.testigos.model.Acreditado acreditado = acreditadoRepository.findById(acreditadoId)
+                    .orElseThrow(() -> new IllegalArgumentException("Acreditado no encontrado con ID: " + acreditadoId));
+            puesto.setCoordinadorAcreditado(acreditado);
+        }
+        
+        return puestoRepository.save(puesto);
     }
 }

@@ -7,6 +7,7 @@ import MesasReportPage from './pages/MesasReportPage';
 import AuditLogPage from './pages/AuditLogPage';
 import LoginPage from './pages/LoginPage';
 import CoordinadoresPage from './pages/CoordinadoresPage';
+import CoordinadoresAcreditadosPage from './pages/CoordinadoresAcreditadosPage';
 import DistribucionPage from './pages/DistribucionPage';
 import AcreditacionesPage from './pages/AcreditacionesPage';
 
@@ -20,6 +21,7 @@ export default function AppRoutes() {
         <Route path="registro" element={<TestigoFormPage />} />
         <Route path="testigos" element={<TestigosListPage />} />
         <Route path="coordinadores" element={<CoordinadoresPage />} />
+        <Route path="coordinadores-acreditados" element={<CoordinadoresAcreditadosPage />} />
         <Route path="reporte-mesas" element={<MesasReportPage />} />
         <Route path="distribucion" element={<DistribucionPage />} />
         <Route path="acreditados" element={<AcreditacionesPage />} />

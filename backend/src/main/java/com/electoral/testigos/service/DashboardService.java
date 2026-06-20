@@ -37,7 +37,7 @@ public class DashboardService {
         long totalTestigos = testigoRepository.count();
         long totalMunicipios = municipioRepository.count();
         long totalPuestos = puestoRepository.count();
-        long totalMesas = mesaRepository.count();
+        long totalMesas = mesaRepository.countByNumeroMesaGreaterThan(0);
         
         long mesasVerdes = mesaRepository.countMesasVerdes();
         long mesasAmarillas = mesaRepository.countMesasAmarillas();

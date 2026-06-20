@@ -27,4 +27,10 @@ public interface AcreditadoRepository extends JpaRepository<Acreditado, Long> {
            "JOIN FETCH m.puesto p " +
            "WHERE p.municipio.id = :municipioId")
     List<Acreditado> findByMunicipioIdWithEagerRelationships(@Param("municipioId") Long municipioId);
+
+    @Query("SELECT a FROM Acreditado a " +
+           "LEFT JOIN FETCH a.mesa m " +
+           "LEFT JOIN FETCH m.puesto p " +
+           "WHERE p.id = :puestoId")
+    List<Acreditado> findByPuestoId(@Param("puestoId") Long puestoId);
 }

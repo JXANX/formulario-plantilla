@@ -26,6 +26,10 @@ public class Puesto {
     @JoinColumn(name = "coordinador_id")
     private Testigo coordinador;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "coordinador_acreditado_id")
+    private Acreditado coordinadorAcreditado;
+
     @Column(name = "codigo_puesto", nullable = false)
     private String codigoPuesto;
 

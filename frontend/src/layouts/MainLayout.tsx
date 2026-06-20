@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
   { label: 'Coordinadores', path: '/coordinadores', icon: <AssignmentIndIcon sx={{ fontSize: 26 }} /> },
   { label: 'Reporte de Mesas', path: '/reporte-mesas', icon: <AssessmentIcon sx={{ fontSize: 26 }} /> },
   { label: 'Acreditados', path: '/acreditados', icon: <VerifiedIcon sx={{ fontSize: 26 }} /> },
+  { label: 'Coord. Acreditados', path: '/coordinadores-acreditados', icon: <AssignmentIndIcon sx={{ fontSize: 26 }} /> },
   { label: 'Optimizar Cobertura', path: '/distribucion', icon: <AccountTreeIcon sx={{ fontSize: 26 }} /> },
   { label: 'Historial', path: '/historial', icon: <HistoryIcon sx={{ fontSize: 26 }} /> },
 ];
@@ -51,6 +52,7 @@ const breadcrumbMap: Record<string, { parent: string; current: string }> = {
   '/coordinadores': { parent: 'GESTIÓN /', current: 'Coordinadores de Puesto' },
   '/reporte-mesas': { parent: 'MONITOREO /', current: 'Reporte de Mesas' },
   '/acreditados': { parent: 'MONITOREO /', current: 'Reporte de Acreditados' },
+  '/coordinadores-acreditados': { parent: 'GESTIÓN /', current: 'Coordinadores de Acreditados' },
   '/distribucion': { parent: 'INTELIGENCIA /', current: 'Optimización de Cobertura' },
   '/historial': { parent: 'AUDITORÍA /', current: 'Historial de Acciones' },
 };
