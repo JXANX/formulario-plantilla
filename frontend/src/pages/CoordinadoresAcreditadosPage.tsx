@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
@@ -132,7 +132,7 @@ export default function CoordinadoresAcreditadosPage() {
       .then(data => {
         if (data.success) {
           setDepartamentos(data.data);
-          // Auto-select QuindÃƒÂ­o
+          // Auto-select Quindío
           const quindio = data.data.find((d: Departamento) => 
             d.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes("quindio")
           );
@@ -331,7 +331,7 @@ export default function CoordinadoresAcreditadosPage() {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
-    doc.text(`Zona ${selectedPuesto.zona} | CÃƒÂ³digo ${selectedPuesto.codigoPuesto} Ã¢â‚¬â€ Coordinador y Testigos`, 14, 26);
+    doc.text(`Zona ${selectedPuesto.zona} | Código ${selectedPuesto.codigoPuesto} Ã¢â‚¬â€ Coordinador y Testigos`, 14, 26);
     
     // Coordinador section
     autoTable(doc, {
@@ -358,7 +358,7 @@ export default function CoordinadoresAcreditadosPage() {
     
     autoTable(doc, {
       startY: (doc as any).lastAutoTable.finalY + 10,
-      head: [['Mesa', 'Nombre Completo', 'Documento', 'Celular', 'Correo ElectrÃƒÂ³nico']],
+      head: [['Mesa', 'Nombre Completo', 'Documento', 'Celular', 'Correo Electrónico']],
       body: tableData,
       headStyles: { fillColor: [41, 82, 204], textColor: 255, fontStyle: 'bold' }, // J.blue
       alternateRowStyles: { fillColor: [240, 238, 233] }, // J.muted
@@ -391,7 +391,7 @@ export default function CoordinadoresAcreditadosPage() {
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 3 }}>
               <Typography sx={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, mb: 0.5 }}>
-                UbicaciÃƒÂ³n Electoral
+                Ubicación Electoral
               </Typography>
               <Typography sx={{ fontSize: '20px', fontWeight: 800, color: J.ink }}>
                 Coordinadores de Puesto
@@ -467,7 +467,7 @@ export default function CoordinadoresAcreditadosPage() {
         <Grid size={{ xs: 12, md: 7 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
             <Typography sx={{ fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, color: J.ink }}>
-              Puestos de VotaciÃƒÂ³n del Municipio
+              Puestos de Votación del Municipio
             </Typography>
             <TextField
               size="small"
@@ -519,7 +519,7 @@ export default function CoordinadoresAcreditadosPage() {
                     <TableCell colSpan={4} align="center" sx={{ py: 4, color: J.textMuted }}>
                       {puestos.length === 0 
                         ? 'Seleccione un municipio para visualizar los puestos.' 
-                        : 'No se encontraron resultados para la bÃƒÂºsqueda.'}
+                        : 'No se encontraron resultados para la búsqueda.'}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -542,7 +542,7 @@ export default function CoordinadoresAcreditadosPage() {
                             {p.nombrePuesto}
                           </Typography>
                           <Typography sx={{ fontSize: '11px', color: J.textMuted }}>
-                            CÃƒÂ³d: {p.codigoPuesto}
+                            Cód: {p.codigoPuesto}
                           </Typography>
                         </TableCell>
                         <TableCell sx={{ py: 1.8 }}>
@@ -626,7 +626,7 @@ export default function CoordinadoresAcreditadosPage() {
                             {selectedPuesto.coordinadorAcreditado.nombreCompleto}
                           </Typography>
                           <Typography sx={{ fontSize: '13px', color: J.ink, mt: 0.25 }}>
-                            CÃƒÂ©dula: {selectedPuesto.coordinadorAcreditado.documento}
+                            Cédula: {selectedPuesto.coordinadorAcreditado.documento}
                           </Typography>
                           
                           {/* Detalles contacto */}
@@ -650,7 +650,7 @@ export default function CoordinadoresAcreditadosPage() {
                       ) : (
                         <Box sx={{ mt: 1 }}>
                           <Typography sx={{ fontSize: '14px', color: J.textMuted, fontStyle: 'italic' }}>
-                            No hay un coordinador asignado a este puesto aÃƒÂºn.
+                            No hay un coordinador asignado a este puesto aún.
                           </Typography>
                           <Button 
                              size="small"
@@ -729,7 +729,7 @@ export default function CoordinadoresAcreditadosPage() {
                               {t.nombreCompleto}
                             </Typography>
                             <Typography sx={{ fontSize: '11px', color: J.textMuted }}>
-                              CC: {t.documento} Ã¢â‚¬Â¢ Cel: {t.celular}
+                              CC: {t.documento} • Cel: {t.celular}
                             </Typography>
                             {t.nombreOrganizacion && (
                               <Typography sx={{ fontSize: '11px', color: J.gold, fontWeight: 600, mt: 0.25 }}>
@@ -760,7 +760,7 @@ export default function CoordinadoresAcreditadosPage() {
             <Card sx={{ border: `1px dashed ${J.border}`, borderRadius: 0, boxShadow: 'none', py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <BusinessIcon sx={{ color: J.textMuted, fontSize: '48px', mb: 1.5 }} />
               <Typography sx={{ color: J.textMuted, fontSize: '14px', fontStyle: 'italic' }}>
-                Seleccione un puesto de votaciÃƒÂ³n para visualizar los detalles.
+                Seleccione un puesto de votación para visualizar los detalles.
               </Typography>
             </Card>
           )}
@@ -786,13 +786,13 @@ export default function CoordinadoresAcreditadosPage() {
           {selectedPuesto && (
             <Box sx={{ mb: 3, p: 2, bgcolor: J.surface, border: `1px solid ${J.border}` }}>
               <Typography sx={{ fontSize: '12px', color: J.textMuted, textTransform: 'uppercase', fontWeight: 600 }}>
-                Puesto de VotaciÃƒÂ³n
+                Puesto de Votación
               </Typography>
               <Typography sx={{ fontSize: '16px', fontWeight: 700, color: J.ink }}>
                 {selectedPuesto.nombrePuesto}
               </Typography>
               <Typography sx={{ fontSize: '12px', color: J.textMuted }}>
-                CÃƒÂ³digo: {selectedPuesto.codigoPuesto} Ã¢â‚¬Â¢ Zona: {selectedPuesto.zona}
+                Código: {selectedPuesto.codigoPuesto} • Zona: {selectedPuesto.zona}
               </Typography>
             </Box>
           )}
@@ -827,7 +827,7 @@ export default function CoordinadoresAcreditadosPage() {
           />
 
           <Typography sx={{ fontSize: '11px', color: J.textMuted, mt: 1.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            * Consejo: Se recomienda seleccionar un testigo que estÃƒÂ© registrado en este puesto para que coordine de manera presencial.
+            * Consejo: Se recomienda seleccionar un testigo que esté registrado en este puesto para que coordine de manera presencial.
           </Typography>
 
           {selectedTestigoForCoord && (
@@ -837,7 +837,7 @@ export default function CoordinadoresAcreditadosPage() {
                   {selectedTestigoForCoord.nombreCompleto}
                 </Typography>
                 <Typography sx={{ fontSize: '12px', color: J.textMuted }}>
-                  CC: {selectedTestigoForCoord.documento} Ã¢â‚¬Â¢ Celular: {selectedTestigoForCoord.celular}
+                  CC: {selectedTestigoForCoord.documento} • Celular: {selectedTestigoForCoord.celular}
                 </Typography>
               </Box>
               <Button 
@@ -870,13 +870,14 @@ export default function CoordinadoresAcreditadosPage() {
               '&:hover': { bgcolor: '#1a3fa3' }
             }}
           >
-            {submittingCoord ? 'Guardando...' : 'Confirmar AsignaciÃƒÂ³n'}
+            {submittingCoord ? 'Guardando...' : 'Confirmar Asignación'}
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
   );
 }
+
 
 
 
