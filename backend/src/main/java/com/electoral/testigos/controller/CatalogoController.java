@@ -121,10 +121,10 @@ public class CatalogoController {
     public ResponseEntity<?> getAcreditadosPorPuesto(@PathVariable Long puestoId) {
         try {
             List<com.electoral.testigos.model.Acreditado> acreditados = catalogoService.getAcreditadosPorPuesto(puestoId);
-            List<com.electoral.testigos.dto.response.TestigoResponse> responses = acreditados.stream()
+            List<com.electoral.testigos.dto.response.AcreditadoResponse> responses = acreditados.stream()
                 .map(a -> {
                     Mesa mesa = a.getMesa();
-                    return com.electoral.testigos.dto.response.TestigoResponse.builder()
+                    return com.electoral.testigos.dto.response.AcreditadoResponse.builder()
                             .id(a.getId())
                             .documento(a.getDocumento())
                             .nombreCompleto(a.getNombreCompleto())
@@ -132,6 +132,7 @@ public class CatalogoController {
                             .correo(a.getCorreo())
                             .nombreOrganizacion(a.getNombreOrganizacion())
                             .tipoTestigo(a.getTipoTestigo())
+                            .estado(a.getEstado())
                             .fechaRegistro(a.getFechaRegistro())
                             .mesaId(mesa != null ? mesa.getId() : null)
                             .numeroMesa(mesa != null ? mesa.getNumeroMesa() : null)
