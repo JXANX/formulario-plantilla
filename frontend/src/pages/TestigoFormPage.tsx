@@ -8,44 +8,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useToast } from '../context/ToastContext';
 import SearchableSelect from '../components/SearchableSelect';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const J = {
-  ink: '#1A1F2E',
-  blue: '#2952CC',
-  gold: '#C9973A',
-  border: '#E2DDD6',
-  muted: '#F0EEE9',
-  surface: '#F8F7F4',
-  textMuted: '#7A7A7A',
-  success: '#2D7D4E',
-  warning: '#B97D1A',
-  danger: '#B83232',
-};
-
-
-/* ─── sx reutilizable para todos los Select ── */
-const sxSelect = {
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: J.border,
-    transition: 'border-color 0.15s ease',
-  },
-  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
-  '&.Mui-disabled': { opacity: 0.5 },
-};
-
-/* ─── sx para InputLabel de selects ─────────────── */
-const sxLabel = {
-  fontSize: '11px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase' as const,
-  fontWeight: 600,
-  color: J.textMuted,
-  '&.Mui-focused': { color: J.blue },
-  '&.MuiFormLabel-filled': { color: J.ink },
-};
+import { J, sxSelect, sxLabel } from '../theme/theme';
+import { testigoService } from '../services/testigo.service';
+import { catalogService } from '../services/catalog.service';
 
 /* ─── small helper: section title ─────────────────── */
 function SectionLabel({ num, text }: { num: string; text: string }) {
@@ -91,14 +56,12 @@ export default function TestigoFormPage() {
   const [testigoExistente, setTestigoExistente] = useState<any>(null);
   const toast = useToast();
 
-  /* ── Logic (unchanged) ─────────────────────────── */
+  /* ── Logic ─────────────────────────── */
   const handleVerificarDocumento = async () => {
     if (!formData.documento) return;
     setIsVerifying(true); setError(''); setSuccess(''); setTestigoExistente(null);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos/documento/${formData.documento}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await testigoService.getByDocumento(formData.documento);
       if (data.success && data.data) {
         // Mostrar info del testigo existente pero NO autocompletar el formulario
         setTestigoExistente(data.data);
@@ -112,30 +75,26 @@ export default function TestigoFormPage() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(r => r.json()).then(d => { if (d.success) setDepartamentos(d.data); }).catch(console.error);
+    catalogService.getDepartamentos()
+      .then(d => { if (d.success) setDepartamentos(d.data); }).catch(console.error);
   }, []);
 
   const handleDeptoChange = (e: any) => {
-    const token = localStorage.getItem('token');
     setSelectedDepto(e.target.value); setSelectedMpio(''); setPuestos([]); setMesas([]);
-    fetch(`${API_URL}/api/catalogo/departamentos/${e.target.value}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(r => r.json()).then(d => { if (d.success) setMunicipios(d.data); });
+    catalogService.getMunicipios(e.target.value)
+      .then(d => { if (d.success) setMunicipios(d.data); });
   };
 
   const handleMpioChange = (e: any) => {
-    const token = localStorage.getItem('token');
     setSelectedMpio(e.target.value); setSelectedPuesto(''); setMesas([]);
-    fetch(`${API_URL}/api/catalogo/municipios/${e.target.value}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(r => r.json()).then(d => { if (d.success) setPuestos(d.data); });
+    catalogService.getPuestos(e.target.value)
+      .then(d => { if (d.success) setPuestos(d.data); });
   };
 
   const handlePuestoChange = (e: any) => {
-    const token = localStorage.getItem('token');
     setSelectedPuesto(e.target.value); setSelectedMesa('');
-    fetch(`${API_URL}/api/catalogo/puestos/${e.target.value}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(r => r.json()).then(d => { if (d.success) setMesas(d.data); });
+    catalogService.getMesas(e.target.value)
+      .then(d => { if (d.success) setMesas(d.data); });
   };
 
   const handleChange = (e: any) => {
@@ -165,22 +124,15 @@ export default function TestigoFormPage() {
   const handleSubmit = async (e: any) => {
     e.preventDefault(); setError(''); setSuccess('');
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ ...formData, mesaId: selectedMesa }),
-      });
-      const data = await res.json();
+      const data = await testigoService.createTestigo({ ...formData, mesaId: selectedMesa });
       if (data.success) {
         setSuccess('Testigo registrado correctamente');
         toast.success('¡Testigo registrado correctamente!');
         setFormData({ documento: '', nombre: '', segundoNombre: '', primerApellido: '', segundoApellido: '', celular: '', correo: '', tipoTestigo: 'PRINCIPAL' });
         setSelectedMesa('');
         if (selectedPuesto) {
-          const token2 = localStorage.getItem('token');
-          fetch(`${API_URL}/api/catalogo/puestos/${selectedPuesto}/mesas`, { headers: { 'Authorization': `Bearer ${token2}` } })
-            .then(r => r.json()).then(d => { if (d.success) setMesas(d.data); });
+          catalogService.getMesas(selectedPuesto)
+            .then(d => { if (d.success) setMesas(d.data); });
         }
       } else { setError(data.message || 'Error al guardar'); toast.error(data.message || 'Error al guardar el testigo.'); }
     } catch { setError('Error de conexión con el servidor'); toast.error('Error de conexión con el servidor.'); }

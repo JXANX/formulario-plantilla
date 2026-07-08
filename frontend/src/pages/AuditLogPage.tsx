@@ -17,20 +17,8 @@ import UploadIcon from '@mui/icons-material/Upload';
 import WarningIcon from '@mui/icons-material/Warning';
 import EditIcon from '@mui/icons-material/Edit';
 import PersonIcon from '@mui/icons-material/Person';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const J = {
-  ink: '#1A1F2E',
-  blue: '#2952CC',
-  gold: '#C9973A',
-  border: '#E2DDD6',
-  surface: '#F8F7F4',
-  textMuted: '#7A7A7A',
-  success: '#2D7D4E',
-  warning: '#B97D1A',
-  danger: '#B83232',
-};
+import { J } from '../theme/theme';
+import { auditService } from '../services/audit.service';
 
 interface AuditEntry {
   id: number;
@@ -91,11 +79,7 @@ export default function AuditLogPage() {
   const fetchLogs = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/audit-logs?page=0&size=500`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await auditService.getLogs();
       if (data.success) setLogs(data.data);
       else setError(data.message || 'Error al cargar el historial');
     } catch { setError('Error de conexión con el servidor'); }

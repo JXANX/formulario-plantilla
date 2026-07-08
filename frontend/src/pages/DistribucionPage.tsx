@@ -13,40 +13,12 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import GuardedSelect from '../components/GuardedSelect';
 import { useToast } from '../context/ToastContext';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const J = {
-  ink: '#1A1F2E',
-  blue: '#2952CC',
-  gold: '#C9973A',
-  border: '#E2DDD6',
-  muted: '#F0EEE9',
-  surface: '#F8F7F4',
-  textMuted: '#7A7A7A',
-  success: '#2D7D4E',
-  warning: '#B97D1A',
-  canvas: '#FFFFFF',
-};
-
-const sxSelect = {
-  '& .MuiOutlinedInput-notchedOutline': { borderColor: J.border },
-  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
-};
-
-const sxLabel = {
-  fontSize: '11px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase' as const,
-  fontWeight: 600,
-  color: J.textMuted,
-  '&.Mui-focused': { color: J.blue },
-};
+import { J, sxSelect, sxLabel } from '../theme/theme';
+import { catalogService } from '../services/catalog.service';
+import { testigoService } from '../services/testigo.service';
 
 export default function DistribucionPage() {
   const toast = useToast();
-  const token = localStorage.getItem('token');
 
   const [departamentos, setDepartamentos] = useState<any[]>([]);
   const [municipios, setMunicipios] = useState<any[]>([]);
@@ -78,10 +50,7 @@ export default function DistribucionPage() {
   }, []);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/catalogo/departamentos`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    catalogService.getDepartamentos()
       .then(data => {
         if (data.success) {
           setDepartamentos(data.data);
@@ -95,10 +64,7 @@ export default function DistribucionPage() {
   }, []);
 
   const loadMunicipios = (deptoId: number) => {
-    fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    catalogService.getMunicipios(deptoId)
       .then(data => {
         if (data.success) setMunicipios(data.data);
       });
@@ -107,10 +73,7 @@ export default function DistribucionPage() {
   const loadDistribucion = (mpioId: string) => {
     if (!mpioId) return;
     setLoadingData(true);
-    fetch(`${API_URL}/api/distribucion/municipio/${mpioId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    testigoService.getDistribucionMunicipio(mpioId)
       .then(data => {
         if (data.success) {
           setDbTestigos(data.data.testigosMovibles);
@@ -141,11 +104,7 @@ export default function DistribucionPage() {
     
     // Ejecutar en paralelo (usando Promise.all)
     const promises = pendingMoves.map(move => 
-      fetch(`${API_URL}/api/testigos/${move.testigoId}/mover?nuevaMesaId=${move.nuevaMesaId}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => res.json())
+      testigoService.moveTestigo(move.testigoId, move.nuevaMesaId)
       .then(data => { if (data.success) successCount++; })
       .catch(() => {}) 
     );

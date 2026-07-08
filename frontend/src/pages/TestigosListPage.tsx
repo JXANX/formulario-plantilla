@@ -10,32 +10,14 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import SearchIcon from '@mui/icons-material/Search';
-import CircleIcon from '@mui/icons-material/Circle';
-import TableBarIcon from '@mui/icons-material/TableBar';
 import EditIcon from '@mui/icons-material/Edit';
 import { useWebSocket } from '../hooks/useWebSocket';
 import SearchableSelect from '../components/SearchableSelect';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const J = {
-  ink: '#1A1F2E',
-  blue: '#2952CC',
-  gold: '#C9973A',
-  border: '#E2DDD6',
-  surface: '#F8F7F4',
-  muted: '#F0EEE9',
-  textMuted: '#7A7A7A',
-  success: '#2D7D4E',
-  successBg: 'rgba(45,125,78,0.08)',
-  successBorder: 'rgba(45,125,78,0.25)',
-  warning: '#B97D1A',
-  warningBg: 'rgba(185,125,26,0.08)',
-  warningBorder: 'rgba(185,125,26,0.25)',
-  danger: '#B83232',
-  dangerBg: 'rgba(184,50,50,0.08)',
-  dangerBorder: 'rgba(184,50,50,0.22)',
-};
+import { J, sxSelect, sxLabel, MENU_PROPS } from '../theme/theme';
+import { MesaDot, MesaChip, MesaMenuItem, getMesaStatus, STATUS_CONFIG } from '../components/MesaStatus';
+import type { MesaStatus } from '../components/MesaStatus';
+import { testigoService } from '../services/testigo.service';
+import { catalogService } from '../services/catalog.service';
 
 interface Testigo {
   id: number; documento: string; nombre: string; segundoNombre: string;
@@ -48,142 +30,6 @@ interface Testigo {
   departamentoId: number; nombreDepartamento: string;
   registradoPor: string;
 }
-
-/* ── Mesa status helpers ─────────────────────────── */
-type MesaStatus = 'available' | 'warning' | 'full';
-
-function getMesaStatus(ocupados: number, capacidad: number): MesaStatus {
-  const pct = capacidad > 0 ? ocupados / capacidad : 0;
-  if (pct >= 1) return 'full';
-  if (pct >= 0.75) return 'warning';
-  return 'available';
-}
-
-const STATUS_CONFIG = {
-  available: { color: J.success, bg: J.successBg, border: J.successBorder, label: 'Disponible' },
-  warning: { color: J.warning, bg: J.warningBg, border: J.warningBorder, label: 'Casi llena' },
-  full: { color: J.danger, bg: J.dangerBg, border: J.dangerBorder, label: 'Llena' },
-};
-
-/* ── MesaDot — tiny colored indicator ───────────── */
-function MesaDot({ status }: { status: MesaStatus }) {
-  return (
-    <CircleIcon sx={{ fontSize: 10, color: STATUS_CONFIG[status].color, flexShrink: 0 }} />
-  );
-}
-
-/* ── MesaChip — badge used in the table cell ─────── */
-function MesaChip({ numeroMesa, ocupados, capacidad }: { numeroMesa: number; ocupados?: number; capacidad?: number }) {
-  if (ocupados === undefined || capacidad === undefined) {
-    return (
-      <Box sx={{
-        display: 'inline-flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.5,
-        border: `1px solid ${J.border}`, bgcolor: J.surface
-      }}>
-        <TableBarIcon sx={{ fontSize: 14, color: J.textMuted }} />
-        <Typography sx={{ fontSize: '13px', fontWeight: 700, color: J.ink }}>
-          Mesa {numeroMesa}
-        </Typography>
-      </Box>
-    );
-  }
-  const status = getMesaStatus(ocupados, capacidad);
-  const cfg = STATUS_CONFIG[status];
-  return (
-    <Box sx={{
-      display: 'inline-flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.5,
-      border: `1px solid ${cfg.border}`, bgcolor: cfg.bg
-    }}>
-      <MesaDot status={status} />
-      <Typography sx={{ fontSize: '13px', fontWeight: 700, color: J.ink }}>
-        Mesa {numeroMesa}
-      </Typography>
-    </Box>
-  );
-}
-
-/* ── MesaMenuItem — rich option inside Select ───── */
-function MesaMenuItem({ mesa, isCurrent }: { mesa: any; isCurrent?: boolean }) {
-  const status = getMesaStatus(mesa.ocupados, mesa.capacidad);
-  const cfg = STATUS_CONFIG[status];
-  const pct = mesa.capacidad > 0 ? Math.round((mesa.ocupados / mesa.capacidad) * 100) : 0;
-
-  return (
-    <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, py: 0.25 }}>
-      {/* Status dot */}
-      <MesaDot status={status} />
-
-      {/* Mesa number */}
-      <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: J.ink, minWidth: 70 }}>
-        Mesa {mesa.numeroMesa}
-      </Typography>
-
-      {/* Capacity bar */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.4 }}>
-        <Box sx={{ height: 5, bgcolor: J.muted, overflow: 'hidden', borderRadius: 0 }}>
-          <Box sx={{
-            height: '100%',
-            width: `${Math.min(pct, 100)}%`,
-            bgcolor: cfg.color,
-            transition: 'width 0.3s ease',
-          }} />
-        </Box>
-        <Typography sx={{ fontSize: '11px', color: J.textMuted, lineHeight: 1 }}>
-          {mesa.ocupados}/{mesa.capacidad} · {pct}%
-        </Typography>
-      </Box>
-
-      {/* Status badge */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        {isCurrent && (
-          <Chip label="actual" size="small" sx={{
-            height: 20, fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em',
-            bgcolor: 'rgba(41,82,204,0.1)', color: J.blue, borderRadius: 0, border: `1px solid rgba(41,82,204,0.2)`,
-          }} />
-        )}
-        <Typography sx={{
-          fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-          color: cfg.color,
-        }}>
-          {cfg.label}
-        </Typography>
-      </Box>
-    </Box>
-  );
-}
-
-/* ── Reusable sxSelect for filter dropdowns ─────── */
-const sxSelect = {
-  '& .MuiOutlinedInput-notchedOutline': { borderColor: J.border },
-  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
-  '&.Mui-disabled': { opacity: 0.5 },
-};
-
-const sxLabel = {
-  fontSize: '11px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase' as const,
-  fontWeight: 600,
-  color: J.textMuted,
-  '&.Mui-focused': { color: J.blue },
-  '&.MuiFormLabel-filled': { color: J.ink },
-};
-
-/* ── Shared MenuProps ────────────────────────────── */
-const MENU_PROPS = {
-  slotProps: {
-    paper: {
-      sx: {
-        borderRadius: 0,
-        border: `1px solid ${J.border}`,
-        boxShadow: '0 8px 24px rgba(26,31,46,0.12)',
-        mt: 0.5,
-        maxHeight: 320,
-      },
-    },
-  },
-};
 
 /* ─────────────────────────────────────────────────── */
 export default function TestigosListPage() {
@@ -236,9 +82,7 @@ export default function TestigosListPage() {
   /* ── Fetches ─────────────────────────────────────── */
   const fetchTestigos = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await testigoService.getTestigos();
       if (data.success) setTestigos(data.data);
       else setError(data.message || 'Error al cargar los testigos');
     } catch { setError('Error de conexión con el servidor'); }
@@ -247,13 +91,10 @@ export default function TestigosListPage() {
 
   const fetchFilterCatalog = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const dRes = await fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { Authorization: `Bearer ${token}` } });
-      const dData = await dRes.json();
+      const dData = await catalogService.getDepartamentos();
       if (dData.success && dData.data.length > 0) {
         const firstId = dData.data[0].id;
-        const mRes = await fetch(`${API_URL}/api/catalogo/departamentos/${firstId}/municipios`, { headers: { Authorization: `Bearer ${token}` } });
-        const mData = await mRes.json();
+        const mData = await catalogService.getMunicipios(firstId);
         if (mData.success) setMunicipios(mData.data);
       }
     } catch (e) { console.error(e); }
@@ -264,9 +105,7 @@ export default function TestigosListPage() {
     setPage(0);
     if (!val) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/municipios/${val}/puestos`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getPuestos(val);
       if (data.success) setPuestos(data.data);
     } catch (e) { console.error(e); }
   };
@@ -276,9 +115,7 @@ export default function TestigosListPage() {
     setPage(0);
     if (!val) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/puestos/${val}/mesas`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getMesas(val);
       if (data.success) setMesas(data.data);
     } catch (e) { console.error(e); }
   };
@@ -290,11 +127,7 @@ export default function TestigosListPage() {
     if (!selectedTestigoForDelete) return;
     setError(''); setSuccess('');
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos/${selectedTestigoForDelete.id}`, {
-        method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await testigoService.deleteTestigo(selectedTestigoForDelete.id);
       if (data.success) { setSuccess('Testigo eliminado correctamente'); fetchTestigos(); }
       else setError(data.message || 'Error al eliminar');
     } catch { setError('Error de conexión'); }
@@ -308,27 +141,22 @@ export default function TestigosListPage() {
     setMoveMpiosList([]); setMovePuestosList([]); setMoveMesasList([]);
     setMoveDialogOpen(true);
     try {
-      const token = localStorage.getItem('token');
-      const dRes = await fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { Authorization: `Bearer ${token}` } });
-      const dData = await dRes.json();
+      const dData = await catalogService.getDepartamentos();
       if (!dData.success) return;
       setMoveDeptosList(dData.data);
       if (testigo.departamentoId) {
         setMoveDepto(String(testigo.departamentoId));
-        const mRes = await fetch(`${API_URL}/api/catalogo/departamentos/${testigo.departamentoId}/municipios`, { headers: { Authorization: `Bearer ${token}` } });
-        const mData = await mRes.json();
+        const mData = await catalogService.getMunicipios(testigo.departamentoId);
         if (mData.success) {
           setMoveMpiosList(mData.data);
           if (testigo.municipioId) {
             setMoveMpio(String(testigo.municipioId));
-            const pRes = await fetch(`${API_URL}/api/catalogo/municipios/${testigo.municipioId}/puestos`, { headers: { Authorization: `Bearer ${token}` } });
-            const pData = await pRes.json();
+            const pData = await catalogService.getPuestos(testigo.municipioId);
             if (pData.success) {
               setMovePuestosList(pData.data);
               if (testigo.puestoId) {
                 setMovePuesto(String(testigo.puestoId));
-                const mesRes = await fetch(`${API_URL}/api/catalogo/puestos/${testigo.puestoId}/mesas`, { headers: { Authorization: `Bearer ${token}` } });
-                const mesData = await mesRes.json();
+                const mesData = await catalogService.getMesas(testigo.puestoId);
                 if (mesData.success) {
                   setMoveMesasList(mesData.data);
                   if (testigo.mesaId) setMoveMesa(String(testigo.mesaId));
@@ -346,9 +174,7 @@ export default function TestigosListPage() {
     setMoveMpiosList([]); setMovePuestosList([]); setMoveMesasList([]);
     if (!val) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/departamentos/${val}/municipios`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getMunicipios(val);
       if (data.success) setMoveMpiosList(data.data);
     } catch (e) { console.error(e); }
   };
@@ -357,9 +183,7 @@ export default function TestigosListPage() {
     setMoveMpio(val); setMovePuesto(''); setMoveMesa(''); setMovePuestosList([]); setMoveMesasList([]);
     if (!val) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/municipios/${val}/puestos`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getPuestos(val);
       if (data.success) setMovePuestosList(data.data);
     } catch (e) { console.error(e); }
   };
@@ -368,9 +192,7 @@ export default function TestigosListPage() {
     setMovePuesto(val); setMoveMesa(''); setMoveMesasList([]);
     if (!val) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/puestos/${val}/mesas`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getMesas(val);
       if (data.success) setMoveMesasList(data.data);
     } catch (e) { console.error(e); }
   };
@@ -379,11 +201,7 @@ export default function TestigosListPage() {
     if (!selectedTestigoForMove || !moveMesa) { setMoveError('Por favor selecciona una mesa de destino'); return; }
     setMoveError('');
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos/${selectedTestigoForMove.id}/mover?nuevaMesaId=${moveMesa}`, {
-        method: 'PUT', headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await testigoService.moveTestigo(selectedTestigoForMove.id, moveMesa);
       if (data.success) {
         setSuccess('Testigo trasladado de mesa correctamente');
         setMoveDialogOpen(false); fetchTestigos();
@@ -417,7 +235,6 @@ export default function TestigosListPage() {
     }
     setEditSaving(true); setEditError('');
     try {
-      const token = localStorage.getItem('token');
       const body = {
         documento: editForm.documento.trim(),
         nombre: editForm.nombre.trim(),
@@ -429,12 +246,7 @@ export default function TestigosListPage() {
         tipoTestigo: editForm.tipoTestigo,
         mesaId: editTestigo.mesaId, // se conserva la mesa actual
       };
-      const res = await fetch(`${API_URL}/api/testigos/${editTestigo.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
+      const data = await testigoService.updateTestigo(editTestigo.id, body);
       if (data.success) {
         setSuccess('Testigo actualizado correctamente');
         setEditDialogOpen(false);

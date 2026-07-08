@@ -1,17 +1,8 @@
 import { useState } from 'react';
 import { Box, Typography, TextField, Button, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const JAGUAR = {
-  ink: '#1A1F2E',
-  blue: '#2952CC',
-  gold: '#C9973A',
-  border: '#E2DDD6',
-  muted: '#7A7A7A',
-  danger: '#B83232',
-};
+import { J as JAGUAR } from '../theme/theme';
+import { authService } from '../services/auth.service';
 
 export default function LoginPage() {
   const [correo, setCorreo] = useState('');
@@ -25,12 +16,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo, password }),
-      });
-      const data = await response.json();
+      const data = await authService.login(correo, password);
       if (data.success && data.data.token) {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data));

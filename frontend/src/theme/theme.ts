@@ -449,3 +449,56 @@ const theme = createTheme({
 });
 
 export default theme;
+
+/* ── Exported design tokens ──────────────────────── */
+export const J = {
+  ink: '#1A1F2E',
+  blue: '#2952CC',
+  gold: '#C9973A',
+  surface: '#F8F7F4',
+  canvas: '#FFFFFF',
+  muted: '#F0EEE9',
+  border: '#E2DDD6',
+  success: '#2D7D4E',
+  warning: '#B97D1A',
+  danger: '#B83232',
+  textBody: '#1A1F2E',
+  textMuted: '#7A7A7A',
+  successBg: 'rgba(45,125,78,0.08)',
+  successBorder: 'rgba(45,125,78,0.25)',
+  warningBg: 'rgba(185,125,26,0.08)',
+  warningBorder: 'rgba(185,125,26,0.25)',
+  dangerBg: 'rgba(184,50,50,0.08)',
+  dangerBorder: 'rgba(184,50,50,0.22)',
+};
+
+export const sxSelect = {
+  '& .MuiOutlinedInput-notchedOutline': { borderColor: J.border, transition: 'border-color 0.15s ease' },
+  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
+  '&.Mui-disabled': { opacity: 0.5 },
+};
+
+export const sxLabel = {
+  fontSize: '11px',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase' as const,
+  fontWeight: 600,
+  color: J.textMuted,
+  '&.Mui-focused': { color: J.blue },
+  '&.MuiFormLabel-filled': { color: J.ink },
+};
+
+export const MENU_PROPS = {
+  slotProps: {
+    paper: {
+      sx: {
+        borderRadius: 0,
+        border: `1px solid ${J.border}`,
+        boxShadow: '0 8px 24px rgba(26,31,46,0.12)',
+        mt: 0.5,
+        maxHeight: 320,
+      },
+    },
+  },
+};

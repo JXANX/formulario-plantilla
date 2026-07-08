@@ -18,22 +18,8 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import StorageIcon       from '@mui/icons-material/Storage';
 import VerifiedIcon      from '@mui/icons-material/Verified';
 import { useWebSocket }  from '../hooks/useWebSocket';
-
-/* ── JAGUAR tokens ───────────────────────────────── */
-const J = {
-  ink:     '#1A1F2E',
-  blue:    '#2952CC',
-  gold:    '#C9973A',
-  surface: '#F8F7F4',
-  canvas:  '#FFFFFF',
-  muted:   '#F0EEE9',
-  border:  '#E2DDD6',
-  success: '#2D7D4E',
-  warning: '#B97D1A',
-  danger:  '#B83232',
-  textBody:'#2C2C2C',
-  textMuted:'#7A7A7A',
-};
+import { J } from '../theme/theme';
+import { dashboardService } from '../services/dashboard.service';
 
 /* ── Types ───────────────────────────────────────── */
 interface DashboardStats {
@@ -51,8 +37,6 @@ interface DashboardStats {
   mesasFaltantesCompletas:   number;
   mesasSinNingunTestigo:     number;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 /* ── Stat card ───────────────────────────────────── */
 function StatCard({
@@ -153,31 +137,25 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/dashboard/stats`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; return; }
-      if (res.ok) { const r = await res.json(); setStats(r.data); }
-    } catch (e) { console.error('Error cargando estadísticas', e); }
+      const data = await dashboardService.getStats();
+      if (data.data) setStats(data.data);
+    } catch (e: any) {
+      if (e.message?.includes('401')) { localStorage.removeItem('token'); window.location.href = '/login'; return; }
+      console.error('Error cargando estadísticas', e);
+    }
   };
 
   const handleDownloadExcel = async () => {
     setDownloading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/excel/export`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url  = window.URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href = url; a.download = 'Testigos_Electorales_Export.xlsx';
-        document.body.appendChild(a); a.click(); a.remove();
-        setSnackbar({ open: true, message: '✅ Excel descargado exitosamente', severity: 'success' });
-      } else {
-        setSnackbar({ open: true, message: '❌ Error al descargar el archivo', severity: 'error' });
-      }
-    } catch { setSnackbar({ open: true, message: '❌ Error de conexión al descargar', severity: 'error' }); }
+      const res = await dashboardService.exportExcel();
+      const blob = await res.blob();
+      const url  = window.URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = 'Testigos_Electorales_Export.xlsx';
+      document.body.appendChild(a); a.click(); a.remove();
+      setSnackbar({ open: true, message: '✅ Excel descargado exitosamente', severity: 'success' });
+    } catch { setSnackbar({ open: true, message: '❌ Error al descargar el archivo', severity: 'error' }); }
     finally  { setDownloading(false); }
   };
 
@@ -191,16 +169,11 @@ export default function DashboardPage() {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const token = localStorage.getItem('token');
       await new Promise(r => setTimeout(r, 800));
       setImportStatus('processing');
-      const res = await fetch(`${API_URL}/api/excel/import`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      });
-      if (res.ok) { setImportStatus('done'); fetchStats(); }
-      else          setImportStatus('error');
+      const res = await dashboardService.importExcel(formData);
+      if (res) { setImportStatus('done'); fetchStats(); }
+      else      setImportStatus('error');
     } catch { setImportStatus('error'); }
     event.target.value = '';
   };

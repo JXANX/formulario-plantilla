@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
@@ -21,85 +21,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import GuardedSelect from '../components/GuardedSelect';
 import { useToast } from '../context/ToastContext';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const J = {
-  ink: '#1A1F2E',
-  blue: '#2952CC',
-  gold: '#C9973A',
-  border: '#E2DDD6',
-  muted: '#F0EEE9',
-  surface: '#F8F7F4',
-  textMuted: '#7A7A7A',
-  success: '#2D7D4E',
-  warning: '#B97D1A',
-  danger: '#B83232',
-};
-
-const sxSelect = {
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: J.border,
-    transition: 'border-color 0.15s ease',
-  },
-  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
-  '&.Mui-disabled': { opacity: 0.5 },
-};
-
-const sxLabel = {
-  fontSize: '11px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase' as const,
-  fontWeight: 600,
-  color: J.textMuted,
-  '&.Mui-focused': { color: J.blue },
-  '&.MuiFormLabel-filled': { color: J.ink },
-};
-
-interface Testigo {
-  id: number;
-  documento: string;
-  nombre: string;
-  segundoNombre?: string;
-  primerApellido: string;
-  segundoApellido?: string;
-  nombreCompleto: string;
-  celular: string;
-  correo?: string;
-  nombreOrganizacion?: string;
-  tipoTestigo: string;
-  mesaId?: number;
-  numeroMesa?: number;
-  puestoId?: number;
-  nombrePuesto?: string;
-  municipioId?: number;
-}
-
-interface Puesto {
-  id: number;
-  codigoPuesto: string;
-  nombrePuesto: string;
-  zona: string;
-  coordinador?: Testigo | null;
-  coordinadorAcreditado?: Testigo | null;
-}
-
-interface Departamento {
-  id: number;
-  codigoDepartamento: string;
-  nombre: string;
-}
-
-interface Municipio {
-  id: number;
-  codigoMunicipio: string;
-  nombre: string;
-}
+import { J, sxSelect, sxLabel } from '../theme/theme';
+import { catalogService } from '../services/catalog.service';
+import { acreditadoService } from '../services/acreditado.service';
+import { coordinatorService } from '../services/coordinator.service';
+import type { Testigo, Puesto, Departamento, Municipio } from '../types';
 
 export default function CoordinadoresAcreditadosPage() {
   const toast = useToast();
-  const token = localStorage.getItem('token');
 
   // Catalogs
   const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
@@ -125,10 +54,7 @@ export default function CoordinadoresAcreditadosPage() {
 
   // 1. Initial Load: Departamentos
   useEffect(() => {
-    fetch(`${API_URL}/api/catalogo/departamentos`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    catalogService.getDepartamentos()
       .then(data => {
         if (data.success) {
           setDepartamentos(data.data);
@@ -147,10 +73,7 @@ export default function CoordinadoresAcreditadosPage() {
 
   // 2. Load Municipios
   const loadMunicipios = (deptoId: number) => {
-    fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    catalogService.getMunicipios(deptoId)
       .then(data => {
         if (data.success) {
           setMunicipios(data.data);
@@ -173,10 +96,7 @@ export default function CoordinadoresAcreditadosPage() {
   // 3. Load Puestos
   const loadPuestos = (mpioId: number) => {
     setLoadingPuestos(true);
-    fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    catalogService.getPuestos(mpioId)
       .then(data => {
         if (data.success) {
           setPuestos(data.data);
@@ -200,10 +120,7 @@ export default function CoordinadoresAcreditadosPage() {
   const handleSelectPuesto = (puesto: Puesto) => {
     setSelectedPuesto(puesto);
     setLoadingTestigos(true);
-    fetch(`${API_URL}/api/catalogo/puestos/${puesto.id}/acreditados`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    coordinatorService.getAcreditadosPuesto(puesto.id)
       .then(data => {
         if (data.success) {
           setTestigosPuesto(data.data);
@@ -243,10 +160,7 @@ export default function CoordinadoresAcreditadosPage() {
     setOpenDialog(true);
     
     // Fetch all witnesses in the system to select from
-    fetch(`${API_URL}/api/acreditados`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    acreditadoService.getAll()
       .then(data => {
         if (data.success) {
           setAllTestigos(data.data);
@@ -260,15 +174,7 @@ export default function CoordinadoresAcreditadosPage() {
     if (!selectedPuesto) return;
     setSubmittingCoord(true);
 
-    const paramAcreditado = selectedTestigoForCoord ? `?acreditadoId=${selectedTestigoForCoord.id}` : '';
-    fetch(`${API_URL}/api/catalogo/puestos/${selectedPuesto.id}/coordinador-acreditado${paramAcreditado}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-      .then(res => res.json())
+    coordinatorService.assignCoordinatorAcreditado(selectedPuesto.id, selectedTestigoForCoord?.id)
       .then(data => {
         if (data.success) {
           toast.success(selectedTestigoForCoord 
@@ -294,14 +200,9 @@ export default function CoordinadoresAcreditadosPage() {
     if (!selectedMpio) return;
     const mpioName = municipios.find(m => String(m.id) === selectedMpio)?.nombre || 'Municipio';
     
-    fetch(`${API_URL}/api/excel/export-coordinadores?municipioId=${selectedMpio}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.blob();
-      })
-      .then(blob => {
+    coordinatorService.exportCoordinadores(selectedMpio)
+      .then(async res => {
+        const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -378,7 +279,7 @@ export default function CoordinadoresAcreditadosPage() {
   const filteredPuestos = puestos.filter(p => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
-    const matchPuesto = p.nombrePuesto.toLowerCase().includes(term) || p.codigoPuesto.toLowerCase().includes(term);
+    const matchPuesto = p.nombrePuesto.toLowerCase().includes(term) || (p.codigoPuesto ?? '').toLowerCase().includes(term);
     const matchCoordinador = p.coordinadorAcreditado?.nombreCompleto.toLowerCase().includes(term) || p.coordinadorAcreditado?.documento.includes(term);
     return matchPuesto || matchCoordinador;
   });

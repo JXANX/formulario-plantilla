@@ -16,21 +16,10 @@ import PeopleIcon from '@mui/icons-material/People';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LabelList, PieChart, Pie, Cell } from 'recharts';
 import SearchableSelect from '../components/SearchableSelect';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const J = {
-  ink: '#1A1F2E',
-  blue: '#2952CC',
-  gold: '#C9973A',
-  border: '#E2DDD6',
-  surface: '#F8F7F4',
-  muted: '#F0EEE9',
-  textMuted: '#7A7A7A',
-  success: '#2D7D4E',
-  warning: '#B97D1A',
-  danger: '#B83232',
-};
+import { J, sxSelect, sxLabel } from '../theme/theme';
+import { testigoService } from '../services/testigo.service';
+import { catalogService } from '../services/catalog.service';
+import { dashboardService } from '../services/dashboard.service';
 
 const PIE_COLORS = [
   '#2952CC', '#C9973A', '#2D7D4E', '#B83232', '#7B4FA6',
@@ -40,10 +29,6 @@ const PIE_COLORS = [
 
 // ─── INTERFACES ────────────────────────────────────────────────────────────────
 
-/**
- * Witness incluye municipioId para poder agrupar correctamente
- * las mesas por municipio en el cálculo de cobertura parcial/total.
- */
 interface Witness {
   id: number;
   documento: string;
@@ -51,7 +36,7 @@ interface Witness {
   celular: string;
   tipoTestigo: string;
   mesaId: number;
-  municipioId: number; // ← nuevo: necesario para filtrar por municipio
+  municipioId: number;
 }
 
 interface Mesa {
@@ -89,18 +74,10 @@ interface CoberturaPuesto {
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────────
 
-/**
- * A partir del arreglo completo de testigos calcula, por municipio:
- *   - mesasTotalmenteCubiertas  → mesas con 2 o más testigos asignados
- *   - mesasParcialmenteCubiertas → mesas con exactamente 1 testigo asignado
- *
- * Cada mesa se contabiliza una única vez (sin duplicados).
- */
 function computeExtendedCoverage(
   witnesses: Witness[],
   municipioId: number
 ): { totalCubiertas: number; parcialCubiertas: number } {
-  // Contar testigos por mesaId dentro del municipio indicado
   const mesaCountMap = new Map<number, number>();
 
   witnesses
@@ -118,33 +95,10 @@ function computeExtendedCoverage(
     } else if (count === 1) {
       parcialCubiertas++;
     }
-    // count === 0 no puede ocurrir (el mapa solo almacena mesas con ≥1 testigo)
   });
 
   return { totalCubiertas, parcialCubiertas };
 }
-
-
-/* ─── sx reutilizable para todos los Select ── */
-const sxSelect = {
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: J.border,
-    transition: 'border-color 0.15s ease',
-  },
-  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
-  '&.Mui-disabled': { opacity: 0.5 },
-};
-
-const sxLabel = {
-  fontSize: '11px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase' as const,
-  fontWeight: 600,
-  color: J.textMuted,
-  '&.Mui-focused': { color: J.blue },
-  '&.MuiFormLabel-filled': { color: J.ink },
-};
 
 // ─── MINI STAT CARD ────────────────────────────────────────────────────────────
 function StatMini({ title, value, color }: { title: string; value: number | string; color: string }) {
@@ -384,9 +338,8 @@ export default function MesasReportPage() {
   useEffect(() => { if (activeTab === 1 && selectedDepartamento) fetchMunicipioCoberturas(selectedDepartamento); }, [activeTab, selectedDepartamento]);
   useEffect(() => {
     if (activeTab === 2 && selectedDeptoPuestos) {
-      const token = localStorage.getItem('token');
-      fetch(`${API_URL}/api/catalogo/departamentos/${selectedDeptoPuestos}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
-        .then(r => r.json()).then(d => { if (d.success) setMunicipiosPuestos(d.data); });
+      catalogService.getMunicipios(selectedDeptoPuestos)
+        .then(d => { if (d.success) setMunicipiosPuestos(d.data); });
     }
   }, [activeTab, selectedDeptoPuestos]);
   useEffect(() => {
@@ -394,9 +347,8 @@ export default function MesasReportPage() {
   }, [activeTab, selectedMunicipioPuestos]);
   useEffect(() => {
     if (activeTab === 3 && selectedDeptoTestigos) {
-      const token = localStorage.getItem('token');
-      fetch(`${API_URL}/api/catalogo/departamentos/${selectedDeptoTestigos}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
-        .then(r => r.json()).then(d => { if (d.success) setMunicipiosTestigos(d.data); });
+      catalogService.getMunicipios(selectedDeptoTestigos)
+        .then(d => { if (d.success) setMunicipiosTestigos(d.data); });
     }
   }, [activeTab, selectedDeptoTestigos]);
   useEffect(() => {
@@ -406,20 +358,16 @@ export default function MesasReportPage() {
 
   const fetchInitialData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const witRes = await fetch(`${API_URL}/api/testigos`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const witData = await witRes.json();
+      const witData = await testigoService.getTestigos();
       if (witData.success) setAllWitnesses(witData.data);
       setLoadingWitnesses(false);
 
-      const deptosRes = await fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const deptosData = await deptosRes.json();
+      const deptosData = await catalogService.getDepartamentos();
       if (deptosData.success && deptosData.data.length > 0) {
         setDepartamentos(deptosData.data);
         let deptoId = selectedDepartamento;
         if (!deptoId) { deptoId = deptosData.data[0].id.toString(); setSelectedDepartamento(deptoId); }
-        const mpiosRes = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const mpiosData = await mpiosRes.json();
+        const mpiosData = await catalogService.getMunicipios(deptoId);
         if (mpiosData.success) setMunicipios(mpiosData.data);
         fetchMunicipioCoberturas(deptoId);
       }
@@ -432,9 +380,7 @@ export default function MesasReportPage() {
     setMunicipios([]); setPuestos([]); setMesas([]);
     if (!deptoId) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getMunicipios(deptoId);
       if (data.success) setMunicipios(data.data);
       fetchMunicipioCoberturas(deptoId);
     } catch (e) { console.error(e); }
@@ -445,9 +391,7 @@ export default function MesasReportPage() {
     setSelectedMunicipio(mpioId); setSelectedPuesto(''); setPuestos([]); setMesas([]);
     if (!mpioId) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getPuestos(mpioId);
       if (data.success) setPuestos(data.data);
     } catch (e) { console.error(e); }
   };
@@ -455,9 +399,7 @@ export default function MesasReportPage() {
   const fetchMesas = async (puestoId: string) => {
     setLoadingMesas(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/puestos/${puestoId}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getMesas(puestoId);
       if (data.success) {
         const fetched: Mesa[] = data.data;
         setMesas(fetched);
@@ -474,9 +416,7 @@ export default function MesasReportPage() {
     if (!deptoId) return;
     setLoadingCoberturas(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/dashboard/cobertura-municipios?departamentoId=${deptoId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await dashboardService.getCoberturaMunicipios(deptoId);
       if (data.success) setMunicipioCoberturas(data.data);
     } catch { setError('Error al obtener coberturas de municipios'); }
     finally { setLoadingCoberturas(false); }
@@ -486,9 +426,7 @@ export default function MesasReportPage() {
     if (!mpioId) return;
     setLoadingPuestoCoberturas(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/dashboard/cobertura-puestos?municipioId=${mpioId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await dashboardService.getCoberturaPuestos(mpioId);
       if (data.success) setPuestoCoberturas(data.data);
     } catch { setError('Error al obtener coberturas de puestos'); }
     finally { setLoadingPuestoCoberturas(false); }
@@ -497,17 +435,11 @@ export default function MesasReportPage() {
   const handleExportMunicipioExcel = async () => {
     setExportingCoberturas(true);
     try {
-      const token = localStorage.getItem('token');
-      const url = selectedDepartamento
-        ? `${API_URL}/api/excel/export-cobertura?departamentoId=${selectedDepartamento}`
-        : `${API_URL}/api/excel/export-cobertura`;
-      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const blob = await res.blob();
-        const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob); a.download = 'Cobertura_Municipios_Export.xlsx';
-        document.body.appendChild(a); a.click(); a.remove();
-      } else setError('Error al generar la exportación');
+      const res = await dashboardService.exportCobertura(selectedDepartamento);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = window.URL.createObjectURL(blob); a.download = 'Cobertura_Municipios_Export.xlsx';
+      document.body.appendChild(a); a.click(); a.remove();
     } catch { setError('Error al conectar con el servidor para exportar'); }
     finally { setExportingCoberturas(false); }
   };
@@ -515,9 +447,7 @@ export default function MesasReportPage() {
   const fetchTestigosMunicipio = async (mpioId: string) => {
     setLoadingTestigosMunicipio(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/testigos`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await testigoService.getTestigos();
       if (data.success) {
         const filtered = (data.data as any[]).filter((t: any) => String(t.municipioId) === String(mpioId));
         setTestigosMunicipio(filtered);
@@ -530,19 +460,17 @@ export default function MesasReportPage() {
     if (!selectedMunicipioTestigos) return;
     setExportingTestigosMunicipio(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/excel/export-testigos-municipio?municipioId=${selectedMunicipioTestigos}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const blob = await res.blob();
-        const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob);
-        const mpioNombre = municipiosTestigos.find((m: any) => String(m.id) === String(selectedMunicipioTestigos))?.nombre || 'municipio';
-        a.download = `Testigos_${mpioNombre}.xlsx`;
-        document.body.appendChild(a); a.click(); a.remove();
-      } else setError('Error al generar el Excel de testigos');
+      const res = await dashboardService.exportTestigosMunicipio(selectedMunicipioTestigos);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = window.URL.createObjectURL(blob);
+      const mpioNombre = municipiosTestigos.find((m: any) => String(m.id) === String(selectedMunicipioTestigos))?.nombre || 'municipio';
+      a.download = `Testigos_${mpioNombre}.xlsx`;
+      document.body.appendChild(a); a.click(); a.remove();
     } catch { setError('Error de conexión al exportar'); }
     finally { setExportingTestigosMunicipio(false); }
   };
+
 
   // ── Estilos de cabecera de tabla ────────────────────────────────────────────
   const thSx = {

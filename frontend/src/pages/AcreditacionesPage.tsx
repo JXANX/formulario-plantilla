@@ -23,21 +23,9 @@ import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import SearchableSelect from '../components/SearchableSelect';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const J = {
-  ink: '#1A1F2E',
-  blue: '#2952CC',
-  gold: '#C9973A',
-  border: '#E2DDD6',
-  surface: '#F8F7F4',
-  muted: '#F0EEE9',
-  textMuted: '#7A7A7A',
-  success: '#2D7D4E',
-  warning: '#B97D1A',
-  danger: '#B83232',
-};
+import { J, sxSelect, sxLabel } from '../theme/theme';
+import { catalogService } from '../services/catalog.service';
+import { acreditadoService } from '../services/acreditado.service';
 
 interface Acreditado {
   id: number;
@@ -126,21 +114,6 @@ function computeExtendedCoverage(
 
   return { totalCubiertas, parcialCubiertas };
 }
-
-const sxSelect = {
-  '& .MuiOutlinedInput-notchedOutline': { borderColor: J.border, transition: 'border-color 0.15s ease' },
-  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: J.blue },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: J.blue, borderWidth: '1.5px' },
-};
-
-const sxLabel = {
-  fontSize: '11px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase' as const,
-  fontWeight: 600,
-  color: J.textMuted,
-  '&.Mui-focused': { color: J.blue },
-};
 
 function StatMini({ title, value, color }: { title: string; value: number | string; color: string }) {
   return (
@@ -264,9 +237,8 @@ export default function AcreditacionesPage() {
   
   useEffect(() => {
     if (activeTab === 2 && selectedDeptoPuestos) {
-      const token = localStorage.getItem('token');
-      fetch(`${API_URL}/api/catalogo/departamentos/${selectedDeptoPuestos}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
-        .then(r => r.json()).then(d => { if (d.success) setMunicipiosPuestos(d.data); });
+      catalogService.getMunicipios(selectedDeptoPuestos)
+        .then(d => { if (d.success) setMunicipiosPuestos(d.data); });
     }
   }, [activeTab, selectedDeptoPuestos]);
   
@@ -276,10 +248,9 @@ export default function AcreditacionesPage() {
 
   useEffect(() => {
     if (activeTab === 3 && departamentos.length > 0) {
-      const token = localStorage.getItem('token');
       const firstDeptoId = departamentos[0].id;
-      fetch(`${API_URL}/api/catalogo/departamentos/${firstDeptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } })
-        .then(r => r.json()).then(d => { if (d.success) setListMunicipios(d.data); });
+      catalogService.getMunicipios(firstDeptoId)
+        .then(d => { if (d.success) setListMunicipios(d.data); });
     }
   }, [activeTab, departamentos]);
 
@@ -297,12 +268,8 @@ export default function AcreditacionesPage() {
 
   const fetchGeneralStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/acreditados/stats`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const r = await res.json();
+      const r = await acreditadoService.getStats();
+      if (r.data) {
         setStats(r.data);
       }
     } catch (e) {
@@ -312,26 +279,19 @@ export default function AcreditacionesPage() {
 
   const fetchInitialData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const acRes = await fetch(`${API_URL}/api/acreditados`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const acData = await acRes.json();
+      const acData = await acreditadoService.getAll();
       if (acData.success) setAllAcreditados(acData.data);
       setLoadingAcreditados(false);
-      const deptosRes = await fetch(`${API_URL}/api/catalogo/departamentos`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const deptosData = await deptosRes.json();
+      const deptosData = await catalogService.getDepartamentos();
       if (deptosData.success) setDepartamentos(deptosData.data);
       
-      const compRes = await fetch(`${API_URL}/api/acreditados/comparativa`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (compRes.ok) {
-        const compData = await compRes.json();
-        if (compData.success) setComparativa(compData.data);
-      }
+      const compData = await acreditadoService.getComparativa();
+      if (compData.success) setComparativa(compData.data);
 
       if (deptosData.success && deptosData.data.length > 0) {
         let deptoId = selectedDepartamento;
         if (!deptoId) { deptoId = deptosData.data[0].id.toString(); setSelectedDepartamento(deptoId); }
-        const mpiosRes = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const mpiosData = await mpiosRes.json();
+        const mpiosData = await catalogService.getMunicipios(deptoId);
         if (mpiosData.success) setMunicipios(mpiosData.data);
         fetchMunicipioCoberturas(deptoId);
       }
@@ -347,9 +307,7 @@ export default function AcreditacionesPage() {
     setMunicipios([]); setPuestos([]); setMesas([]);
     if (!deptoId) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/departamentos/${deptoId}/municipios`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getMunicipios(deptoId);
       if (data.success) setMunicipios(data.data);
       fetchMunicipioCoberturas(deptoId);
     } catch (e) { console.error(e); }
@@ -360,9 +318,7 @@ export default function AcreditacionesPage() {
     setSelectedMunicipio(mpioId); setSelectedPuesto(''); setPuestos([]); setMesas([]);
     if (!mpioId) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/municipios/${mpioId}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getPuestos(mpioId);
       if (data.success) setPuestos(data.data);
     } catch (e) { console.error(e); }
   };
@@ -373,9 +329,7 @@ export default function AcreditacionesPage() {
     setPage(0);
     if (!val) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/municipios/${val}/puestos`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getPuestos(val);
       if (data.success) setListPuestos(data.data);
     } catch (e) { console.error(e); }
   };
@@ -386,9 +340,7 @@ export default function AcreditacionesPage() {
     setPage(0);
     if (!val) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/puestos/${val}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getMesas(val);
       if (data.success) setListMesas(data.data);
     } catch (e) { console.error(e); }
   };
@@ -396,9 +348,7 @@ export default function AcreditacionesPage() {
   const fetchMesas = async (puestoId: string) => {
     setLoadingMesas(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/catalogo/puestos/${puestoId}/mesas`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await catalogService.getMesas(puestoId);
       if (data.success) {
         const fetched: Mesa[] = data.data;
         setMesas(fetched);
@@ -418,9 +368,7 @@ export default function AcreditacionesPage() {
     if (!deptoId) return;
     setLoadingCoberturas(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/acreditados/cobertura-municipios?departamentoId=${deptoId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await acreditadoService.getCoberturaMunicipios(deptoId);
       if (data.success) setMunicipioCoberturas(data.data);
     } catch { setError('Error al obtener coberturas de municipios'); }
     finally { setLoadingCoberturas(false); }
@@ -430,9 +378,7 @@ export default function AcreditacionesPage() {
     if (!mpioId) return;
     setLoadingPuestoCoberturas(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/acreditados/cobertura-puestos?municipioId=${mpioId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
+      const data = await acreditadoService.getCoberturaPuestos(mpioId);
       if (data.success) setPuestoCoberturas(data.data);
     } catch { setError('Error al obtener coberturas de puestos'); }
     finally { setLoadingPuestoCoberturas(false); }
@@ -441,17 +387,11 @@ export default function AcreditacionesPage() {
   const handleExportMunicipioExcel = async () => {
     setExportingCoberturas(true);
     try {
-      const token = localStorage.getItem('token');
-      const url = selectedDepartamento
-        ? `${API_URL}/api/acreditados/export-cobertura?departamentoId=${selectedDepartamento}`
-        : `${API_URL}/api/acreditados/export-cobertura`;
-      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const blob = await res.blob();
-        const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob); a.download = 'Cobertura_Acreditados_Municipios.xlsx';
-        document.body.appendChild(a); a.click(); a.remove();
-      } else setError('Error al generar la exportación');
+      const res = await acreditadoService.exportCobertura(selectedDepartamento);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = window.URL.createObjectURL(blob); a.download = 'Cobertura_Acreditados_Municipios.xlsx';
+      document.body.appendChild(a); a.click(); a.remove();
     } catch { setError('Error al conectar con el servidor para exportar'); }
     finally { setExportingCoberturas(false); }
   };
@@ -460,32 +400,26 @@ export default function AcreditacionesPage() {
     if (!selectedListMunicipio) return;
     setExportingTestigosMunicipio(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/acreditados/export-testigos-municipio?municipioId=${selectedListMunicipio}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const blob = await res.blob();
-        const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob);
-        const mpioNombre = listMunicipios.find((m: any) => String(m.id) === String(selectedListMunicipio))?.nombre || 'municipio';
-        a.download = `Acreditados_${mpioNombre}.xlsx`;
-        document.body.appendChild(a); a.click(); a.remove();
-      } else setError('Error al generar el Excel de acreditados');
-    } catch { setError('Error de conexión al exportar'); }
+      const res = await acreditadoService.exportTestigosMunicipio(selectedListMunicipio);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = window.URL.createObjectURL(blob);
+      const mpioNombre = listMunicipios.find((m: any) => String(m.id) === String(selectedListMunicipio))?.nombre || 'municipio';
+      a.download = `Acreditados_${mpioNombre}.xlsx`;
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch { setError('Error al generar el Excel de acreditados'); }
     finally { setExportingTestigosMunicipio(false); }
   };
 
   const handleExportAll = async () => {
     setExportingAll(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/acreditados/export`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const blob = await res.blob();
-        const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob); a.download = 'Listado_Completo_Acreditados.xlsx';
-        document.body.appendChild(a); a.click(); a.remove();
-        setSnackbar({ open: true, message: '✅ Excel completo descargado exitosamente', severity: 'success' });
-      } else setError('Error al exportar todos los acreditados');
+      const res = await acreditadoService.exportAll();
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = window.URL.createObjectURL(blob); a.download = 'Listado_Completo_Acreditados.xlsx';
+      document.body.appendChild(a); a.click(); a.remove();
+      setSnackbar({ open: true, message: '✅ Excel completo descargado exitosamente', severity: 'success' });
     } catch { setError('Error de conexión al exportar completo'); }
     finally { setExportingAll(false); }
   };
@@ -500,15 +434,10 @@ export default function AcreditacionesPage() {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const token = localStorage.getItem('token');
       await new Promise(r => setTimeout(r, 600));
       setImportStatus('processing');
-      const res = await fetch(`${API_URL}/api/acreditados/import`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      });
-      if (res.ok) {
+      const res = await acreditadoService.importExcel(formData);
+      if (res) {
         setImportStatus('done');
         fetchGeneralStats();
         fetchInitialData();
@@ -525,12 +454,8 @@ export default function AcreditacionesPage() {
     if (!window.confirm('🚨 ¿Está seguro de que desea limpiar todos los registros de acreditados?\n\nEsta acción borrará ÚNICAMENTE los acreditados cargados desde el Excel oficial, sin tocar la base de datos de testigos manuales.')) return;
     setClearing(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/acreditados/clear`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
+      const res = await acreditadoService.clear();
+      if (res) {
         setSnackbar({ open: true, message: '🧹 Listado de acreditados limpiado exitosamente', severity: 'success' });
         fetchGeneralStats();
         fetchInitialData();
@@ -543,6 +468,7 @@ export default function AcreditacionesPage() {
       setClearing(false);
     }
   };
+
 
   const handleCloseImportDialog = () => {
     setImportDialogOpen(false);

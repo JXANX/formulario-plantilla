@@ -1,4 +1,4 @@
-# Build and IDE files
+# ── Build and IDE files ──────────────────────────────────────
 **/target/
 **/.idea/
 **/*.iml
@@ -7,38 +7,46 @@
 **/logs/
 **/exports/
 
-**/backup_supabase.sql
-
-#EJEMPLOS
-**/visionfront/
-
-# Frontend dependencies and builds
+# ── Frontend dependencies and builds ─────────────────────────
 **/node_modules/
 **/dist/
 frontend/build/
 
-# OS files
+# ── OS files ─────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-backup_utf8_fixed.sql
-
-# Local environment configs
+# ── Environment configs (secrets) ────────────────────────────
 .env
 .env.local
 .env.*.local
 
-# Tools and scripts
-maven/
-run_backend.ps1
-upload_excel_cloud.ps1
+# ── Compiled Java classes (standalone utils) ─────────────────
+java-utils/*.class
 
-# Compiled Java classes (standalone)
-*.class
-
-# Binary artifacts
+# ── Binary artifacts / drivers ───────────────────────────────
 *.jar
 !backend/**/*.jar
 
-# Gemini
+# ── Large data files (Excel, CSV, PDF) ───────────────────────
+data/
+# Keep sample/template data tracked individually if needed
+
+# ── Database dumps and backups ───────────────────────────────
+database/backup_utf8_fixed.sql
+**/backup_supabase.sql
+
+# ── Archives ─────────────────────────────────────────────────
+*.zip
+
+# ── Maven local install ──────────────────────────────────────
+maven/
+
+# ── Example / reference projects ─────────────────────────────
+**/visionfront/
+
+# ── Gemini IDE ───────────────────────────────────────────────
 .gemini/
+
+# ── Misc temp folders ────────────────────────────────────────
+ultimos acreditados/
