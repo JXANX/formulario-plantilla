@@ -38,10 +38,10 @@ public class DataInitializer implements CommandLineRunner {
         });
         patricia.setNombre("Patricia");
         patricia.setPassword(passwordEncoder.encode("Patricia.Electoral"));
-        patricia.setRol(Rol.ADMIN);
+        patricia.setRol(Rol.COORDINADOR_TESTIGOS);
         patricia.setActivo(true);
         usuarioRepository.save(patricia);
-        logger.info("Usuario ADMIN Patricia inicializado/actualizado");
+        logger.info("Usuario COORDINADOR_TESTIGOS Patricia inicializado/actualizado");
 
         // 2. Angela (Admin normal 2)
         Usuario angela = usuarioRepository.findByCorreo("Angela").orElseGet(() -> {
@@ -51,10 +51,10 @@ public class DataInitializer implements CommandLineRunner {
         });
         angela.setNombre("Angela");
         angela.setPassword(passwordEncoder.encode("Angela.Electoral"));
-        angela.setRol(Rol.ADMIN);
+        angela.setRol(Rol.COORDINADOR_TESTIGOS);
         angela.setActivo(true);
         usuarioRepository.save(angela);
-        logger.info("Usuario ADMIN Angela inicializado/actualizado");
+        logger.info("Usuario COORDINADOR_TESTIGOS Angela inicializado/actualizado");
 
         // 3. AdminSuperior (Admin superior)
         Usuario adminSuperior = usuarioRepository.findByCorreo("AdminSuperior").orElseGet(() -> {
@@ -68,6 +68,38 @@ public class DataInitializer implements CommandLineRunner {
         adminSuperior.setActivo(true);
         usuarioRepository.save(adminSuperior);
         logger.info("Usuario SUPER_ADMIN AdminSuperior inicializado/actualizado");
+
+        // 4. Seed Tipos de Voto
+        seedTiposVoto();
+
+        // 5. Seed Candidatos
+        seedCandidatos();
+    }
+
+    @Autowired
+    private com.electoral.testigos.repository.TipoVotoRepository tipoVotoRepository;
+
+    @Autowired
+    private com.electoral.testigos.repository.CandidatoRepository candidatoRepository;
+
+    private void seedTiposVoto() {
+        if (tipoVotoRepository.count() == 0) {
+            tipoVotoRepository.save(com.electoral.testigos.model.TipoVoto.builder().nombre("Voto por Candidato").codigo("CANDIDATO").activo(true).build());
+            tipoVotoRepository.save(com.electoral.testigos.model.TipoVoto.builder().nombre("Voto en Blanco").codigo("BLANCO").activo(true).build());
+            tipoVotoRepository.save(com.electoral.testigos.model.TipoVoto.builder().nombre("Voto Nulo").codigo("NULO").activo(true).build());
+            tipoVotoRepository.save(com.electoral.testigos.model.TipoVoto.builder().nombre("Voto no Marcado").codigo("NO_MARCADO").activo(true).build());
+            logger.info("Tipos de voto predeterminados creados");
+        }
+    }
+
+    private void seedCandidatos() {
+        if (candidatoRepository.count() == 0) {
+            candidatoRepository.save(com.electoral.testigos.model.Candidato.builder().nombre("Juan Carlos Giraldo").partido("Pacto Histórico").numeroTarjeton(1).activo(true).build());
+            candidatoRepository.save(com.electoral.testigos.model.Candidato.builder().nombre("María Elena Restrepo").partido("Partido Liberal").numeroTarjeton(2).activo(true).build());
+            candidatoRepository.save(com.electoral.testigos.model.Candidato.builder().nombre("Andrés Felipe Uribe").partido("Partido Conservador").numeroTarjeton(3).activo(true).build());
+            candidatoRepository.save(com.electoral.testigos.model.Candidato.builder().nombre("Soraya Helena Toro").partido("Centro Democrático").numeroTarjeton(4).activo(true).build());
+            logger.info("Candidatos predeterminados creados");
+        }
     }
 }
 
