@@ -15,6 +15,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import VerifiedIcon from '@mui/icons-material/Verified';
+
+// New Icons
+import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import FindInPageIcon from '@mui/icons-material/FindInPage';
+
 import { useState, useEffect } from 'react';
 import logo from '../assets/logo_tracto.png';
 import logoBox from '../assets/logobox_tracto.png';
@@ -31,18 +38,32 @@ const JAGUAR = {
   muted: '#7A7A7A',
 };
 
-interface NavItem { label: string; path: string; icon: React.ReactNode; }
+interface NavItem { label: string; path: string; icon: React.ReactNode; roles: string[]; }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon sx={{ fontSize: 26 }} /> },
-  { label: 'Registrar Testigo', path: '/registro', icon: <PersonAddIcon sx={{ fontSize: 26 }} /> },
-  { label: 'Listado de Testigos', path: '/testigos', icon: <PeopleIcon sx={{ fontSize: 26 }} /> },
-  { label: 'Coordinadores', path: '/coordinadores', icon: <AssignmentIndIcon sx={{ fontSize: 26 }} /> },
-  { label: 'Reporte de Mesas', path: '/reporte-mesas', icon: <AssessmentIcon sx={{ fontSize: 26 }} /> },
-  { label: 'Acreditados', path: '/acreditados', icon: <VerifiedIcon sx={{ fontSize: 26 }} /> },
-  { label: 'Coord. Acreditados', path: '/coordinadores-acreditados', icon: <AssignmentIndIcon sx={{ fontSize: 26 }} /> },
-  { label: 'Optimizar Cobertura', path: '/distribucion', icon: <AccountTreeIcon sx={{ fontSize: 26 }} /> },
-  { label: 'Historial', path: '/historial', icon: <HistoryIcon sx={{ fontSize: 26 }} /> },
+  { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
+  { label: 'Registrar Testigo', path: '/registro', icon: <PersonAddIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
+  { label: 'Listado de Testigos', path: '/testigos', icon: <PeopleIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
+  { label: 'Coordinadores', path: '/coordinadores', icon: <AssignmentIndIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
+  { label: 'Reporte de Mesas', path: '/reporte-mesas', icon: <AssessmentIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
+  { label: 'Acreditados', path: '/acreditados', icon: <VerifiedIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
+  { label: 'Coord. Acreditados', path: '/coordinadores-acreditados', icon: <AssignmentIndIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
+  { label: 'Optimizar Cobertura', path: '/distribucion', icon: <AccountTreeIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
+  
+  // Operator conteo
+  { label: 'Conteo de Votos', path: '/conteo-votos', icon: <FactCheckIcon sx={{ fontSize: 26 }} />, roles: ['OPERARIO'] },
+  
+  // Lawyer consulta
+  { label: 'Consulta de Votos', path: '/consulta-votos', icon: <FindInPageIcon sx={{ fontSize: 26 }} />, roles: ['ABOGADO'] },
+  
+  // Vote central (Super Admin)
+  { label: 'Control de Votos', path: '/control-votos', icon: <HowToVoteIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN'] },
+
+  // User management (Super Admin)
+  { label: 'Gestión de Usuarios', path: '/usuarios', icon: <ManageAccountsIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN'] },
+
+  // Audit Logs (Super Admin)
+  { label: 'Historial', path: '/historial', icon: <HistoryIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN'] },
 ];
 
 const breadcrumbMap: Record<string, { parent: string; current: string }> = {
@@ -55,16 +76,30 @@ const breadcrumbMap: Record<string, { parent: string; current: string }> = {
   '/coordinadores-acreditados': { parent: 'GESTIÓN /', current: 'Coordinadores de Acreditados' },
   '/distribucion': { parent: 'INTELIGENCIA /', current: 'Optimización de Cobertura' },
   '/historial': { parent: 'AUDITORÍA /', current: 'Historial de Acciones' },
+  '/usuarios': { parent: 'ADMINISTRACIÓN /', current: 'Gestión de Usuarios' },
+  '/conteo-votos': { parent: 'CONTEO /', current: 'Registro de Conteos E14' },
+  '/consulta-votos': { parent: 'CONSULTA /', current: 'Control de Discrepancias' },
+  '/control-votos': { parent: 'MONITOREO /', current: 'Panel Central de Votos' },
 };
 
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) navigate('/login');
+    const userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      navigate('/login');
+    } else {
+      try {
+        setCurrentUser(JSON.parse(userStr));
+      } catch {
+        navigate('/login');
+      }
+    }
   }, [navigate]);
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
@@ -80,6 +115,9 @@ export default function MainLayout() {
   const currentPath = location.pathname;
   const crumb = breadcrumbMap[currentPath] ?? { parent: 'PANEL /', current: 'Electoral' };
 
+  const role = currentUser?.rol || '';
+  const filteredNavItems = navItems.filter(item => item.roles.includes(role));
+
   /* ── SIDEBAR ─────────────────────────────────────── */
   const sidebarContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: JAGUAR.ink }}>
@@ -90,7 +128,7 @@ export default function MainLayout() {
             TRACTO
           </Typography>
           <Typography sx={{ fontWeight: 500, fontSize: '17px', color: JAGUAR.gold, mt: 0.5 }}>
-            Control de Testigos
+            Control Electoral
           </Typography>
         </Box>
         <IconButton
@@ -108,8 +146,8 @@ export default function MainLayout() {
         </Box>
       </Box>
 
-      <List disablePadding sx={{ flex: 1 }}>
-        {navItems.map((item) => {
+      <List disablePadding sx={{ flex: 1, overflowY: 'auto' }}>
+        {filteredNavItems.map((item) => {
           const active = currentPath === item.path;
           return (
             <ListItemButton
@@ -191,8 +229,12 @@ export default function MainLayout() {
                   <img src={logoBox} alt="TRACTO" style={{ height: '76px', width: 'auto', objectFit: 'contain' }} />
                 </Box>
                 <Box sx={{ textAlign: 'left' }}>
-                  <Typography sx={{ fontSize: '15px', fontWeight: 700, color: JAGUAR.ink, lineHeight: 1.2 }}>Coordinador Principal</Typography>
-                  <Typography sx={{ fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: JAGUAR.muted }}>Admin</Typography>
+                  <Typography sx={{ fontSize: '15px', fontWeight: 700, color: JAGUAR.ink, lineHeight: 1.2 }}>
+                    {currentUser?.nombre || 'Usuario'}
+                  </Typography>
+                  <Typography sx={{ fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: JAGUAR.muted }}>
+                    {currentUser?.rol ? currentUser.rol.replace('_', ' ') : 'Invitado'}
+                  </Typography>
                 </Box>
               </Box>
               <Box sx={{ display: { xs: 'flex', md: 'none' }, height: 60, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
