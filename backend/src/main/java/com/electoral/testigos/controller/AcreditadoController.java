@@ -32,7 +32,7 @@ public class AcreditadoController {
     private AcreditadoService acreditadoService;
 
     @PostMapping("/import")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> importAcreditados(@RequestParam("file") MultipartFile file) {
         try {
             acreditadoService.importarAcreditados(file.getInputStream());
@@ -44,7 +44,7 @@ public class AcreditadoController {
     }
 
     @GetMapping("/stats")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> getStats() {
         try {
             AcreditadoDashboardStats stats = acreditadoService.getGeneralStats();
@@ -56,7 +56,7 @@ public class AcreditadoController {
     }
 
     @GetMapping("/cobertura-municipios")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> getCoberturaMunicipios(@RequestParam(required = false) Long departamentoId) {
         try {
             List<CoberturaMunicipioResponse> list = acreditadoService.getCoberturaMunicipios(departamentoId);
@@ -68,7 +68,7 @@ public class AcreditadoController {
     }
 
     @GetMapping("/cobertura-puestos")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> getCoberturaPuestos(@RequestParam(required = false) Long municipioId) {
         try {
             List<CoberturaPuestoResponse> list = acreditadoService.getCoberturaPuestos(municipioId);
@@ -80,7 +80,7 @@ public class AcreditadoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> listarAcreditados() {
         try {
             List<AcreditadoResponse> list = acreditadoService.obtenerTodosLosAcreditados();
@@ -92,7 +92,7 @@ public class AcreditadoController {
     }
 
     @GetMapping("/comparativa")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> getComparativa() {
         try {
             return ResponseEntity.ok(new ApiResponse<>(true, "Comparativa obtenida", acreditadoService.getComparativaTestigos()));
@@ -103,7 +103,7 @@ public class AcreditadoController {
     }
 
     @DeleteMapping("/clear")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> limpiarAcreditados() {
         try {
             acreditadoService.limpiarAcreditados();
@@ -115,7 +115,7 @@ public class AcreditadoController {
     }
 
     @GetMapping("/export")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<Resource> exportExcel() {
         try {
             File file = acreditadoService.exportarDatos();
@@ -131,7 +131,7 @@ public class AcreditadoController {
     }
 
     @GetMapping("/export-cobertura")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<Resource> exportCobertura(@RequestParam(required = false) Long departamentoId) {
         try {
             File file = acreditadoService.exportarCobertura(departamentoId);
@@ -147,7 +147,7 @@ public class AcreditadoController {
     }
 
     @GetMapping("/export-testigos-municipio")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<Resource> exportTestigosMunicipio(@RequestParam Long municipioId) {
         try {
             File file = acreditadoService.exportarTestigosPorMunicipio(municipioId);

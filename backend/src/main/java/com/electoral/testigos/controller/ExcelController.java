@@ -27,6 +27,7 @@ public class ExcelController {
     private ExcelExportService excelExportService;
 
     @PostMapping("/import")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> importExcel(@RequestParam("file") MultipartFile file) {
         try {
             excelImportService.importarPlantilla(file.getInputStream(), false);
@@ -38,6 +39,7 @@ public class ExcelController {
     }
 
     @GetMapping("/export")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<Resource> exportExcel() {
         try {
             File file = excelExportService.exportarDatos();
@@ -53,6 +55,7 @@ public class ExcelController {
     }
 
     @GetMapping("/export-cobertura")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<Resource> exportCobertura(@RequestParam(required = false) Long departamentoId) {
         try {
             File file = excelExportService.exportarCobertura(departamentoId);
@@ -68,6 +71,7 @@ public class ExcelController {
     }
 
     @GetMapping("/export-coordinadores")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<Resource> exportCoordinadores(@RequestParam Long municipioId) {
         try {
             File file = excelExportService.exportarCoordinadores(municipioId);
@@ -83,6 +87,7 @@ public class ExcelController {
     }
 
     @GetMapping("/export-testigos-municipio")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<Resource> exportTestigosMunicipio(@RequestParam Long municipioId) {
         try {
             File file = excelExportService.exportarTestigosPorMunicipio(municipioId);

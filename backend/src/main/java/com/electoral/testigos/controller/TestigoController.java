@@ -22,7 +22,7 @@ public class TestigoController {
     private TestigoService testigoService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> listarTestigos() {
         try {
             List<TestigoResponse> testigos = testigoService.obtenerTodosLosTestigos();
@@ -34,7 +34,7 @@ public class TestigoController {
     }
 
     @GetMapping("/documento/{documento}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> buscarPorDocumento(@PathVariable String documento) {
         try {
             java.util.Optional<Testigo> testigo = testigoService.buscarPorDocumento(documento);
@@ -50,7 +50,7 @@ public class TestigoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> registrarTestigo(@Valid @RequestBody TestigoRequest request) {
         try {
             Testigo testigo = testigoService.registrarTestigo(request);
@@ -63,7 +63,7 @@ public class TestigoController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> eliminarTestigo(@PathVariable Long id) {
         try {
             testigoService.eliminarTestigo(id);
@@ -75,7 +75,7 @@ public class TestigoController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> actualizarTestigo(@PathVariable Long id, @Valid @RequestBody TestigoRequest request) {
         try {
             Testigo testigo = testigoService.actualizarTestigo(id, request);
@@ -87,7 +87,7 @@ public class TestigoController {
     }
 
     @PutMapping("/{id}/mover")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> moverTestigo(@PathVariable Long id, @RequestParam Long nuevaMesaId) {
         try {
             Testigo testigo = testigoService.moverTestigo(id, nuevaMesaId);

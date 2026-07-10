@@ -16,7 +16,7 @@ public class DistribucionController {
     private DistribucionService distribucionService;
 
     @GetMapping("/municipio/{municipioId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> getDistribucionByMunicipio(@PathVariable Long municipioId) {
         try {
             DistribucionMunicipioResponse response = distribucionService.getDistribucion(municipioId);

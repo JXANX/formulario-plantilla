@@ -10,6 +10,7 @@ import com.electoral.testigos.service.CatalogoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class CatalogoController {
 
     @PutMapping("/puestos/{puestoId}/coordinador")
     @org.springframework.transaction.annotation.Transactional
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> asignarCoordinador(
             @PathVariable Long puestoId,
             @RequestParam(required = false) Long testigoId) {
@@ -99,6 +101,7 @@ public class CatalogoController {
     }
     @PutMapping("/puestos/{puestoId}/coordinador-acreditado")
     @org.springframework.transaction.annotation.Transactional
+    @PreAuthorize("hasAnyRole('COORDINADOR_TESTIGOS', 'SUPER_ADMIN', 'ADMIN')")
     public ResponseEntity<?> asignarCoordinadorAcreditado(
             @PathVariable Long puestoId,
             @RequestParam(required = false) Long acreditadoId) {
