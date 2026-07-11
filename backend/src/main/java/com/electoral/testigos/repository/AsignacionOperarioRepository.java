@@ -10,7 +10,13 @@ import java.util.List;
 
 @Repository
 public interface AsignacionOperarioRepository extends JpaRepository<AsignacionOperario, Long> {
-    List<AsignacionOperario> findByOperarioId(Long operarioId);
+    @Query("SELECT a FROM AsignacionOperario a " +
+           "LEFT JOIN FETCH a.operario " +
+           "LEFT JOIN FETCH a.puesto p " +
+           "LEFT JOIN FETCH a.mesa m " +
+           "LEFT JOIN FETCH m.puesto mp " +
+           "WHERE a.operario.id = :operarioId")
+    List<AsignacionOperario> findByOperarioId(@Param("operarioId") Long operarioId);
     
     void deleteByOperarioId(Long operarioId);
 
