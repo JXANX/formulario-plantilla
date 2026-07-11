@@ -499,7 +499,7 @@ export default function DashboardVotosPage() {
           )}
 
           {/* TAB 1: Resolution of Discrepancies */}
-          {tabIndex === 1 && isAdmin && (
+          {tabIndex === 1 && hasTabsAccess && (
             <Card>
               <CardContent sx={{ px: 0 }}>
                 <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', px: 3, mb: 2 }}>
