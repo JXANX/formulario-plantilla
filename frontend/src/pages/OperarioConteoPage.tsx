@@ -42,8 +42,8 @@ export default function OperarioConteoPage() {
   const [registraduriaInputs, setRegistraduriaInputs] = useState<Record<string, number>>({});
   const [testigoInputs, setTestigoInputs] = useState<Record<string, number>>({});
 
-  // Image Zoom Modal
-  const [zoomImgUrl, setZoomImgUrl] = useState<string | null>(null);
+  // Image/PDF Zoom Modal
+  const [zoomFile, setZoomFile] = useState<{ url: string, type: string } | null>(null);
 
   useEffect(() => {
     const session = authService.getCurrentUser();
@@ -199,12 +199,15 @@ export default function OperarioConteoPage() {
     fetch(`${API_URL}/api/votos/fotos/ver/${fotoId}/archivo`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.blob())
-    .then(blob => {
-      const blobUrl = URL.createObjectURL(blob);
-      setZoomImgUrl(blobUrl);
+    .then(res => {
+      const contentType = res.headers.get('Content-Type') || 'image/jpeg';
+      return res.blob().then(blob => ({ blob, contentType }));
     })
-    .catch(() => toast.error('Error al abrir la foto'));
+    .then(({ blob, contentType }) => {
+      const blobUrl = URL.createObjectURL(blob);
+      setZoomFile({ url: blobUrl, type: contentType });
+    })
+    .catch(() => toast.error('Error al abrir el archivo'));
   };
 
 
@@ -379,7 +382,7 @@ export default function OperarioConteoPage() {
                               startIcon={<CloudUploadIcon />}
                             >
                               Subir Archivo
-                              <input type="file" hidden accept="image/*" onChange={(e) => handleFileUpload(e, 'REGISTRADURIA')} />
+                              <input type="file" hidden accept=".pdf, image/png, image/jpeg, image/jpg" onChange={(e) => handleFileUpload(e, 'REGISTRADURIA')} />
                             </Button>
                           )}
                         </Paper>
@@ -408,7 +411,7 @@ export default function OperarioConteoPage() {
                               startIcon={<CloudUploadIcon />}
                             >
                               Subir Archivo
-                              <input type="file" hidden accept="image/*" onChange={(e) => handleFileUpload(e, 'TESTIGO')} />
+                              <input type="file" hidden accept=".pdf, image/png, image/jpeg, image/jpg" onChange={(e) => handleFileUpload(e, 'TESTIGO')} />
                             </Button>
                           )}
                         </Paper>
@@ -533,22 +536,24 @@ export default function OperarioConteoPage() {
         </>
       )}
 
-      {/* Zoom Image Dialog */}
-      <Dialog open={zoomImgUrl !== null} onClose={() => setZoomImgUrl(null)} maxWidth="lg">
+      {/* Zoom File Dialog */}
+      <Dialog open={zoomFile !== null} onClose={() => setZoomFile(null)} maxWidth="lg" fullWidth>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Imagen E14</span>
-          <IconButton onClick={() => setZoomImgUrl(null)}>
+          <span>Archivo E14</span>
+          <IconButton onClick={() => setZoomFile(null)}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#000' }}>
-          {zoomImgUrl && (
+        <DialogContent sx={{ p: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: zoomFile?.type.includes('pdf') ? '#fff' : '#000', height: '80vh' }}>
+          {zoomFile && zoomFile.type.includes('pdf') ? (
+            <iframe src={zoomFile.url} width="100%" height="100%" style={{ border: 'none' }} title="PDF E14" />
+          ) : zoomFile ? (
             <img 
-              src={zoomImgUrl} 
+              src={zoomFile.url} 
               alt="Zoom E14" 
-              style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} 
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
             />
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
     </Box>

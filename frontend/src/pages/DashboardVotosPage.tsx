@@ -417,8 +417,8 @@ export default function DashboardVotosPage() {
                   <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', px: 3, mb: 2 }}>
                     Avance de Cobertura por Municipio
                   </Typography>
-                  <TableContainer>
-                    <Table>
+                  <TableContainer sx={{ maxHeight: 400, overflowY: 'auto' }}>
+                    <Table stickyHeader>
                       <TableHead>
                         <TableRow>
                           <TableCell>Municipio</TableCell>
@@ -459,8 +459,8 @@ export default function DashboardVotosPage() {
                   <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', px: 3, mb: 2 }}>
                     Carga de Trabajo por Operario
                   </Typography>
-                  <TableContainer>
-                    <Table>
+                  <TableContainer sx={{ maxHeight: 400, overflowY: 'auto' }}>
+                    <Table stickyHeader>
                       <TableHead>
                         <TableRow>
                           <TableCell>Nombre Operario</TableCell>
@@ -508,8 +508,8 @@ export default function DashboardVotosPage() {
                 <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', px: 3, mb: 2 }}>
                   Mesas con Diferencias entre Registraduría y Testigo
                 </Typography>
-                <TableContainer>
-                  <Table>
+                <TableContainer sx={{ maxHeight: 400, overflowY: 'auto' }}>
+                  <Table stickyHeader>
                     <TableHead>
                       <TableRow>
                         <TableCell>Municipio</TableCell>

@@ -155,6 +155,17 @@ export default function AuditLogPage() {
               value={filter}
               onChange={e => { setFilter(e.target.value); setPage(0); }}
               sx={{ minWidth: 220 }}
+              slotProps={{
+                select: {
+                  MenuProps: {
+                    slotProps: {
+                      paper: {
+                        sx: { overflowX: 'auto' }
+                      }
+                    }
+                  }
+                }
+              }}
             >
               {FILTER_OPTIONS.map(o => (
                 <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
