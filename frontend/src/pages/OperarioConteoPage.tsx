@@ -247,9 +247,32 @@ export default function OperarioConteoPage() {
           </CardContent>
         </Card>
       ) : (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3.5fr 8.5fr' }, gap: 4 }}>
-          {/* Left Column: List of assigned tables */}
-          <Box>
+        <>
+          {/* Table Selector Dropdown (visible only on mobile/tablet) */}
+          <Box sx={{ display: { xs: 'block', lg: 'none' }, mb: 3 }}>
+            <TextField
+              select
+              fullWidth
+              label="Seleccionar Mesa Asignada"
+              value={selectedMesaId || ''}
+              onChange={(e) => handleSelectMesa(Number(e.target.value))}
+              size="small"
+              sx={{ bgcolor: '#fff' }}
+            >
+              {asignaciones.map((asig) => {
+                if (!asig.mesa) return null;
+                return (
+                  <MenuItem key={asig.mesa.id} value={asig.mesa.id}>
+                    Mesa #{asig.mesa.numeroMesa} — {asig.mesa.puesto?.nombrePuesto || 'Puesto'} ({asig.mesa.puesto?.municipio?.nombre || 'Municipio'})
+                  </MenuItem>
+                );
+              })}
+            </TextField>
+          </Box>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3.5fr 8.5fr' }, gap: 4 }}>
+            {/* Left Column: List of assigned tables (visible only on desktop) */}
+            <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
             <Typography variant="h6" sx={{ mb: 2 }}>Mis Mesas Asignadas ({asignaciones.length})</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '65vh', overflowY: 'auto' }}>
               {asignaciones.map((asig) => {
@@ -410,7 +433,7 @@ export default function OperarioConteoPage() {
                       )}
                     </Box>
 
-                    <TableContainer>
+                    <TableContainer sx={{ overflowX: 'auto', maxWidth: '100%' }}>
                       <Table>
                         <TableHead>
                           <TableRow>
@@ -507,6 +530,7 @@ export default function OperarioConteoPage() {
             )}
           </Box>
         </Box>
+        </>
       )}
 
       {/* Zoom Image Dialog */}
