@@ -85,7 +85,7 @@ public class VotosController {
     }
 
     @GetMapping("/fotos/ver/{id}/archivo")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERARIO', 'ABOGADO')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'OPERARIO', 'ABOGADO')")
     public ResponseEntity<Resource> verArchivoFoto(@PathVariable Long id) {
         try {
             File file = votosService.obtenerArchivoFoto(id);

@@ -199,7 +199,11 @@ export default function OperarioConteoPage() {
     fetch(`${API_URL}/api/votos/fotos/ver/${fotoId}/archivo`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => {
+    .then(async res => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error ${res.status}: ${text}`);
+      }
       const contentType = res.headers.get('Content-Type') || 'image/jpeg';
       return res.blob().then(blob => ({ blob, contentType }));
     })
