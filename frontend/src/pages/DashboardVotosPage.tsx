@@ -58,7 +58,7 @@ export default function DashboardVotosPage() {
   const [detalleMesa, setDetalleMesa] = useState<VotosDetalleMesa | null>(null);
   const [editCounts, setEditCounts] = useState<Record<string, { reg: number; test: number }>>({});
   const [savingResolution, setSavingResolution] = useState(false);
-  const [zoomImgUrl, setZoomImgUrl] = useState<string | null>(null);
+  const [zoomFile, setZoomFile] = useState<{url: string, type: string} | null>(null);
 
   useEffect(() => {
     loadData();
@@ -282,11 +282,27 @@ export default function DashboardVotosPage() {
         const text = await res.text();
         throw new Error(`Error ${res.status}: ${text}`);
       }
-      return res.blob();
+      const contentType = res.headers.get('Content-Type') || 'image/jpeg';
+      return res.blob().then(blob => ({ blob, contentType }));
     })
-    .then(blob => {
-      const url = URL.createObjectURL(blob);
-      setZoomImgUrl(url);
+    .then(({ blob, contentType }) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const arr = new Uint8Array(reader.result as ArrayBuffer);
+        let header = "";
+        for (let i = 0; i < arr.length; i++) {
+          header += String.fromCharCode(arr[i]);
+        }
+        let finalType = contentType;
+        let finalBlob = blob;
+        if (header === "%PDF") {
+          finalType = "application/pdf";
+          finalBlob = new Blob([blob], { type: 'application/pdf' });
+        }
+        const url = URL.createObjectURL(finalBlob);
+        setZoomFile({ url, type: finalType });
+      };
+      reader.readAsArrayBuffer(blob.slice(0, 4));
     })
     .catch((err) => toast.error(err.message || 'Error al cargar foto'));
   };
@@ -906,22 +922,24 @@ export default function DashboardVotosPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Zoom Image Dialog */}
-      <Dialog open={zoomImgUrl !== null} onClose={() => setZoomImgUrl(null)} maxWidth="lg">
+      {/* Zoom File Dialog */}
+      <Dialog open={zoomFile !== null} onClose={() => setZoomFile(null)} maxWidth="lg" fullWidth sx={{ zIndex: 1400 }}>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Imagen E14</span>
-          <IconButton onClick={() => setZoomImgUrl(null)}>
+          <span>Archivo E14</span>
+          <IconButton onClick={() => setZoomFile(null)}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#000' }}>
-          {zoomImgUrl && (
+        <DialogContent sx={{ p: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: zoomFile?.type.includes('pdf') ? '#fff' : '#000', height: '80vh' }}>
+          {zoomFile && zoomFile.type.includes('pdf') ? (
+            <iframe src={zoomFile.url} width="100%" height="100%" style={{ border: 'none' }} title="PDF E14" />
+          ) : zoomFile ? (
             <img 
-              src={zoomImgUrl} 
+              src={zoomFile.url} 
               alt="Zoom E14" 
-              style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} 
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
             />
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
     </Box>
