@@ -134,7 +134,7 @@ export default function LoginPage() {
               label="Usuario"
               variant="outlined"
               value={correo}
-              onChange={(e) => setCorreo(e.target.value)}
+              onChange={(e) => setCorreo(e.target.value.replace(/\s/g, ''))}
               required
               autoComplete="new-username"
               slotProps={{ htmlInput: { style: { fontSize: '1.1rem' } } }}
@@ -145,7 +145,7 @@ export default function LoginPage() {
               type="password"
               variant="outlined"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value.replace(/\s/g, ''))}
               required
               autoComplete="new-password"
               slotProps={{ htmlInput: { style: { fontSize: '1.1rem' } } }}
