@@ -75,12 +75,18 @@ export default function AbogadoConsultaPage() {
     fetch(`${API_URL}/api/votos/fotos/ver/${fotoId}/archivo`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.blob())
+    .then(async res => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error ${res.status}: ${text}`);
+      }
+      return res.blob();
+    })
     .then(blob => {
       const url = URL.createObjectURL(blob);
       setZoomImgUrl(url);
     })
-    .catch(() => toast.error('Error al cargar foto'));
+    .catch((err) => toast.error(err.message || 'Error al cargar foto'));
   };
 
   const handleDownloadImage = (fotoId: number, originName: string, mesaNum: number) => {
@@ -90,7 +96,13 @@ export default function AbogadoConsultaPage() {
     fetch(`${API_URL}/api/votos/fotos/ver/${fotoId}/archivo`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.blob())
+    .then(async res => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error ${res.status}: ${text}`);
+      }
+      return res.blob();
+    })
     .then(blob => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -99,9 +111,9 @@ export default function AbogadoConsultaPage() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      toast.success('Descarga iniciada');
+      URL.revokeObjectURL(url);
     })
-    .catch(() => toast.error('Error al descargar archivo'));
+    .catch((err) => toast.error(err.message || 'Error al descargar archivo'));
   };
 
   return (

@@ -274,12 +274,18 @@ export default function DashboardVotosPage() {
     fetch(`${API_URL}/api/votos/fotos/ver/${fotoId}/archivo`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.blob())
+    .then(async res => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error ${res.status}: ${text}`);
+      }
+      return res.blob();
+    })
     .then(blob => {
       const url = URL.createObjectURL(blob);
       setZoomImgUrl(url);
     })
-    .catch(() => toast.error('Error al cargar foto'));
+    .catch((err) => toast.error(err.message || 'Error al cargar foto'));
   };
 
   return (
