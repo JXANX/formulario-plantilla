@@ -270,9 +270,9 @@ export default function OperarioConteoPage() {
             </TextField>
           </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3.5fr 8.5fr' }, gap: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4, width: '100%' }}>
             {/* Left Column: List of assigned tables (visible only on desktop) */}
-            <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+            <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexDirection: 'column', width: { lg: '280px' }, flexShrink: 0 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>Mis Mesas Asignadas ({asignaciones.length})</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '65vh', overflowY: 'auto' }}>
               {asignaciones.map((asig) => {
@@ -310,7 +310,7 @@ export default function OperarioConteoPage() {
           </Box>
 
           {/* Right Column: Vote entry details */}
-          <Box sx={{ overflowX: 'auto', width: '100%' }}>
+          <Box sx={{ flex: 1, minWidth: 0, overflowX: 'auto' }}>
             {detalleMesa ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Table Header Info */}
@@ -433,8 +433,8 @@ export default function OperarioConteoPage() {
                       )}
                     </Box>
 
-                    <TableContainer sx={{ overflowX: 'auto', maxWidth: '100%' }}>
-                      <Table>
+                    <TableContainer sx={{ overflowX: 'auto' }}>
+                      <Table size="small" sx={{ minWidth: 500 }}>
                         <TableHead>
                           <TableRow>
                             <TableCell>Candidato / Tarjeta</TableCell>
@@ -473,7 +473,7 @@ export default function OperarioConteoPage() {
                                     value={valReg}
                                     onChange={(e) => handleInputChange(key, e.target.value, true)}
                                     disabled={submitting}
-                                    slotProps={{ htmlInput: { min: 0, style: { width: 80 } } }}
+                                    slotProps={{ htmlInput: { min: 0, style: { width: 60 } } }}
                                   />
                                 </TableCell>
                                 <TableCell>
@@ -483,7 +483,7 @@ export default function OperarioConteoPage() {
                                     value={valTest}
                                     onChange={(e) => handleInputChange(key, e.target.value, false)}
                                     disabled={submitting}
-                                    slotProps={{ htmlInput: { min: 0, style: { width: 80 } } }}
+                                    slotProps={{ htmlInput: { min: 0, style: { width: 60 } } }}
                                   />
                                 </TableCell>
                                 <TableCell align="center">
