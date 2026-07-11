@@ -116,7 +116,7 @@ public class VotosController {
     }
 
     @GetMapping("/resumen")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ABOGADO')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'ABOGADO', 'OPERARIO')")
     public ResponseEntity<?> obtenerResumen() {
         try {
             VotosResumenResponse resumen = votosService.obtenerResumenConteo();
