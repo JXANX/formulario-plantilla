@@ -340,7 +340,7 @@ export default function OperarioConteoPage() {
                             <Typography sx={{ color: '#fff', fontSize: '0.9rem', fontWeight: 600 }}>
                               {detalleMesa.testigoNombre}
                             </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'rgba(255,255,255,0.6)', mt: 0.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#fff', mt: 0.5 }}>
                               <PhoneIcon sx={{ fontSize: 14 }} />
                               <Typography sx={{ fontSize: '0.8rem' }}>{detalleMesa.testigoCelular}</Typography>
                             </Box>
