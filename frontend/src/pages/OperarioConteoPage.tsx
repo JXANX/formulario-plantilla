@@ -204,8 +204,24 @@ export default function OperarioConteoPage() {
       return res.blob().then(blob => ({ blob, contentType }));
     })
     .then(({ blob, contentType }) => {
-      const blobUrl = URL.createObjectURL(blob);
-      setZoomFile({ url: blobUrl, type: contentType });
+      // Read first 4 bytes to detect PDF magic signature "%PDF"
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const arr = new Uint8Array(reader.result as ArrayBuffer);
+        let header = "";
+        for (let i = 0; i < arr.length; i++) {
+          header += String.fromCharCode(arr[i]);
+        }
+        let finalType = contentType;
+        let finalBlob = blob;
+        if (header === "%PDF") {
+          finalType = "application/pdf";
+          finalBlob = new Blob([blob], { type: 'application/pdf' });
+        }
+        const blobUrl = URL.createObjectURL(finalBlob);
+        setZoomFile({ url: blobUrl, type: finalType });
+      };
+      reader.readAsArrayBuffer(blob.slice(0, 4));
     })
     .catch(() => toast.error('Error al abrir el archivo'));
   };
@@ -558,9 +574,23 @@ export default function OperarioConteoPage() {
       <Dialog open={zoomFile !== null} onClose={() => setZoomFile(null)} maxWidth="lg" fullWidth>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Archivo E14</span>
-          <IconButton onClick={() => setZoomFile(null)}>
-            <CloseIcon />
-          </IconButton>
+          <Box>
+            {zoomFile && (
+              <Button 
+                variant="outlined" 
+                size="small" 
+                component="a" 
+                href={zoomFile.url} 
+                download={zoomFile.type.includes('pdf') ? 'E14.pdf' : 'E14.jpg'}
+                sx={{ mr: 2 }}
+              >
+                Descargar
+              </Button>
+            )}
+            <IconButton onClick={() => setZoomFile(null)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </DialogTitle>
         <DialogContent sx={{ p: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: zoomFile?.type.includes('pdf') ? '#fff' : '#000', height: '80vh' }}>
           {zoomFile && zoomFile.type.includes('pdf') ? (
