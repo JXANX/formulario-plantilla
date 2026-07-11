@@ -276,6 +276,9 @@ export default function DashboardVotosPage() {
     })
     .then(async res => {
       if (!res.ok) {
+        if (res.status === 404) {
+          throw new Error('Error al intentar cargar la previsualización: archivo no existente');
+        }
         const text = await res.text();
         throw new Error(`Error ${res.status}: ${text}`);
       }
