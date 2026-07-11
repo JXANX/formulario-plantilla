@@ -23,9 +23,14 @@ import type { VotosResumen, VotosDetalleMesa } from '../services/votos.service';
 import { catalogService } from '../services/catalog.service';
 import { usuariosService } from '../services/usuarios.service';
 import type { Usuario } from '../services/usuarios.service';
+import { authService } from '../services/auth.service';
 
 export default function DashboardVotosPage() {
   const toast = useToast();
+  
+  const currentUser = authService.getCurrentUser();
+  const isAdmin = currentUser?.rol === 'SUPER_ADMIN' || currentUser?.rol === 'ADMIN';
+
   const [tabIndex, setTabIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [resumen, setResumen] = useState<VotosResumen | null>(null);
@@ -69,7 +74,7 @@ export default function DashboardVotosPage() {
         })
         .catch(() => toast.error('Error al cargar resumen'))
         .finally(() => setLoading(false));
-    } else if (tabIndex === 1) {
+    } else if (tabIndex === 1 && isAdmin) {
       votosService.obtenerDiscrepancias()
         .then(res => {
           if (res.success) setDiscrepancias(res.data);
@@ -77,7 +82,7 @@ export default function DashboardVotosPage() {
         })
         .catch(() => toast.error('Error al cargar discrepancias'))
         .finally(() => setLoading(false));
-    } else if (tabIndex === 2) {
+    } else if (tabIndex === 2 && isAdmin) {
       votosService.obtenerTodasAsignaciones()
         .then(res => {
           if (res.success) setAsignaciones(res.data);
@@ -85,6 +90,8 @@ export default function DashboardVotosPage() {
         })
         .catch(() => toast.error('Error al cargar asignaciones'))
         .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   };
 
@@ -104,47 +111,29 @@ export default function DashboardVotosPage() {
       });
   };
 
-  const handleDeptoChange = (id: string) => {
-    setSelectedDeptoId(id);
-    setSelectedMpioId('');
-    setSelectedPuestoId('');
-    setSelectedMesaId('');
-    setMunicipios([]);
-    setPuestos([]);
-    setMesas([]);
-    if (id) {
-      catalogService.getMunicipios(Number(id))
-        .then(res => {
-          if (res.success) setMunicipios(res.data);
-        });
+  useEffect(() => {
+    if (selectedDeptoId) {
+      catalogService.getMunicipios(Number(selectedDeptoId)).then(res => { if (res.success) setMunicipios(res.data); });
+      setMunicipios([]); setPuestos([]); setMesas([]);
+      setSelectedMpioId(''); setSelectedPuestoId(''); setSelectedMesaId('');
     }
-  };
+  }, [selectedDeptoId]);
 
-  const handleMpioChange = (id: string) => {
-    setSelectedMpioId(id);
-    setSelectedPuestoId('');
-    setSelectedMesaId('');
-    setPuestos([]);
-    setMesas([]);
-    if (id) {
-      catalogService.getPuestos(Number(id))
-        .then(res => {
-          if (res.success) setPuestos(res.data);
-        });
+  useEffect(() => {
+    if (selectedMpioId) {
+      catalogService.getPuestos(Number(selectedMpioId)).then(res => { if (res.success) setPuestos(res.data); });
+      setPuestos([]); setMesas([]);
+      setSelectedPuestoId(''); setSelectedMesaId('');
     }
-  };
+  }, [selectedMpioId]);
 
-  const handlePuestoChange = (id: string) => {
-    setSelectedPuestoId(id);
-    setSelectedMesaId('');
-    setMesas([]);
-    if (id) {
-      catalogService.getMesas(Number(id))
-        .then(res => {
-          if (res.success) setMesas(res.data.filter((m: any) => m.numeroMesa > 0));
-        });
+  useEffect(() => {
+    if (selectedPuestoId) {
+      catalogService.getMesas(Number(selectedPuestoId)).then(res => { if (res.success) setMesas(res.data); });
+      setMesas([]);
+      setSelectedMesaId('');
     }
-  };
+  }, [selectedPuestoId]);
 
   const handleManualAssignment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -307,18 +296,25 @@ export default function DashboardVotosPage() {
       </Box>
 
       {/* Tabs */}
-      <Tabs 
-        value={tabIndex} 
-        onChange={(_, idx) => setTabIndex(idx)} 
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        sx={{ mb: 4 }}
-      >
-        <Tab icon={<BarChartIcon />} label="Estadísticas de Avance" />
-        <Tab icon={<GavelIcon />} label="Resolución de Discrepancias" />
-        <Tab icon={<AutoAwesomeIcon />} label="Asignación y Distribución" />
-      </Tabs>
+      {isAdmin && (
+        <Tabs 
+          value={tabIndex} 
+          onChange={(_, idx) => setTabIndex(idx)} 
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{ mb: 4 }}
+        >
+          <Tab icon={<BarChartIcon />} label="Estadísticas de Avance" />
+          <Tab icon={<GavelIcon />} label="Resolución de Discrepancias" />
+          <Tab icon={<AutoAwesomeIcon />} label="Asignación y Distribución" />
+        </Tabs>
+      )}
+      {!isAdmin && (
+        <Typography variant="h6" sx={{ mb: 4, color: J.ink, borderBottom: `2px solid ${J.gold}`, pb: 1, display: 'inline-block' }}>
+           <BarChartIcon sx={{ mr: 1, verticalAlign: 'bottom' }}/> Estadísticas de Avance
+        </Typography>
+      )}
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -502,7 +498,7 @@ export default function DashboardVotosPage() {
           )}
 
           {/* TAB 1: Resolution of Discrepancies */}
-          {tabIndex === 1 && (
+          {tabIndex === 1 && isAdmin && (
             <Card>
               <CardContent sx={{ px: 0 }}>
                 <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', px: 3, mb: 2 }}>
@@ -572,7 +568,7 @@ export default function DashboardVotosPage() {
           )}
 
           {/* TAB 2: Work allocation */}
-          {tabIndex === 2 && (
+          {tabIndex === 2 && isAdmin && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Balancing actions */}
               <Card>
@@ -630,7 +626,7 @@ export default function DashboardVotosPage() {
                           fullWidth
                           label="Departamento"
                           value={selectedDeptoId}
-                          onChange={(e) => handleDeptoChange(e.target.value)}
+                          onChange={(e) => setSelectedDeptoId(e.target.value)}
                           required
                           sx={sxSelect}
                         >
@@ -646,7 +642,7 @@ export default function DashboardVotosPage() {
                           fullWidth
                           label="Municipio"
                           value={selectedMpioId}
-                          onChange={(e) => handleMpioChange(e.target.value)}
+                          onChange={(e) => setSelectedMpioId(e.target.value)}
                           required
                           disabled={!selectedDeptoId}
                           sx={sxSelect}
@@ -663,7 +659,7 @@ export default function DashboardVotosPage() {
                           fullWidth
                           label="Puesto"
                           value={selectedPuestoId}
-                          onChange={(e) => handlePuestoChange(e.target.value)}
+                          onChange={(e) => setSelectedPuestoId(e.target.value)}
                           required
                           disabled={!selectedMpioId}
                           sx={sxSelect}
