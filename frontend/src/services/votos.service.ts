@@ -61,6 +61,8 @@ export interface VotosResumen {
   mesasReportadasTestigo: number;
   mesasConDiscrepancias: number;
   totalDiscrepanciasActivas: number;
+  totalVotosRegistraduria: number;
+  totalVotosTestigo: number;
   municipios: ResumenMunicipio[];
   operarios: ResumenOperario[];
 }

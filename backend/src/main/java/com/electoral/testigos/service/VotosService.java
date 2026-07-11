@@ -322,6 +322,8 @@ public class VotosService {
         // We can do it by querying all distinct mesa ids from Registraduría table
         long reportadasReg = registraduriaRepository.findAll().stream().map(r -> r.getMesa().getId()).distinct().count();
         long reportadasTest = testigoVotoRepository.findAll().stream().map(r -> r.getMesa().getId()).distinct().count();
+        long totalVotosReg = registraduriaRepository.findAll().stream().mapToLong(com.electoral.testigos.model.RegistroVotoRegistraduria::getVotos).sum();
+        long totalVotosTest = testigoVotoRepository.findAll().stream().mapToLong(com.electoral.testigos.model.RegistroVotoTestigo::getVotos).sum();
         
         List<Discrepancia> activeDiscrepancies = discrepanciaRepository.findAllWithDiscrepancy();
         long mesasConDisc = activeDiscrepancies.stream().map(d -> d.getMesa().getId()).distinct().count();
@@ -395,6 +397,8 @@ public class VotosService {
                 .mesasReportadasTestigo(reportadasTest)
                 .mesasConDiscrepancias(mesasConDisc)
                 .totalDiscrepanciasActivas(totalActiveDiscrepancies)
+                .totalVotosRegistraduria(totalVotosReg)
+                .totalVotosTestigo(totalVotosTest)
                 .municipios(resumenMunis)
                 .operarios(resumenOperarios)
                 .build();

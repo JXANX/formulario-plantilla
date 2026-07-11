@@ -3,7 +3,7 @@ import {
   Box, Typography, Card, CardContent, Button, Table,
   TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TextField, CircularProgress, Tooltip, IconButton, Dialog, DialogTitle,
-  DialogContent
+  DialogContent, MenuItem
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -20,6 +20,7 @@ import { J } from '../theme/theme';
 import { authService } from '../services/auth.service';
 import { votosService } from '../services/votos.service';
 import type { VotosDetalleMesa, VotoRenglon } from '../services/votos.service';
+import { usuariosService } from '../services/usuarios.service';
 
 export default function OperarioConteoPage() {
   const toast = useToast();
@@ -31,6 +32,11 @@ export default function OperarioConteoPage() {
   const [asignaciones, setAsignaciones] = useState<any[]>([]);
   const [selectedMesaId, setSelectedMesaId] = useState<number | null>(null);
   const [detalleMesa, setDetalleMesa] = useState<VotosDetalleMesa | null>(null);
+  
+  // Admin monitoring states
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [operarios, setOperarios] = useState<any[]>([]);
+  const [selectedOperarioId, setSelectedOperarioId] = useState<number | ''>('');
 
   // Form states
   const [registraduriaInputs, setRegistraduriaInputs] = useState<Record<string, number>>({});
@@ -41,10 +47,33 @@ export default function OperarioConteoPage() {
 
   useEffect(() => {
     const session = authService.getCurrentUser();
-    if (session && session.id) {
-      loadAsignaciones(session.id);
+    setCurrentUser(session);
+    if (session) {
+      if (session.rol === 'SUPER_ADMIN') {
+        usuariosService.listar()
+          .then(res => {
+            if (res.success) {
+              const ops = res.data.filter((u: any) => u.rol === 'OPERARIO' && u.activo);
+              setOperarios(ops);
+              if (ops.length > 0) {
+                setSelectedOperarioId(ops[0].id);
+                loadAsignaciones(ops[0].id);
+              }
+            }
+          });
+      } else {
+        loadAsignaciones(session.id);
+      }
     }
   }, []);
+
+  const handleOperarioChange = (opId: number) => {
+    setSelectedOperarioId(opId);
+    setAsignaciones([]);
+    setDetalleMesa(null);
+    setSelectedMesaId(null);
+    loadAsignaciones(opId);
+  };
 
   const loadAsignaciones = (operarioId: number) => {
     setLoading(true);
@@ -182,9 +211,26 @@ export default function OperarioConteoPage() {
 
   return (
     <Box>
-      <Typography variant="h2" sx={{ fontSize: '28px', mb: 3 }}>
-        Trabajo del Operario — Control de E14
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+        <Typography variant="h2" sx={{ fontSize: '28px' }}>
+          Trabajo del Operario — Control de E14
+        </Typography>
+        
+        {currentUser?.rol === 'SUPER_ADMIN' && operarios.length > 0 && (
+          <TextField
+            select
+            label="Visualizar Operario"
+            value={selectedOperarioId}
+            onChange={(e) => handleOperarioChange(Number(e.target.value))}
+            sx={{ minWidth: 220, bgcolor: '#fff' }}
+            size="small"
+          >
+            {operarios.map(op => (
+              <MenuItem key={op.id} value={op.id}>{op.nombre}</MenuItem>
+            ))}
+          </TextField>
+        )}
+      </Box>
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>

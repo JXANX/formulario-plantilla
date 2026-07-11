@@ -21,6 +21,7 @@ import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import FindInPageIcon from '@mui/icons-material/FindInPage';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 import { useState, useEffect } from 'react';
 import logo from '../assets/logo_tracto.png';
@@ -50,14 +51,17 @@ const navItems: NavItem[] = [
   { label: 'Coord. Acreditados', path: '/coordinadores-acreditados', icon: <AssignmentIndIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
   { label: 'Optimizar Cobertura', path: '/distribucion', icon: <AccountTreeIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'COORDINADOR_TESTIGOS', 'ADMIN'] },
   
-  // Operator conteo
-  { label: 'Conteo de Votos', path: '/conteo-votos', icon: <FactCheckIcon sx={{ fontSize: 26 }} />, roles: ['OPERARIO'] },
+  // Operator conteo (also visible to SUPER_ADMIN)
+  { label: 'Conteo de Votos', path: '/conteo-votos', icon: <FactCheckIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'OPERARIO'] },
   
-  // Lawyer consulta
-  { label: 'Consulta de Votos', path: '/consulta-votos', icon: <FindInPageIcon sx={{ fontSize: 26 }} />, roles: ['ABOGADO'] },
+  // Lawyer consulta (also visible to SUPER_ADMIN)
+  { label: 'Consulta de Votos', path: '/consulta-votos', icon: <FindInPageIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'ABOGADO'] },
   
   // Vote central (Super Admin)
   { label: 'Control de Votos', path: '/control-votos', icon: <HowToVoteIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN'] },
+
+  // Candidatos (Super Admin)
+  { label: 'Candidatos', path: '/candidatos', icon: <GroupsIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN'] },
 
   // User management (Super Admin)
   { label: 'Gestión de Usuarios', path: '/usuarios', icon: <ManageAccountsIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN'] },
@@ -80,6 +84,7 @@ const breadcrumbMap: Record<string, { parent: string; current: string }> = {
   '/conteo-votos': { parent: 'CONTEO /', current: 'Registro de Conteos E14' },
   '/consulta-votos': { parent: 'CONSULTA /', current: 'Control de Discrepancias' },
   '/control-votos': { parent: 'MONITOREO /', current: 'Panel Central de Votos' },
+  '/candidatos': { parent: 'ADMINISTRACIÓN /', current: 'Gestión de Candidatos' },
 };
 
 export default function MainLayout() {

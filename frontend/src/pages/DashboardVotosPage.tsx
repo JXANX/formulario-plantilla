@@ -323,7 +323,7 @@ export default function DashboardVotosPage() {
           {tabIndex === 0 && resumen && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Stat Cards */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr 1fr' }, gap: 3 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr', md: '1fr 1fr 1fr 1fr 1fr 1fr' }, gap: 3 }}>
                 <Box>
                   <Card sx={{ borderLeft: `6px solid ${J.blue}` }}>
                     <CardContent>
@@ -373,7 +373,31 @@ export default function DashboardVotosPage() {
                         {resumen.mesasConDiscrepancias}
                       </Typography>
                       <Typography variant="caption" sx={{ color: J.textMuted }}>
-                        {resumen.totalDiscrepanciasActivas} renglones en conflicto
+                        {resumen.totalDiscrepanciasActivas} en conflicto
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Box>
+                <Box>
+                  <Card sx={{ borderLeft: `6px solid ${J.blue}` }}>
+                    <CardContent>
+                      <Typography sx={{ color: J.textMuted, fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                        Total Votos Registraduría
+                      </Typography>
+                      <Typography variant="h2" sx={{ fontSize: '32px', mt: 1, fontWeight: 700, color: J.blue }}>
+                        {resumen.totalVotosRegistraduria?.toLocaleString() || 0}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Box>
+                <Box>
+                  <Card sx={{ borderLeft: `6px solid ${J.gold}` }}>
+                    <CardContent>
+                      <Typography sx={{ color: J.textMuted, fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                        Total Votos Testigo
+                      </Typography>
+                      <Typography variant="h2" sx={{ fontSize: '32px', mt: 1, fontWeight: 700, color: J.gold }}>
+                        {resumen.totalVotosTestigo?.toLocaleString() || 0}
                       </Typography>
                     </CardContent>
                   </Card>

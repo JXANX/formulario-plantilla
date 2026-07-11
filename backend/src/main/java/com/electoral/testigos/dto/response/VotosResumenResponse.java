@@ -10,6 +10,8 @@ public class VotosResumenResponse {
     private long mesasReportadasTestigo;
     private long mesasConDiscrepancias;
     private long totalDiscrepanciasActivas;
+    private long totalVotosRegistraduria;
+    private long totalVotosTestigo;
 
     private List<ResumenMunicipio> municipios;
     private List<ResumenOperario> operarios;

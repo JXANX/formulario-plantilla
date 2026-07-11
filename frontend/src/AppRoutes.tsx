@@ -16,6 +16,7 @@ import UsuariosPage from './pages/UsuariosPage';
 import OperarioConteoPage from './pages/OperarioConteoPage';
 import DashboardVotosPage from './pages/DashboardVotosPage';
 import AbogadoConsultaPage from './pages/AbogadoConsultaPage';
+import CandidatosPage from './pages/CandidatosPage';
 
 import { authService } from './services/auth.service';
 
@@ -102,17 +103,21 @@ export default function AppRoutes() {
             <DashboardVotosPage />
           </RoleGuard>
         } />
+        <Route path="candidatos" element={
+          <RoleGuard allowedRoles={['SUPER_ADMIN']}>
+            <CandidatosPage />
+          </RoleGuard>
+        } />
 
-        {/* OPERARIO only */}
         <Route path="conteo-votos" element={
-          <RoleGuard allowedRoles={['OPERARIO']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERARIO']}>
             <OperarioConteoPage />
           </RoleGuard>
         } />
 
-        {/* ABOGADO only */}
+        {/* ABOGADO + SUPER_ADMIN */}
         <Route path="consulta-votos" element={
-          <RoleGuard allowedRoles={['ABOGADO']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN', 'ABOGADO']}>
             <AbogadoConsultaPage />
           </RoleGuard>
         } />
