@@ -58,7 +58,7 @@ const navItems: NavItem[] = [
   { label: 'Consulta de Votos', path: '/consulta-votos', icon: <FindInPageIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'ABOGADO'] },
   
   // Vote central (Super Admin)
-  { label: 'Control de Votos', path: '/control-votos', icon: <HowToVoteIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'OPERARIO'] },
+  { label: 'Control de Votos', path: '/control-votos', icon: <HowToVoteIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN', 'OPERARIO', 'ABOGADO'] },
 
   // Candidatos (Super Admin)
   { label: 'Candidatos', path: '/candidatos', icon: <GroupsIcon sx={{ fontSize: 26 }} />, roles: ['SUPER_ADMIN'] },

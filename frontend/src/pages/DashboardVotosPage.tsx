@@ -30,6 +30,7 @@ export default function DashboardVotosPage() {
   
   const currentUser = authService.getCurrentUser();
   const isAdmin = currentUser?.rol === 'SUPER_ADMIN' || currentUser?.rol === 'ADMIN';
+  const hasTabsAccess = isAdmin || currentUser?.rol === 'ABOGADO';
 
   const [tabIndex, setTabIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -74,7 +75,7 @@ export default function DashboardVotosPage() {
         })
         .catch(() => toast.error('Error al cargar resumen'))
         .finally(() => setLoading(false));
-    } else if (tabIndex === 1 && isAdmin) {
+    } else if (tabIndex === 1 && hasTabsAccess) {
       votosService.obtenerDiscrepancias()
         .then(res => {
           if (res.success) setDiscrepancias(res.data);
@@ -296,7 +297,7 @@ export default function DashboardVotosPage() {
       </Box>
 
       {/* Tabs */}
-      {isAdmin && (
+      {hasTabsAccess && (
         <Tabs 
           value={tabIndex} 
           onChange={(_, idx) => setTabIndex(idx)} 
@@ -307,10 +308,10 @@ export default function DashboardVotosPage() {
         >
           <Tab icon={<BarChartIcon />} label="Estadísticas de Avance" />
           <Tab icon={<GavelIcon />} label="Resolución de Discrepancias" />
-          <Tab icon={<AutoAwesomeIcon />} label="Asignación y Distribución" />
+          {isAdmin && <Tab icon={<AutoAwesomeIcon />} label="Asignación y Distribución" />}
         </Tabs>
       )}
-      {!isAdmin && (
+      {!hasTabsAccess && (
         <Typography variant="h6" sx={{ mb: 4, color: J.ink, borderBottom: `2px solid ${J.gold}`, pb: 1, display: 'inline-block' }}>
            <BarChartIcon sx={{ mr: 1, verticalAlign: 'bottom' }}/> Estadísticas de Avance
         </Typography>

@@ -99,7 +99,7 @@ export default function AppRoutes() {
           </RoleGuard>
         } />
         <Route path="control-votos" element={
-          <RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERARIO']}>
+          <RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERARIO', 'ABOGADO']}>
             <DashboardVotosPage />
           </RoleGuard>
         } />
