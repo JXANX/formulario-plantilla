@@ -1,6 +1,6 @@
 # Sistema de Gestión de Testigos Electorales - Quindío 2026
 
-Aplicación web profesional para la gestión integral de testigos electorales.
+Aplicación web profesional para la gestión integral de testigos electorales, control de escrutinios, digitalización de E14 y monitoreo de discrepancias en tiempo real.
 
 ## Arquitectura
 
