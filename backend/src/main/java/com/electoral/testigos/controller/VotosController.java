@@ -91,7 +91,9 @@ public class VotosController {
             File file = votosService.obtenerArchivoFoto(id);
             Resource resource = new FileSystemResource(file);
             String contentType = Files.probeContentType(file.toPath());
-            if (contentType == null) {
+            if (file.getName().toLowerCase().endsWith(".pdf")) {
+                contentType = "application/pdf";
+            } else if (contentType == null) {
                 contentType = "image/jpeg";
             }
             return ResponseEntity.ok()

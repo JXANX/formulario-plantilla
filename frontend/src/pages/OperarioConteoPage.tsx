@@ -345,7 +345,7 @@ export default function OperarioConteoPage() {
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#fff', mt: 0.5 }}>
                               <PhoneIcon sx={{ fontSize: 14 }} />
-                              <Typography sx={{ fontSize: '0.8rem' }}>{detalleMesa.testigoCelular}</Typography>
+                              <Typography sx={{ fontSize: '0.8rem', color: '#fff' }}>{detalleMesa.testigoCelular}</Typography>
                             </Box>
                           </Paper>
                         </Box>
@@ -373,7 +373,16 @@ export default function OperarioConteoPage() {
                               >
                                 <VisibilityIcon sx={{ fontSize: 32 }} />
                               </IconButton>
-                              <Typography sx={{ fontSize: '0.8rem', color: J.textMuted }}>Ver foto subida</Typography>
+                              <Typography sx={{ fontSize: '0.8rem', color: J.textMuted }}>Ver archivo subido</Typography>
+                              <Button
+                                size="small"
+                                variant="text"
+                                component="label"
+                                sx={{ mt: 1, fontSize: '0.75rem' }}
+                              >
+                                Reemplazar
+                                <input type="file" hidden accept=".pdf, image/png, image/jpeg, image/jpg" onChange={(e) => handleFileUpload(e, 'REGISTRADURIA')} />
+                              </Button>
                             </Box>
                           ) : (
                             <Button
@@ -402,7 +411,16 @@ export default function OperarioConteoPage() {
                               >
                                 <VisibilityIcon sx={{ fontSize: 32 }} />
                               </IconButton>
-                              <Typography sx={{ fontSize: '0.8rem', color: J.textMuted }}>Ver foto subida</Typography>
+                              <Typography sx={{ fontSize: '0.8rem', color: J.textMuted }}>Ver archivo subido</Typography>
+                              <Button
+                                size="small"
+                                variant="text"
+                                component="label"
+                                sx={{ mt: 1, fontSize: '0.75rem' }}
+                              >
+                                Reemplazar
+                                <input type="file" hidden accept=".pdf, image/png, image/jpeg, image/jpg" onChange={(e) => handleFileUpload(e, 'TESTIGO')} />
+                              </Button>
                             </Box>
                           ) : (
                             <Button
