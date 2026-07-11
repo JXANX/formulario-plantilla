@@ -16,16 +16,16 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const data = await authService.login(correo, password);
+      const data = await authService.login(correo.trim(), password.trim());
       if (data.success && data.data.token) {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data));
         navigate('/dashboard');
       } else {
-        setError(data.message || 'Credenciales inválidas');
+        setError('Usuario o contraseña incorrectos');
       }
-    } catch {
-      setError('Error de conexión con el servidor');
+    } catch (err: any) {
+      setError('Usuario o contraseña incorrectos');
     } finally {
       setLoading(false);
     }
