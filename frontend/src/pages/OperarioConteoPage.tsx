@@ -310,7 +310,7 @@ export default function OperarioConteoPage() {
           </Box>
 
           {/* Right Column: Vote entry details */}
-          <Box>
+          <Box sx={{ overflowX: 'auto', width: '100%' }}>
             {detalleMesa ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {/* Table Header Info */}

@@ -249,7 +249,7 @@ export default function MainLayout() {
           </Toolbar>
         </AppBar>
 
-        <Box component="main" sx={{ flex: 1, p: { xs: 2, sm: 3, md: 5 }, bgcolor: '#F8F7F4', backgroundImage: 'radial-gradient(rgba(26,31,46,0.03) 1px, transparent 1px)', backgroundSize: '28px 28px', minWidth: 0, overflowX: 'hidden' }}>
+        <Box component="main" sx={{ flex: 1, p: { xs: 2, sm: 3, md: 5 }, bgcolor: '#F8F7F4', backgroundImage: 'radial-gradient(rgba(26,31,46,0.03) 1px, transparent 1px)', backgroundSize: '28px 28px', minWidth: 0, overflowX: 'auto' }}>
           <Outlet />
         </Box>
       </Box>
