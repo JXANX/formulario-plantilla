@@ -15,6 +15,7 @@ public interface AsignacionOperarioRepository extends JpaRepository<AsignacionOp
            "LEFT JOIN FETCH a.puesto p " +
            "LEFT JOIN FETCH a.mesa m " +
            "LEFT JOIN FETCH m.puesto mp " +
+           "LEFT JOIN FETCH mp.municipio " +
            "WHERE a.operario.id = :operarioId")
     List<AsignacionOperario> findByOperarioId(@Param("operarioId") Long operarioId);
     
@@ -24,6 +25,7 @@ public interface AsignacionOperarioRepository extends JpaRepository<AsignacionOp
            "LEFT JOIN FETCH a.operario " +
            "LEFT JOIN FETCH a.puesto p " +
            "LEFT JOIN FETCH a.mesa m " +
-           "LEFT JOIN FETCH m.puesto mp")
+           "LEFT JOIN FETCH m.puesto mp " +
+           "LEFT JOIN FETCH mp.municipio")
     List<AsignacionOperario> findAllWithEagerRelationships();
 }

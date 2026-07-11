@@ -1,5 +1,6 @@
 package com.electoral.testigos.service;
 
+import com.electoral.testigos.dto.response.AsignacionResponse;
 import com.electoral.testigos.model.AsignacionOperario;
 import com.electoral.testigos.model.Mesa;
 import com.electoral.testigos.model.Usuario;
@@ -10,7 +11,6 @@ import com.electoral.testigos.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,17 +28,21 @@ public class AsignacionService {
     private MesaRepository mesaRepository;
 
     @Transactional(readOnly = true)
-    public List<AsignacionOperario> obtenerTodas() {
-        return asignacionRepository.findAllWithEagerRelationships();
+    public List<AsignacionResponse> obtenerTodas() {
+        return asignacionRepository.findAllWithEagerRelationships().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<AsignacionOperario> obtenerPorOperario(Long operarioId) {
-        return asignacionRepository.findByOperarioId(operarioId);
+    public List<AsignacionResponse> obtenerPorOperario(Long operarioId) {
+        return asignacionRepository.findByOperarioId(operarioId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public AsignacionOperario crearAsignacion(Long operarioId, Long puestoId, Long mesaId) {
+    public AsignacionResponse crearAsignacion(Long operarioId, Long puestoId, Long mesaId) {
         Usuario operario = usuarioRepository.findById(operarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario operario no encontrado"));
         
@@ -56,7 +60,52 @@ public class AsignacionService {
             throw new RuntimeException("Asignación por puesto no implementada directamente, asigne por mesa.");
         }
 
-        return asignacionRepository.save(builder.build());
+        AsignacionOperario saved = asignacionRepository.save(builder.build());
+        return mapToResponse(saved);
+    }
+
+    public AsignacionResponse mapToResponse(AsignacionOperario entity) {
+        if (entity == null) return null;
+
+        AsignacionResponse.UsuarioDTO operarioDTO = null;
+        if (entity.getOperario() != null) {
+            operarioDTO = AsignacionResponse.UsuarioDTO.builder()
+                    .id(entity.getOperario().getId())
+                    .nombre(entity.getOperario().getNombre())
+                    .correo(entity.getOperario().getCorreo())
+                    .rol(entity.getOperario().getRol() != null ? entity.getOperario().getRol().name() : null)
+                    .build();
+        }
+
+        AsignacionResponse.MesaDTO mesaDTO = null;
+        if (entity.getMesa() != null) {
+            AsignacionResponse.PuestoDTO puestoDTO = null;
+            if (entity.getMesa().getPuesto() != null) {
+                AsignacionResponse.MunicipioDTO municipioDTO = null;
+                if (entity.getMesa().getPuesto().getMunicipio() != null) {
+                    municipioDTO = AsignacionResponse.MunicipioDTO.builder()
+                            .id(entity.getMesa().getPuesto().getMunicipio().getId())
+                            .nombre(entity.getMesa().getPuesto().getMunicipio().getNombre())
+                            .build();
+                }
+                puestoDTO = AsignacionResponse.PuestoDTO.builder()
+                        .id(entity.getMesa().getPuesto().getId())
+                        .nombrePuesto(entity.getMesa().getPuesto().getNombrePuesto())
+                        .municipio(municipioDTO)
+                        .build();
+            }
+            mesaDTO = AsignacionResponse.MesaDTO.builder()
+                    .id(entity.getMesa().getId())
+                    .numeroMesa(entity.getMesa().getNumeroMesa())
+                    .puesto(puestoDTO)
+                    .build();
+        }
+
+        return AsignacionResponse.builder()
+                .id(entity.getId())
+                .operario(operarioDTO)
+                .mesa(mesaDTO)
+                .build();
     }
 
     @Transactional

@@ -1,7 +1,7 @@
 package com.electoral.testigos.controller;
 
 import com.electoral.testigos.dto.response.ApiResponse;
-import com.electoral.testigos.model.AsignacionOperario;
+import com.electoral.testigos.dto.response.AsignacionResponse;
 import com.electoral.testigos.service.AsignacionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class AsignacionController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> obtenerTodas() {
         try {
-            List<AsignacionOperario> asignaciones = asignacionService.obtenerTodas();
+            List<AsignacionResponse> asignaciones = asignacionService.obtenerTodas();
             return ResponseEntity.ok(new ApiResponse<>(true, "Asignaciones obtenidas", asignaciones));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
@@ -33,7 +33,7 @@ public class AsignacionController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OPERARIO')")
     public ResponseEntity<?> obtenerPorOperario(@PathVariable Long operarioId) {
         try {
-            List<AsignacionOperario> asignaciones = asignacionService.obtenerPorOperario(operarioId);
+            List<AsignacionResponse> asignaciones = asignacionService.obtenerPorOperario(operarioId);
             return ResponseEntity.ok(new ApiResponse<>(true, "Asignaciones del operario obtenidas", asignaciones));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
@@ -47,7 +47,7 @@ public class AsignacionController {
             @RequestParam(required = false) Long puestoId,
             @RequestParam(required = false) Long mesaId) {
         try {
-            AsignacionOperario asignacion = asignacionService.crearAsignacion(operarioId, puestoId, mesaId);
+            AsignacionResponse asignacion = asignacionService.crearAsignacion(operarioId, puestoId, mesaId);
             return ResponseEntity.ok(new ApiResponse<>(true, "Asignación creada exitosamente", asignacion));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));

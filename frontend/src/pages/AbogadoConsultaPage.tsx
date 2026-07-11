@@ -126,7 +126,7 @@ export default function AbogadoConsultaPage() {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {/* General Stats summary */}
           {resumen && (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr', md: '1.2fr 1fr 1fr 1.2fr 1.2fr' }, gap: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1.2fr 1fr 1fr 1.2fr 1.2fr' }, gap: 3 }}>
               <Box>
                 <Card sx={{ borderLeft: `6px solid ${J.blue}` }}>
                   <CardContent>

@@ -307,7 +307,14 @@ export default function DashboardVotosPage() {
       </Box>
 
       {/* Tabs */}
-      <Tabs value={tabIndex} onChange={(_, idx) => setTabIndex(idx)} sx={{ mb: 4 }}>
+      <Tabs 
+        value={tabIndex} 
+        onChange={(_, idx) => setTabIndex(idx)} 
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        sx={{ mb: 4 }}
+      >
         <Tab icon={<BarChartIcon />} label="Estadísticas de Avance" />
         <Tab icon={<GavelIcon />} label="Resolución de Discrepancias" />
         <Tab icon={<AutoAwesomeIcon />} label="Asignación y Distribución" />
@@ -323,7 +330,7 @@ export default function DashboardVotosPage() {
           {tabIndex === 0 && resumen && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Stat Cards */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr', md: '1fr 1fr 1fr 1fr 1fr 1fr' }, gap: 3 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr 1fr 1fr 1fr' }, gap: 3 }}>
                 <Box>
                   <Card sx={{ borderLeft: `6px solid ${J.blue}` }}>
                     <CardContent>
@@ -600,7 +607,7 @@ export default function DashboardVotosPage() {
                 <CardContent>
                   <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 2 }}>Asignar Mesa Manualmente</Typography>
                   <form onSubmit={handleManualAssignment}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '3fr 2.25fr 2.25fr 2.25fr 2.25fr' }, gap: 3, alignItems: 'center' }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '3fr 2.25fr 2.25fr 2.25fr 2.25fr' }, gap: 3, alignItems: 'center' }}>
                       <Box>
                         <TextField
                           select

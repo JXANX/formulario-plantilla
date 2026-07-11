@@ -619,6 +619,9 @@ export default function AcreditacionesPage() {
       <Tabs
         value={activeTab}
         onChange={(_, v) => { setActiveTab(v); setPage(0); }}
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
         sx={{ mb: 4, borderBottom: `1px solid ${J.border}`, '& .MuiTabs-indicator': { bgcolor: J.gold, height: 2 } }}
       >
         <Tab label="Cobertura por Puesto" sx={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: J.textMuted, '&.Mui-selected': { color: J.ink } }} />
