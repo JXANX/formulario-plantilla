@@ -11,6 +11,7 @@ import com.electoral.testigos.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.electoral.testigos.model.Puesto;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -136,19 +137,37 @@ public class AsignacionService {
             throw new RuntimeException("No hay mesas registradas en el sistema para balancear");
         }
 
+        // Agrupar mesas por puesto. Usamos LinkedHashMap para preservar el orden geográfico de los puestos.
+        java.util.Map<Puesto, List<Mesa>> mesasPorPuesto = mesas.stream()
+                .filter(m -> m.getPuesto() != null)
+                .collect(Collectors.groupingBy(
+                        Mesa::getPuesto,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        // Obtener la lista ordenada de puestos
+        List<Puesto> puestos = new java.util.ArrayList<>(mesasPorPuesto.keySet());
+
         // 3. Limpiar asignaciones previas
         asignacionRepository.deleteAll();
 
-        // 4. Distribuir mesas round-robin
-        for (int i = 0; i < mesas.size(); i++) {
-            Mesa mesa = mesas.get(i);
+        // 4. Distribuir puestos round-robin
+        for (int i = 0; i < puestos.size(); i++) {
+            Puesto puesto = puestos.get(i);
             Usuario operario = operarios.get(i % operarios.size());
+            List<Mesa> mesasDelPuesto = mesasPorPuesto.get(puesto);
 
-            AsignacionOperario asignacion = AsignacionOperario.builder()
-                    .operario(operario)
-                    .mesa(mesa)
-                    .build();
-            asignacionRepository.save(asignacion);
+            if (mesasDelPuesto != null) {
+                for (Mesa mesa : mesasDelPuesto) {
+                    AsignacionOperario asignacion = AsignacionOperario.builder()
+                            .operario(operario)
+                            .puesto(puesto)
+                            .mesa(mesa)
+                            .build();
+                    asignacionRepository.save(asignacion);
+                }
+            }
         }
     }
 }

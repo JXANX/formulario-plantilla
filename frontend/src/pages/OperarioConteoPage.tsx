@@ -261,6 +261,7 @@ export default function OperarioConteoPage() {
                     onClick={() => handleSelectMesa(asig.mesa.id)}
                     sx={{ 
                       cursor: 'pointer',
+                      flexShrink: 0,
                       borderLeft: active ? `6px solid ${J.gold}` : '1px solid transparent',
                       borderColor: active ? J.border : J.border,
                       bgcolor: active ? 'rgba(201,151,58,0.04)' : '#fff',
