@@ -86,19 +86,16 @@ public class VotosController {
 
     @GetMapping("/fotos/ver/{id}/archivo")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'OPERARIO', 'ABOGADO')")
-    public ResponseEntity<Resource> verArchivoFoto(@PathVariable Long id) {
+    public ResponseEntity<byte[]> verArchivoFoto(@PathVariable Long id) {
         try {
-            File file = votosService.obtenerArchivoFoto(id);
-            Resource resource = new FileSystemResource(file);
-            String contentType = Files.probeContentType(file.toPath());
-            if (file.getName().toLowerCase().endsWith(".pdf")) {
-                contentType = "application/pdf";
-            } else if (contentType == null) {
-                contentType = "image/jpeg";
+            FotoE14 foto = votosService.obtenerFotoEntity(id);
+            if (foto.getArchivoData() == null) {
+                return ResponseEntity.notFound().build();
             }
+            String contentType = foto.getContentType() != null ? foto.getContentType() : "image/jpeg";
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .body(resource);
+                    .body(foto.getArchivoData());
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }

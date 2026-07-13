@@ -22,8 +22,15 @@ public class FotoE14 {
     @Column(nullable = false)
     private OrigenFoto origen;
 
-    @Column(name = "ruta_archivo", nullable = false)
+    @Column(name = "ruta_archivo")
     private String rutaArchivo;
+
+    @Lob
+    @Column(name = "archivo_data")
+    private byte[] archivoData;
+
+    @Column(name = "content_type")
+    private String contentType;
 
     @Column(name = "fecha_subida", nullable = false)
     @Builder.Default

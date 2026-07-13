@@ -154,42 +154,35 @@ public class VotosService {
     public FotoE14 guardarFotoE14(Long mesaId, String origenStr, MultipartFile file, Usuario usuario) throws IOException {
         Mesa mesa = mesaRepository.findById(mesaId)
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
-        Puesto puesto = mesa.getPuesto();
-        Municipio municipio = puesto.getMunicipio();
 
         OrigenFoto origen = OrigenFoto.valueOf(origenStr.toUpperCase());
 
-        // Create folder: uploads/E14/{municipio_id}/{puesto_id}/{mesa_id}/
-        String folderPath = String.format("%s/%d/%d/%d", UPLOAD_DIR, municipio.getId(), puesto.getId(), mesa.getId());
-        File dir = new File(folderPath);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        // Delete previous if same origin exists (to replace)
+        Optional<FotoE14> optPrev = fotoRepository.findByMesaIdAndOrigen(mesaId, origen);
+        if (optPrev.isPresent()) {
+            FotoE14 prev = optPrev.get();
+            // Optional: delete physical file if it exists, for cleanup of old data
+            if (prev.getRutaArchivo() != null) {
+                File prevFile = new File(prev.getRutaArchivo());
+                if (prevFile.exists()) {
+                    prevFile.delete();
+                }
+            }
+            fotoRepository.delete(prev);
         }
 
         String originalFilename = file.getOriginalFilename();
         String extension = originalFilename != null && originalFilename.contains(".")
                 ? originalFilename.substring(originalFilename.lastIndexOf("."))
                 : ".jpg";
-
-        String filename = String.format("%s_%d%s", origen.name(), System.currentTimeMillis(), extension);
-        Path targetPath = Paths.get(folderPath, filename);
-        Files.write(targetPath, file.getBytes());
-
-        // Delete previous if same origin exists (to replace)
-        Optional<FotoE14> optPrev = fotoRepository.findByMesaIdAndOrigen(mesaId, origen);
-        if (optPrev.isPresent()) {
-            FotoE14 prev = optPrev.get();
-            File prevFile = new File(prev.getRutaArchivo());
-            if (prevFile.exists()) {
-                prevFile.delete();
-            }
-            fotoRepository.delete(prev);
-        }
+        String dummyPath = String.format("%s_%d%s", origen.name(), System.currentTimeMillis(), extension);
 
         FotoE14 foto = FotoE14.builder()
                 .mesa(mesa)
                 .origen(origen)
-                .rutaArchivo(targetPath.toString())
+                .rutaArchivo(dummyPath) // Keep a dummy name or original name for reference
+                .archivoData(file.getBytes())
+                .contentType(file.getContentType() != null ? file.getContentType() : "image/jpeg")
                 .fechaSubida(LocalDateTime.now())
                 .subidoPor(usuario)
                 .build();
@@ -198,14 +191,9 @@ public class VotosService {
     }
 
     @Transactional(readOnly = true)
-    public File obtenerArchivoFoto(Long fotoId) {
-        FotoE14 foto = fotoRepository.findById(fotoId)
+    public FotoE14 obtenerFotoEntity(Long fotoId) {
+        return fotoRepository.findById(fotoId)
                 .orElseThrow(() -> new RuntimeException("Registro de foto no encontrado"));
-        File file = new File(foto.getRutaArchivo());
-        if (!file.exists()) {
-            throw new RuntimeException("Archivo físico de imagen no encontrado");
-        }
-        return file;
     }
 
     @Transactional(readOnly = true)
